@@ -53,6 +53,7 @@ export type Database = {
           email: string
           first_name: string | null
           id: string
+          is_reviewer: boolean
           last_name: string | null
           team: string | null
         }
@@ -62,6 +63,7 @@ export type Database = {
           email: string
           first_name?: string | null
           id?: string
+          is_reviewer?: boolean
           last_name?: string | null
           team?: string | null
         }
@@ -71,6 +73,7 @@ export type Database = {
           email?: string
           first_name?: string | null
           id?: string
+          is_reviewer?: boolean
           last_name?: string | null
           team?: string | null
         }
@@ -266,42 +269,173 @@ export type Database = {
       }
       news: {
         Row: {
+          audience: Database["public"]["Enums"]["news_audience"]
           author: string
           author_email: string | null
           body: string | null
           created_at: string
           id: string
           image_path: string | null
+          input_mode: Database["public"]["Enums"]["news_input_mode"] | null
           links: Json
+          manager_validated_at: string | null
+          manager_validated_by_email: string | null
+          published_at: string | null
+          review_category:
+            | Database["public"]["Enums"]["rejection_category"]
+            | null
+          review_note: string | null
+          reviewed_audience:
+            | Database["public"]["Enums"]["news_audience"]
+            | null
           revalidate_at: string | null
           status: Database["public"]["Enums"]["news_status"]
+          submitted_at: string | null
           title: string
+          updated_at: string
         }
         Insert: {
+          audience?: Database["public"]["Enums"]["news_audience"]
           author?: string
           author_email?: string | null
           body?: string | null
           created_at?: string
           id?: string
           image_path?: string | null
+          input_mode?: Database["public"]["Enums"]["news_input_mode"] | null
           links?: Json
+          manager_validated_at?: string | null
+          manager_validated_by_email?: string | null
+          published_at?: string | null
+          review_category?:
+            | Database["public"]["Enums"]["rejection_category"]
+            | null
+          review_note?: string | null
+          reviewed_audience?:
+            | Database["public"]["Enums"]["news_audience"]
+            | null
           revalidate_at?: string | null
           status?: Database["public"]["Enums"]["news_status"]
+          submitted_at?: string | null
           title: string
+          updated_at?: string
         }
         Update: {
+          audience?: Database["public"]["Enums"]["news_audience"]
           author?: string
           author_email?: string | null
           body?: string | null
           created_at?: string
           id?: string
           image_path?: string | null
+          input_mode?: Database["public"]["Enums"]["news_input_mode"] | null
           links?: Json
+          manager_validated_at?: string | null
+          manager_validated_by_email?: string | null
+          published_at?: string | null
+          review_category?:
+            | Database["public"]["Enums"]["rejection_category"]
+            | null
+          review_note?: string | null
+          reviewed_audience?:
+            | Database["public"]["Enums"]["news_audience"]
+            | null
           revalidate_at?: string | null
           status?: Database["public"]["Enums"]["news_status"]
+          submitted_at?: string | null
           title?: string
+          updated_at?: string
         }
         Relationships: []
+      }
+      news_audience_teams: {
+        Row: {
+          created_at: string
+          news_id: string
+          team: string
+        }
+        Insert: {
+          created_at?: string
+          news_id: string
+          team: string
+        }
+        Update: {
+          created_at?: string
+          news_id?: string
+          team?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_audience_teams_news_id_fkey"
+            columns: ["news_id"]
+            isOneToOne: false
+            referencedRelation: "news"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_audience_teams_team_fkey"
+            columns: ["team"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["name"]
+          },
+        ]
+      }
+      news_status_history: {
+        Row: {
+          action: string | null
+          audience: Database["public"]["Enums"]["news_audience"]
+          changed_at: string
+          changed_by_email: string | null
+          id: string
+          is_automatic: boolean
+          new_status: Database["public"]["Enums"]["news_status"]
+          news_id: string
+          note: string | null
+          old_status: Database["public"]["Enums"]["news_status"] | null
+          rejection_category:
+            | Database["public"]["Enums"]["rejection_category"]
+            | null
+        }
+        Insert: {
+          action?: string | null
+          audience: Database["public"]["Enums"]["news_audience"]
+          changed_at?: string
+          changed_by_email?: string | null
+          id?: string
+          is_automatic?: boolean
+          new_status: Database["public"]["Enums"]["news_status"]
+          news_id: string
+          note?: string | null
+          old_status?: Database["public"]["Enums"]["news_status"] | null
+          rejection_category?:
+            | Database["public"]["Enums"]["rejection_category"]
+            | null
+        }
+        Update: {
+          action?: string | null
+          audience?: Database["public"]["Enums"]["news_audience"]
+          changed_at?: string
+          changed_by_email?: string | null
+          id?: string
+          is_automatic?: boolean
+          new_status?: Database["public"]["Enums"]["news_status"]
+          news_id?: string
+          note?: string | null
+          old_status?: Database["public"]["Enums"]["news_status"] | null
+          rejection_category?:
+            | Database["public"]["Enums"]["rejection_category"]
+            | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_status_history_news_id_fkey"
+            columns: ["news_id"]
+            isOneToOne: false
+            referencedRelation: "news"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       submission_status_history: {
         Row: {
@@ -459,6 +593,23 @@ export type Database = {
         }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      choisir_persona: {
+        Args: { _persona: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      submit_news: {
+        Args: { _news_id: string }
+        Returns: Database["public"]["Enums"]["news_status"]
+      }
+      review_news: {
+        Args: {
+          _category?: Database["public"]["Enums"]["rejection_category"] | null
+          _decision: string
+          _news_id: string
+          _note?: string | null
+        }
+        Returns: Database["public"]["Enums"]["news_status"]
+      }
       bulk_import_allowed_users: {
         Args: { _dry_run?: boolean; _rows: Json }
         Returns: Json
@@ -472,7 +623,16 @@ export type Database = {
       app_role: "admin" | "manager" | "collaborateur"
       blocker_severity: "critical" | "warning" | "info"
       blocker_status: "OUVERT" | "EN COURS" | "SURVEILLANCE" | "RÉSOLU"
-      news_status: "brouillon" | "publiée"
+      news_audience: "mon_equipe" | "tout_le_cabinet"
+      news_input_mode: "dictee" | "notes" | "ecrit"
+      news_status:
+        | "brouillon"
+        | "a_valider_manager"
+        | "a_valider_comm"
+        | "a_modifier_manager"
+        | "a_modifier_comm"
+        | "publiée"
+        | "refusée"
       rejection_category:
         | "à clarifier"
         | "en désaccord avec les process"
@@ -609,7 +769,17 @@ export const Constants = {
       app_role: ["admin", "manager", "collaborateur"],
       blocker_severity: ["critical", "warning", "info"],
       blocker_status: ["OUVERT", "EN COURS", "SURVEILLANCE", "RÉSOLU"],
-      news_status: ["brouillon", "publiée"],
+      news_audience: ["mon_equipe", "tout_le_cabinet"],
+      news_input_mode: ["dictee", "notes", "ecrit"],
+      news_status: [
+        "brouillon",
+        "a_valider_manager",
+        "a_valider_comm",
+        "a_modifier_manager",
+        "a_modifier_comm",
+        "publiée",
+        "refusée",
+      ],
       rejection_category: [
         "à clarifier",
         "en désaccord avec les process",

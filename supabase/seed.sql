@@ -18,16 +18,16 @@ DELETE FROM public.departure_notices;
 -- 1. Équipes
 INSERT INTO public.teams (name, is_reserved) VALUES ('Admin', true) ON CONFLICT DO NOTHING;
 INSERT INTO public.teams (name) VALUES
-  ('Accounting'), ('Direction Commerciale'), ('Direction Conseil'), ('Direction recrutement'),
-  ('Finance'), ('Legal'), ('Marketing'), ('Opérations'), ('People'), ('Pôle Data et IA'),
+  ('Accounting'), ('Communication'), ('Direction Commerciale'), ('Direction Conseil'), ('Direction recrutement'),
+  ('Finance'), ('IT'), ('Legal'), ('Marketing'), ('Opérations'), ('People'), ('Pôle Data et IA'),
   ('Product'), ('Relation clients')
 ON CONFLICT DO NOTHING;
 
 -- Équipes héritées de l'ancienne démo, plus utilisées
 DELETE FROM public.teams t
  WHERE NOT t.is_reserved
-   AND t.name NOT IN ('Accounting', 'Direction Commerciale', 'Direction Conseil', 'Direction recrutement',
-                      'Finance', 'Legal', 'Marketing', 'Opérations', 'People', 'Pôle Data et IA',
+   AND t.name NOT IN ('Accounting', 'Communication', 'Direction Commerciale', 'Direction Conseil', 'Direction recrutement',
+                      'Finance', 'IT', 'Legal', 'Marketing', 'Opérations', 'People', 'Pôle Data et IA',
                       'Product', 'Relation clients')
    AND NOT EXISTS (SELECT 1 FROM public.allowed_users u WHERE u.team = t.name)
    AND NOT EXISTS (SELECT 1 FROM public.manager_teams m WHERE m.team = t.name);
@@ -37,14 +37,16 @@ DELETE FROM public.teams t
 WITH people(email, first_name, last_name, role, team) AS (
   VALUES
     ('admin@biggerboat.example',         'Claire',  'Vasseur', 'admin',         NULL),
-    ('sophie.marchand@biggerboat.example','Sophie',  'Marchand','manager',       'Product'),
-    ('karim.haddad@biggerboat.example',  'Karim',   'Haddad',  'manager',       'Direction Commerciale'),
+    -- Nadia/Yacine/Maxime : renommés (prénom seulement) pour ne pas entrer en collision
+    -- avec les personas de démo Sophie/Karim/Julien (fondations v1, 31 oct. 2026).
+    ('sophie.marchand@biggerboat.example','Nadia',   'Marchand','manager',       'Product'),
+    ('karim.haddad@biggerboat.example',  'Yacine',  'Haddad',  'manager',       'Direction Commerciale'),
     ('julie.moreau@biggerboat.example',  'Julie',   'Moreau',  'manager',       'People'),
     ('thomas.diallo@biggerboat.example', 'Thomas',  'Diallo',  'collaborateur', 'Direction Commerciale'),
     ('nina.petit@biggerboat.example',    'Nina',    'Petit',   'collaborateur', 'Product'),
     ('hugo.martin@biggerboat.example',   'Hugo',    'Martin',  'collaborateur', 'People'),
     ('lea.bernard@biggerboat.example',   'Léa',     'Bernard', 'collaborateur', 'Pôle Data et IA'),
-    ('julien.caron@biggerboat.example',  'Julien',  'Caron',   'collaborateur', 'Marketing'),
+    ('julien.caron@biggerboat.example',  'Maxime',  'Caron',   'collaborateur', 'Marketing'),
     ('sofia.benali@biggerboat.example',  'Sofia',   'Benali',  'collaborateur', 'Direction Commerciale')
 ), up AS (
   INSERT INTO public.allowed_users (email, first_name, last_name, team)
@@ -68,6 +70,36 @@ FROM (VALUES
 JOIN public.allowed_users u ON u.email = m.email
 ON CONFLICT DO NOTHING;
 
+-- 2bis. Personas de démonstration (fondations v1, 31 oct. 2026) : 6 profils fixes
+--       repris par la fonction choisir_persona pour un changement de rôle en un clic.
+--       Prénoms seulement, affichés sans nom de famille dans le sélecteur.
+WITH personas(email, first_name, role, team, is_reviewer) AS (
+  VALUES
+    ('ines@happyplace.test',    'Inès',    'collaborateur', 'Direction Commerciale', false),
+    ('marc@happyplace.test',    'Marc',    'manager',       'Direction Commerciale', false),
+    ('camille@happyplace.test', 'Camille', 'collaborateur', 'Communication',         true),
+    ('julien@happyplace.test',  'Julien',  'collaborateur', 'Communication',         true),
+    ('sophie@happyplace.test',  'Sophie',  'manager',       'Communication',         false),
+    ('karim@happyplace.test',   'Karim',   'admin',         'IT',                    false)
+), up AS (
+  INSERT INTO public.allowed_users (email, first_name, team, is_reviewer)
+  SELECT email, first_name, CASE WHEN role = 'collaborateur' THEN team END, is_reviewer FROM personas
+  ON CONFLICT (email) DO UPDATE
+    SET first_name = excluded.first_name, team = excluded.team, is_reviewer = excluded.is_reviewer
+  RETURNING id, email
+)
+INSERT INTO public.allowed_user_roles (allowed_user_id, role)
+SELECT up.id, p.role::public.app_role FROM up JOIN personas p ON p.email = up.email
+ON CONFLICT (allowed_user_id) DO UPDATE SET role = excluded.role;
+
+INSERT INTO public.manager_teams (allowed_user_id, team)
+SELECT u.id, m.team FROM (VALUES
+  ('marc@happyplace.test',   'Direction Commerciale'),
+  ('sophie@happyplace.test', 'Communication')
+) AS m(email, team)
+JOIN public.allowed_users u ON u.email = m.email
+ON CONFLICT DO NOTHING;
+
 -- 3. Actualités
 INSERT INTO public.news (title, body, author, status, created_at) VALUES
 ('Meet-up candidats Cloud & DevOps', 'Une rencontre candidats et entreprises est organisée le 6 novembre autour des métiers Platform Engineering, SRE et Cloud.', 'Communauté Tech', 'publiée', now() - interval '31 days'),
@@ -82,13 +114,76 @@ INSERT INTO public.news (title, body, author, status, created_at) VALUES
 ('Lancement du vivier Data & IA', 'Centralisation en cours de nos candidats Data Engineer, ML Engineer et AI Product Manager qualifiés.', 'Pôle Data & IA', 'publiée', now() - interval '18 days'),
 ('Bilan du marché tech — septembre 2026', 'La demande reste soutenue sur les profils cybersécurité, cloud et data. Le délai moyen de recrutement observé ce mois-ci est de 31 jours.', 'Direction Conseil', 'publiée', now() - interval '18 days');
 
+-- 3bis. Actus de la Direction Commerciale (fondations v1) : une actu par statut,
+--       pour que le dashboard affiche les 7 statuts et les 2 audiences dès l'installation.
+--       author_email est forcé à NULL par le trigger set_news_author_email (il n'y a pas
+--       de JWT dans l'éditeur SQL) : on le corrige par un UPDATE juste après, comme pour
+--       les soumissions plus haut.
+INSERT INTO public.news
+  (title, body, author, status, audience, submitted_at, published_at,
+   reviewed_audience, review_category, review_note, created_at)
+VALUES
+('Signature du contrat Atlas : 12 postes à pourvoir au T1',
+ 'Le contrat Atlas est signé : 12 postes à pourvoir dès janvier sur les métiers Cloud et Data. Le brief détaillé arrive cette semaine.',
+ 'Marc', 'brouillon', 'mon_equipe', NULL, NULL, NULL, NULL, NULL, now() - interval '2 days'),
+
+('Nouveau processus de relance candidats',
+ 'À partir de ce mois, chaque candidat sans retour client depuis 7 jours reçoit une relance automatique avant tout appel manuel.',
+ 'Inès', 'a_valider_manager', 'mon_equipe', now() - interval '1 day', NULL, NULL, NULL, NULL, now() - interval '4 days'),
+
+('Bienvenue à nos 3 nouveaux consultants',
+ 'Trois consultants rejoignent la Direction Commerciale ce mois-ci, sur les comptes SaaS B2B et Cloud. Présentations complètes au prochain point d''équipe.',
+ 'Marc', 'a_valider_comm', 'tout_le_cabinet', now() - interval '3 days', NULL, NULL, NULL, NULL, now() - interval '6 days'),
+
+('Mise à jour du référentiel candidats',
+ 'Le référentiel de qualification candidats intègre de nouveaux critères Data & IA pour harmoniser les briefs clients.',
+ 'Inès', 'a_modifier_manager', 'mon_equipe', now() - interval '3 days', NULL, 'mon_equipe', NULL,
+ 'Précise les postes concernés et la date d''ouverture avant de renvoyer.', now() - interval '5 days'),
+
+('Résultats du T3 de la Direction Commerciale',
+ 'Le T3 confirme la dynamique sur les comptes SaaS B2B avec un délai moyen de recrutement en baisse de 4 jours.',
+ 'Marc', 'a_modifier_comm', 'tout_le_cabinet', now() - interval '5 days', NULL, 'tout_le_cabinet', NULL,
+ 'Vérifie les chiffres du dernier comité et ajoute la source avant renvoi.', now() - interval '8 days'),
+
+('Nouvel accord télétravail',
+ 'La Direction Commerciale passe à 2 jours de télétravail hebdomadaires au choix, à partir du mois prochain.',
+ 'Marc', 'publiée', 'mon_equipe', now() - interval '11 days', now() - interval '10 days', NULL, NULL, NULL, now() - interval '12 days'),
+
+('Charte de sobriété numérique',
+ 'Projet de charte limitant les notifications hors horaires de travail, proposé pour tout le cabinet.',
+ 'Inès', 'refusée', 'tout_le_cabinet', now() - interval '8 days', NULL, NULL, 'en désaccord avec les process',
+ 'Le sujet relève de la Direction Générale, pas d''une actu individuelle.', now() - interval '10 days');
+
+UPDATE public.news n SET author_email = a.email
+FROM (VALUES
+  ('Signature du contrat Atlas : 12 postes à pourvoir au T1', 'marc@happyplace.test'),
+  ('Nouveau processus de relance candidats',                  'ines@happyplace.test'),
+  ('Bienvenue à nos 3 nouveaux consultants',                  'marc@happyplace.test'),
+  ('Mise à jour du référentiel candidats',                    'ines@happyplace.test'),
+  ('Résultats du T3 de la Direction Commerciale',             'marc@happyplace.test'),
+  ('Nouvel accord télétravail',                                'marc@happyplace.test'),
+  ('Charte de sobriété numérique',                             'ines@happyplace.test')
+) AS a(title, email)
+WHERE n.title = a.title;
+
+-- Équipe ciblée par les actus « Mon équipe » (table de liaison contrôlée par submit_news
+-- lors d'un vrai envoi ; on la renseigne nous-mêmes puisque le seed insère directement).
+INSERT INTO public.news_audience_teams (news_id, team)
+SELECT n.id, 'Direction Commerciale' FROM public.news n
+WHERE n.audience = 'mon_equipe'
+  AND n.title IN ('Signature du contrat Atlas : 12 postes à pourvoir au T1',
+                   'Nouveau processus de relance candidats',
+                   'Mise à jour du référentiel candidats',
+                   'Nouvel accord télétravail')
+ON CONFLICT DO NOTHING;
+
 -- 4. Soumissions (idées et demandes des équipes)
 INSERT INTO public.submissions (author_name, team, content, status, created_at) VALUES
 ('Thomas Diallo',  'Direction Commerciale', 'Réserver les points de qualification client aux seuls consultants seniors.', 'validée', now() - interval '23 days'),
 ('Nina Petit',     'Product',               'Créer un vivier partagé de Product Designers seniors avec portfolio vérifié.', 'validée', now() - interval '21 days'),
 ('Hugo Martin',    'People',                'Automatiser les relances candidats après sept jours sans retour du client.', 'validée', now() - interval '20 days'),
 ('Léa Bernard',    'Pôle Data et IA',       'Souscrire un accès à une plateforme d’évaluation SQL et Python pour les profils Data.', 'validée', now() - interval '18 days'),
-('Julien Caron',   'Marketing',             'Publier chaque mois une analyse courte des tendances de recrutement dans la tech.', 'validée', now() - interval '18 days'),
+('Maxime Caron',   'Marketing',             'Publier chaque mois une analyse courte des tendances de recrutement dans la tech.', 'validée', now() - interval '18 days'),
 ('Sofia Benali',   'Direction Commerciale', 'Mettre en place un compte rendu client systématique sous 24 heures après chaque entretien candidat.', 'validée', now() - interval '17 days'),
 ('Antoine Mercier','Product',               'Organiser une session de sourcing dédiée aux profils SRE et Platform Engineer disponibles sous deux mois.', 'validée', now() - interval '17 days'),
 ('Camille Roux',   'Product',               'Créer une fiche de brief standardisée pour les recrutements Product Manager et Product Designer.', 'validée', now() - interval '17 days'),
@@ -96,7 +191,7 @@ INSERT INTO public.submissions (author_name, team, content, status, created_at) 
 ('Nina Petit',     'Product',               'À qui dois-je m’adresser pour obtenir un accès au job board premium ?', 'en attente', now() - interval '12 days'),
 ('Thomas Diallo',  'Direction Commerciale', 'Les indicateurs du dashboard ne correspondent pas aux chiffres de notre tableau d’équipe.', 'en attente', now() - interval '9 days'),
 ('Léa Bernard',    'Pôle Data et IA',       'Proposition : un déjeuner mensuel pour accueillir les nouveaux arrivants.', 'en attente', now() - interval '4 days'),
-('Julien Caron',   'Marketing',             'Ajouter une rubrique « qui fait quoi » pour savoir à qui s’adresser selon le sujet.', 'en attente', now() - interval '1 day');
+('Maxime Caron',   'Marketing',             'Ajouter une rubrique « qui fait quoi » pour savoir à qui s’adresser selon le sujet.', 'en attente', now() - interval '1 day');
 
 INSERT INTO public.submissions (author_name, team, content, status, rejection_category, rejection_note, created_at) VALUES
 ('Hugo Martin', 'People', 'Prime trimestrielle par équipe plutôt qu’individuelle.', 'en attente', NULL, NULL, now() - interval '15 days');
@@ -152,5 +247,12 @@ UPDATE public.submission_status_history h
    SET changed_at = s.created_at + CASE WHEN h.old_status IS NULL THEN interval '0' ELSE interval '1 day' END
   FROM public.submissions s
  WHERE h.submission_id = s.id;
+
+-- Historique des actus : la ligne de création suit la date de création réelle de l'actu
+-- (le trigger news_v2_history la date de "now()" au moment du seed).
+UPDATE public.news_status_history h
+   SET changed_at = coalesce(n.submitted_at, n.created_at)
+  FROM public.news n
+ WHERE h.news_id = n.id AND h.old_status IS NULL;
 
 COMMIT;
