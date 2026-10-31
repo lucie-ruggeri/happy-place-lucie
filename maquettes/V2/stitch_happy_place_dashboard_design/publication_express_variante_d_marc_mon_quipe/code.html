@@ -1,0 +1,533 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_standard" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "error": "#ba1a1a",
+          "on-primary-fixed": "#1b1c1c",
+          "secondary": "#715859",
+          "on-secondary-container": "#775e5f",
+          "surface-container-highest": "#e4e2e1",
+          "surface-container-high": "#e9e8e7",
+          "on-error-container": "#93000a",
+          "outline-variant": "#c4c7c7",
+          "surface-container": "#efedec",
+          "surface-dim": "#dbdad9",
+          "tertiary": "#000000",
+          "on-surface": "#1b1c1b",
+          "on-tertiary-container": "#987d7e",
+          "on-background": "#1b1c1b",
+          "primary-fixed-dim": "#c7c6c6",
+          "on-error": "#ffffff",
+          "on-primary": "#ffffff",
+          "secondary-fixed-dim": "#debfbf",
+          "surface-bright": "#fbf9f8",
+          "primary-container": "#1b1c1c",
+          "background": "#fbf9f8",
+          "on-primary-fixed-variant": "#464747",
+          "tertiary-container": "#281717",
+          "secondary-container": "#fcdbdb",
+          "on-tertiary": "#ffffff",
+          "inverse-on-surface": "#f2f0ef",
+          "surface-tint": "#5e5e5e",
+          "inverse-surface": "#303030",
+          "primary": "#000000",
+          "tertiary-fixed": "#fbdbdb",
+          "outline": "#747878",
+          "surface": "#fbf9f8",
+          "surface-container-lowest": "#ffffff",
+          "on-secondary-fixed": "#281717",
+          "surface-container-low": "#f5f3f2",
+          "on-tertiary-fixed-variant": "#574142",
+          "on-surface-variant": "#444748",
+          "error-container": "#ffdad6",
+          "surface-variant": "#e4e2e1",
+          "inverse-primary": "#c7c6c6",
+          "on-secondary-fixed-variant": "#584142",
+          "on-tertiary-fixed": "#281717",
+          "tertiary-fixed-dim": "#debfbf",
+          "secondary-fixed": "#fcdbdb",
+          "on-secondary": "#ffffff",
+          "primary-fixed": "#e3e2e2",
+          "on-primary-container": "#848483"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "margin-tablet": "2rem",
+          "space-xs": "0.25rem",
+          "gutter": "1.25rem",
+          "space-xl": "2.5rem",
+          "space-sm": "0.5rem",
+          "margin": "1rem",
+          "gutter-desktop": "1.5rem",
+          "space-md": "1rem",
+          "space-lg": "1.5rem",
+          "margin-desktop": "3rem"
+        },
+        "fontFamily": {
+          "label-sm": [
+            "JetBrains Mono"
+          ],
+          "headline-xl-mobile": [
+            "Comfortaa"
+          ],
+          "body-sm": [
+            "Inter"
+          ],
+          "label-md": [
+            "JetBrains Mono"
+          ],
+          "body-md": [
+            "Inter"
+          ],
+          "headline-md": [
+            "Comfortaa"
+          ],
+          "label-lg": [
+            "JetBrains Mono"
+          ],
+          "headline-sm": [
+            "Comfortaa"
+          ],
+          "headline-xl": [
+            "Comfortaa"
+          ],
+          "headline-lg": [
+            "Comfortaa"
+          ],
+          "body-lg": [
+            "Inter"
+          ]
+        },
+        "fontSize": {
+          "label-sm": [
+            "10px",
+            {
+              "lineHeight": "12px",
+              "letterSpacing": "0.1em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-xl-mobile": [
+            "28px",
+            {
+              "lineHeight": "36px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-sm": [
+            "13px",
+            {
+              "lineHeight": "18px",
+              "fontWeight": "400"
+            }
+          ],
+          "label-md": [
+            "11px",
+            {
+              "lineHeight": "14px",
+              "letterSpacing": "0.08em",
+              "fontWeight": "500"
+            }
+          ],
+          "body-md": [
+            "14px",
+            {
+              "lineHeight": "22px",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-md": [
+            "20px",
+            {
+              "lineHeight": "28px",
+              "fontWeight": "500"
+            }
+          ],
+          "label-lg": [
+            "13px",
+            {
+              "lineHeight": "16px",
+              "letterSpacing": "0.06em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-sm": [
+            "16px",
+            {
+              "lineHeight": "24px",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-xl": [
+            "36px",
+            {
+              "lineHeight": "44px",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-lg": [
+            "26px",
+            {
+              "lineHeight": "34px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-lg": [
+            "16px",
+            {
+              "lineHeight": "26px",
+              "fontWeight": "400"
+            }
+          ]
+        }
+      }
+    }
+  }</script></head><body class="bg-surface font-body-md text-body-md text-on-surface min-h-screen"><header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest border-b border-surface-container-highest"><div class="max-w-[1440px] mx-auto px-margin-desktop h-16 flex items-center justify-between gap-space-lg"><div class="flex items-center gap-space-md"><img alt="Happy Place Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VsR36tDeZKEGIolKujYNUrhGEEuDyx07x4pFEUBhAUwt1WSfpzZDRg16usteIJ4MdyfnnhjeSmX57NDEaL1tQ1T84O9peaE6jBWqSl05TQFFBD9h28g7D595rNFC_-bhVOV7bp0QLKGY_2juJD6wqqyc6yvzkP2l2AmbsBkOpOMsSy3gEO3eYsnyfKFybJzeyOSF7zism4nXYHDeRJeQWO-tH3U_fI4MyBinJfniyt3g"></div><div class="flex items-center gap-space-md"><button class="flex items-center gap-space-sm px-space-md py-space-xs bg-surface-container-lowest border border-surface-container-highest rounded-lg hover:border-primary transition-colors text-left" type="button"><div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Changer de rôle</span><span class="font-label-md text-label-md text-on-surface font-medium">Marc · Manager · Direction Commerciale</span></div><span class="material-symbols-outlined text-[16px] text-on-surface-variant">unfold_more</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-surface min-h-[calc(100vh-64px)]"><div class="max-w-[1440px] mx-auto px-margin-desktop py-space-xl"><div class="flex flex-col w-full">
+<!-- Sub-header / Breadcrumb Contextual bar -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm mb-space-lg">
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center justify-center w-6 h-6 rounded bg-secondary-container text-on-secondary-fixed">
+<span class="material-symbols-outlined text-[16px]">campaign</span>
+</span>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Communication Interne</span>
+<span class="font-label-sm text-label-sm text-outline-variant">/</span>
+<span class="font-label-md text-label-md text-on-surface font-medium">Flash Actu Express</span>
+</div>
+<div class="flex items-center gap-space-xs self-start md:self-auto bg-surface-container-low px-space-sm py-1 rounded-full">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Circuit Direct · Manager</span>
+</div>
+</div>
+<!-- 1. Pipeline Stage Bar (Recruitment-style segmented progress bar) -->
+<div class="w-full bg-surface-container-lowest p-space-md rounded-xl shadow-sm mb-space-xl">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-space-sm">
+<!-- Etape 1 : Dicter (Terminée) -->
+<div class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg bg-surface-container-low">
+<div class="w-6 h-6 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface shrink-0">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">01. Étape</span>
+<span class="font-label-md text-label-md text-on-surface font-medium truncate">Dicter</span>
+</div>
+</div>
+<!-- Etape 2 : Relire (ACTIVE) -->
+<div class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg bg-secondary-container text-on-secondary-fixed ring-1 ring-secondary-fixed-dim">
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center shrink-0">
+<span class="font-label-sm text-label-sm font-semibold">2</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-on-secondary-fixed uppercase tracking-wider font-semibold">En cours</span>
+<span class="font-label-md text-label-md text-on-secondary-fixed font-bold truncate">Relire</span>
+</div>
+</div>
+<!-- Etape 3 : Audience -->
+<div class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg bg-surface-container-lowest opacity-70">
+<div class="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-outline shrink-0">
+<span class="font-label-sm text-label-sm font-medium">3</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">03. Cible</span>
+<span class="font-label-md text-label-md text-on-surface-variant truncate">Audience</span>
+</div>
+</div>
+<!-- Etape 4 : Envoyer -->
+<div class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg bg-surface-container-lowest opacity-70">
+<div class="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-outline shrink-0">
+<span class="font-label-sm text-label-sm font-medium">4</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">04. Diffusion</span>
+<span class="font-label-md text-label-md text-on-surface-variant truncate">Envoyer</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Dual Panel Layout (12 cols) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
+<!-- LEFT PANEL: Editor & Content (8 cols) -->
+<div class="lg:col-span-8 flex flex-col gap-space-lg">
+<!-- 2. Mode Selector: Dicter (actif) / Coller / Écrire -->
+<div class="flex items-center justify-between flex-wrap gap-space-sm bg-surface-container-lowest p-space-xs rounded-xl shadow-sm">
+<div class="flex items-center gap-1.5 p-1 bg-surface-container-low rounded-lg">
+<!-- Actif : Dicter -->
+<button class="flex items-center gap-space-xs px-space-md py-space-xs rounded-lg bg-primary text-on-primary shadow-sm font-body-md text-body-md font-medium transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">mic</span>
+<span class="">Dicter</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-container"></span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-xs rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-body-md text-body-md" type="button">
+<span class="material-symbols-outlined text-[18px]">content_paste</span>
+<span class="">Coller des notes</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-xs rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-body-md text-body-md" type="button">
+<span class="material-symbols-outlined text-[18px]">edit_note</span>
+<span class="">Écrire</span>
+</button>
+</div>
+<div class="flex items-center gap-space-xs px-space-md py-1">
+<span class="font-label-sm text-label-sm text-outline">AUDIO SOURCE :</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">« note_vocale_09h42.m4a »</span>
+<span class="font-label-sm text-label-sm text-outline-variant font-bold">(01:24)</span>
+</div>
+</div>
+<!-- 3. AI Banner with badge "EN RÉDACTION" -->
+<div class="relative overflow-hidden bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pl-space-xs">
+<div class="flex items-start sm:items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0 text-on-surface">
+<span class="material-symbols-outlined text-[20px]">auto_fix_high</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium leading-tight">
+                Mis en forme par l'IA à partir de ta dictée.
+              </p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+                Relis et corrige avant d'envoyer. Le ton a été calé sur l'édito interne Happy Place.
+              </p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded bg-secondary-container text-on-secondary-fixed font-label-sm text-label-sm font-semibold tracking-wider uppercase shrink-0 self-start sm:self-center">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+            En rédaction
+          </span>
+</div>
+</div>
+<!-- 4. Pre-filled Editorial Form -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-lg">
+<!-- Field 1: Title -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-medium" for="actu-title">
+              Titre de la publication
+            </label>
+<span class="font-label-sm text-label-sm text-outline">Généré par IA · Modifiable</span>
+</div>
+<input class="w-full bg-surface-container-low text-on-surface font-headline-md text-headline-md px-space-md py-space-sm rounded-lg focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-primary transition-all font-semibold" id="actu-title" type="text" value="Signature du contrat Atlas : 12 postes à pourvoir au T1">
+</div>
+<!-- Field 2: Content (4-5 lines pre-filled) -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-medium" for="actu-body">
+              Corps du message
+            </label>
+<div class="flex items-center gap-space-sm">
+<span class="font-label-sm text-label-sm text-outline">482 caractères</span>
+<button class="text-on-surface-variant hover:text-on-surface text-label-sm font-label-sm flex items-center gap-0.5" type="button">
+<span class="material-symbols-outlined text-[14px]">refresh</span>
+                Régénérer
+              </button>
+</div>
+</div>
+<textarea class="w-full bg-surface-container-low text-on-surface font-body-md text-body-md p-space-md rounded-lg leading-relaxed focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-primary transition-all resize-y" id="actu-body" rows="5">Excellente nouvelle pour l'équipe commerciale : nous venons d'entériner le partenariat stratégique avec le groupe Atlas. Cette signature débloque l'ouverture immédiate de 12 nouveaux postes stratégiques dès ce premier trimestre, dont 5 Consultants Seniors, 4 Chargés de Recherche et 3 Directeurs de Mission. 
+
+Les fiches de cadrage et le plan de sourcing dédié sont déjà configurés dans notre vivier. Merci de prioriser vos premiers calages candidats dès la réunion d'équipe de jeudi matin !</textarea>
+</div>
+<!-- Field 3: Visual (Facultatif) -->
+<div class="flex flex-col gap-space-xs pt-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-medium">
+              Visuel d'illustration <span class="text-outline font-normal">(Facultatif)</span>
+</label>
+<span class="font-label-sm text-label-sm text-outline">Format recommandé 16:9</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-12 gap-space-md items-center bg-surface-container-low p-space-md rounded-lg">
+<div class="sm:col-span-5 h-28 rounded-lg overflow-hidden relative shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Modern collaborative executive office space, warm natural light falling across minimalist wooden meeting desks, elegant architectural interior with muted earth tones, soft ecru walls, sophisticated team recruitment atmosphere in cinematic photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzzPwJWoHw5IHKmkjiCXsk72jTr_3jmtggMPPzuC7wIbYjbMqCc9O_mz1zlmd-M5Nb6gvrfYfRIHXdH3srsXnbJgH3wYv0dERA00CN7L8XA6bzavWVQyexbXexMUg4DMQRcgZnMtB8DziOlz5yLcDne3y0sKBmyFjSgiMIKVV5q039jTEGDnH0SCVIkE6XnW5fZnMTcNSlFqGLa9aevm3Fg50b6rv75l6HHpa16fm5">
+<div class="absolute bottom-1.5 right-1.5 px-space-xs py-0.5 rounded bg-primary-container text-surface-bright font-label-sm text-label-sm opacity-90">
+                Suggéré IA
+              </div>
+</div>
+<div class="sm:col-span-7 flex flex-col justify-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface font-medium">Visuel sélectionné : Atlas Launch</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                L'IA a sélectionné une photo corporate correspondant au mandat Atlas. Vous pouvez la remplacer ou ne rien joindre.
+              </p>
+<div class="flex items-center gap-space-sm pt-1">
+<button class="px-space-sm py-1 bg-surface-container-lowest hover:bg-surface text-on-surface font-label-sm text-label-sm uppercase rounded shadow-sm transition-colors" type="button">
+                  Changer
+                </button>
+<button class="px-space-sm py-1 text-error hover:bg-error-container/20 font-label-sm text-label-sm uppercase rounded transition-colors" type="button">
+                  Supprimer
+                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT PANEL: Targeting, Manager Workflow & Immediate Actions (4 cols) -->
+<div class="lg:col-span-4 flex flex-col gap-space-lg">
+<!-- 5. Carte Audience (Mon équipe - Direction Commerciale) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">groups</span>
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-medium">Audience de diffusion</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline cursor-pointer hover:text-on-surface">info</span>
+</div>
+<!-- Selected audience card block -->
+<div class="p-space-md rounded-lg bg-surface-container-low flex flex-col gap-space-xs ring-1 ring-primary">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">
+              Mon équipe
+            </span>
+<span class="material-symbols-outlined text-[20px] text-primary" style="font-variation-settings: 'FILL' 1;">
+              check_circle
+            </span>
+</div>
+<div class="flex items-center gap-space-xs mt-1">
+<span class="px-space-xs py-0.5 rounded bg-surface-container-highest text-on-surface font-label-sm text-label-sm uppercase font-medium">
+              Direction Commerciale
+            </span>
+<span class="font-label-sm text-label-sm text-outline">· 18 personnes</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">
+            Diffusé directement sur le flux privé de ton pôle et notifié par email digest.
+          </p>
+</div>
+<!-- Audience switcher trigger -->
+<button class="w-full flex items-center justify-between px-space-md py-space-xs rounded-lg bg-surface hover:bg-surface-container transition-colors text-left" type="button">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Modifier les destinataires</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">tune</span>
+</button>
+</div>
+<!-- 6. Carte "Ce qui va se passer" SPÉCIFIQUE MANAGER (Circuit direct) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold">
+            Ce qui va se passer
+          </h2>
+<span class="px-space-xs py-0.5 rounded bg-secondary-container text-on-secondary-fixed font-label-sm text-label-sm uppercase tracking-wide font-medium">
+            Circuit direct
+          </span>
+</div>
+<!-- Mini-frise horizontale à 2 étapes seulement : Toi (Marc) -> Publié -->
+<div class="py-space-md px-space-sm bg-surface-container-low rounded-lg">
+<div class="flex items-center justify-between relative px- space-sm">
+<!-- Continuous line connector -->
+<div class="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-0.5 bg-surface-container-highest z-0"></div>
+<!-- Étape 1 : Toi (Marc) -->
+<div class="relative z-10 flex flex-col items-center text-center">
+<div class="w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
+<span class="font-label-md text-label-md font-bold">M</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold mt-1">Toi (Marc)</span>
+<span class="font-label-sm text-label-sm text-outline">Éditeur Manager</span>
+</div>
+<!-- Intermediary arrow symbol -->
+<div class="relative z-10 w-6 h-6 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-xs">
+<span class="material-symbols-outlined text-[14px] text-primary">arrow_forward</span>
+</div>
+<!-- Étape 2 : Publié -->
+<div class="relative z-10 flex flex-col items-center text-center">
+<div class="w-9 h-9 rounded-full bg-secondary-container text-on-secondary-fixed flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold mt-1">Publié</span>
+<span class="font-label-sm text-label-sm text-outline">Sans validation</span>
+</div>
+</div>
+</div>
+<!-- Explicative sentence in Inter -->
+<div class="flex items-start gap-space-sm bg-surface-container-low/60 p-space-sm rounded-lg">
+<span class="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">verified_user</span>
+<p class="font-body-md text-body-md text-on-surface leading-snug">
+            Tu es manager : ton actu est publiée tout de suite pour <span class="font-semibold text-on-surface">Direction Commerciale</span>, sans validation.
+          </p>
+</div>
+</div>
+<!-- 7. Actions SPÉCIFIQUES MANAGER -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-sm">
+<!-- Primary Action : Publier maintenant (#171818, texte blanc) -->
+<button class="w-full flex items-center justify-center gap-space-sm bg-primary hover:bg-inverse-surface text-on-primary py-3 px-space-lg rounded-lg font-body-md text-body-md font-semibold transition-all active:scale-[0.99] shadow-sm" id="btn-publish-now" type="button">
+<span class="material-symbols-outlined text-[18px]">send</span>
+<span class="">Publier maintenant</span>
+</button>
+<!-- Secondary Action : Plus tard (rappel demain) (fond blanc, bordure #E6E6E1, texte anthracite) -->
+<button class="w-full flex items-center justify-center gap-space-sm bg-surface-container-lowest hover:bg-surface-container-low text-on-surface py-2.5 px-space-lg rounded-lg font-body-md text-body-md font-medium transition-colors ring-1 ring-surface-container-highest" id="btn-later-reminder" type="button">
+<span class="material-symbols-outlined text-[18px] text-outline">schedule</span>
+<span class="">Plus tard (rappel demain)</span>
+</button>
+<!-- Auxiliary Quick action -->
+<div class="flex items-center justify-between pt-space-xs px-1">
+<button class="font-label-sm text-label-sm text-outline hover:text-on-surface transition-colors flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[14px]">save</span>
+            Enregistrer le brouillon
+          </button>
+<button class="font-label-sm text-label-sm text-error hover:underline transition-colors" type="button">
+            Abandonner
+          </button>
+</div>
+</div>
+<!-- Metric indicator for Manager reassurance -->
+<div class="flex items-center justify-between px-space-md py-space-sm bg-surface-container-low rounded-lg">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-outline">notifications_active</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Alerte Push équipe : <strong class="text-on-surface">Activée</strong></span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Canal #commercial</span>
+</div>
+</div>
+</div>
+<!-- Notification Toast Simulation (Hidden by default) -->
+<div class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none" id="status-toast">
+<div class="bg-primary text-on-primary px-space-lg py-space-md rounded-xl shadow-xl flex items-center gap-space-md">
+<span class="material-symbols-outlined text-[20px] text-secondary-container">check_circle</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm font-semibold">Publication diffusée en direct</span>
+<span class="font-body-sm text-body-sm text-surface-container-highest">Visible immédiatement par la Direction Commerciale (18 membres).</span>
+</div>
+</div>
+</div>
+<script>
+    (function() {
+      const publishBtn = document.getElementById('btn-publish-now');
+      const laterBtn = document.getElementById('btn-later-reminder');
+      const toast = document.getElementById('status-toast');
+
+      if (publishBtn && toast) {
+        publishBtn.addEventListener('click', function() {
+          this.disabled = true;
+          this.classList.add('opacity-80');
+          this.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span><span>Diffusion en cours...</span>';
+          
+          setTimeout(() => {
+            this.innerHTML = '<span class="material-symbols-outlined text-[18px]">done</span><span>Publié !</span>';
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            
+            setTimeout(() => {
+              toast.classList.remove('translate-y-0', 'opacity-100');
+              toast.classList.add('translate-y-20', 'opacity-0');
+            }, 4000);
+          }, 700);
+        });
+      }
+
+      if (laterBtn) {
+        laterBtn.addEventListener('click', function() {
+          const original = this.innerHTML;
+          this.innerHTML = '<span class="material-symbols-outlined text-[18px]">alarm_on</span><span>Rappel programmé à 09:00</span>';
+          setTimeout(() => {
+            this.innerHTML = original;
+          }, 2500);
+        });
+      }
+    })();
+  </script>
+</div></div></main><footer class="w-full bg-surface-container-lowest border-t border-surface-container-highest"><div class="max-w-[1440px] mx-auto px-margin-desktop py-space-lg flex flex-col sm:flex-row items-center justify-between gap-space-md"><div class="flex items-center gap-space-sm"><span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Bigger Boat · Executive Operations</span><span class="text-outline-variant font-label-sm text-label-sm">—</span><span class="font-body-sm text-body-sm text-on-surface-variant">Happy Place Recruiting System</span></div><div class="font-label-sm text-label-sm text-outline uppercase tracking-wider">© 2026 Happy Place. Tous droits réservés.</div></div></footer>
+
+</body></html>

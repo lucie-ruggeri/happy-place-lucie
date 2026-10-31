@@ -1,0 +1,492 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_standard" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "error": "#ba1a1a",
+          "on-primary-fixed": "#1b1c1c",
+          "secondary": "#715859",
+          "on-secondary-container": "#775e5f",
+          "surface-container-highest": "#e4e2e1",
+          "surface-container-high": "#e9e8e7",
+          "on-error-container": "#93000a",
+          "outline-variant": "#c4c7c7",
+          "surface-container": "#efedec",
+          "surface-dim": "#dbdad9",
+          "tertiary": "#000000",
+          "on-surface": "#1b1c1b",
+          "on-tertiary-container": "#987d7e",
+          "on-background": "#1b1c1b",
+          "primary-fixed-dim": "#c7c6c6",
+          "on-error": "#ffffff",
+          "on-primary": "#ffffff",
+          "secondary-fixed-dim": "#debfbf",
+          "surface-bright": "#fbf9f8",
+          "primary-container": "#1b1c1c",
+          "background": "#fbf9f8",
+          "on-primary-fixed-variant": "#464747",
+          "tertiary-container": "#281717",
+          "secondary-container": "#fcdbdb",
+          "on-tertiary": "#ffffff",
+          "inverse-on-surface": "#f2f0ef",
+          "surface-tint": "#5e5e5e",
+          "inverse-surface": "#303030",
+          "primary": "#000000",
+          "tertiary-fixed": "#fbdbdb",
+          "outline": "#747878",
+          "surface": "#fbf9f8",
+          "surface-container-lowest": "#ffffff",
+          "on-secondary-fixed": "#281717",
+          "surface-container-low": "#f5f3f2",
+          "on-tertiary-fixed-variant": "#574142",
+          "on-surface-variant": "#444748",
+          "error-container": "#ffdad6",
+          "surface-variant": "#e4e2e1",
+          "inverse-primary": "#c7c6c6",
+          "on-secondary-fixed-variant": "#584142",
+          "on-tertiary-fixed": "#281717",
+          "tertiary-fixed-dim": "#debfbf",
+          "secondary-fixed": "#fcdbdb",
+          "on-secondary": "#ffffff",
+          "primary-fixed": "#e3e2e2",
+          "on-primary-container": "#848483"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "margin-tablet": "2rem",
+          "space-xs": "0.25rem",
+          "gutter": "1.25rem",
+          "space-xl": "2.5rem",
+          "space-sm": "0.5rem",
+          "margin": "1rem",
+          "gutter-desktop": "1.5rem",
+          "space-md": "1rem",
+          "space-lg": "1.5rem",
+          "margin-desktop": "3rem"
+        },
+        "fontFamily": {
+          "label-sm": [
+            "JetBrains Mono"
+          ],
+          "headline-xl-mobile": [
+            "Comfortaa"
+          ],
+          "body-sm": [
+            "Inter"
+          ],
+          "label-md": [
+            "JetBrains Mono"
+          ],
+          "body-md": [
+            "Inter"
+          ],
+          "headline-md": [
+            "Comfortaa"
+          ],
+          "label-lg": [
+            "JetBrains Mono"
+          ],
+          "headline-sm": [
+            "Comfortaa"
+          ],
+          "headline-xl": [
+            "Comfortaa"
+          ],
+          "headline-lg": [
+            "Comfortaa"
+          ],
+          "body-lg": [
+            "Inter"
+          ]
+        },
+        "fontSize": {
+          "label-sm": [
+            "10px",
+            {
+              "lineHeight": "12px",
+              "letterSpacing": "0.1em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-xl-mobile": [
+            "28px",
+            {
+              "lineHeight": "36px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-sm": [
+            "13px",
+            {
+              "lineHeight": "18px",
+              "fontWeight": "400"
+            }
+          ],
+          "label-md": [
+            "11px",
+            {
+              "lineHeight": "14px",
+              "letterSpacing": "0.08em",
+              "fontWeight": "500"
+            }
+          ],
+          "body-md": [
+            "14px",
+            {
+              "lineHeight": "22px",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-md": [
+            "20px",
+            {
+              "lineHeight": "28px",
+              "fontWeight": "500"
+            }
+          ],
+          "label-lg": [
+            "13px",
+            {
+              "lineHeight": "16px",
+              "letterSpacing": "0.06em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-sm": [
+            "16px",
+            {
+              "lineHeight": "24px",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-xl": [
+            "36px",
+            {
+              "lineHeight": "44px",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-lg": [
+            "26px",
+            {
+              "lineHeight": "34px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-lg": [
+            "16px",
+            {
+              "lineHeight": "26px",
+              "fontWeight": "400"
+            }
+          ]
+        }
+      }
+    }
+  }</script></head><body class="bg-surface font-body-md text-body-md text-on-surface min-h-screen"><header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest border-b border-surface-container-highest"><div class="max-w-[1440px] mx-auto px-margin-desktop h-16 flex items-center justify-between gap-space-lg"><div class="flex items-center gap-space-md"><img alt="Happy Place Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VsR36tDeZKEGIolKujYNUrhGEEuDyx07x4pFEUBhAUwt1WSfpzZDRg16usteIJ4MdyfnnhjeSmX57NDEaL1tQ1T84O9peaE6jBWqSl05TQFFBD9h28g7D595rNFC_-bhVOV7bp0QLKGY_2juJD6wqqyc6yvzkP2l2AmbsBkOpOMsSy3gEO3eYsnyfKFybJzeyOSF7zism4nXYHDeRJeQWO-tH3U_fI4MyBinJfniyt3g"><div class="h-4 w-px bg-surface-container-highest"></div><div class="flex items-center gap-space-xs"><span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Bigger Boat</span><span class="text-outline-variant font-label-sm text-label-sm">·</span><span class="font-label-md text-label-md text-on-surface-variant">Intranet de pilotage</span></div></div><nav class="hidden lg:flex items-center gap-space-lg h-full" data-active-classes="text-on-surface border-b-2 border-primary font-body-md text-body-md"><a aria-current="page" class="transition-colors h-full flex items-center text-on-surface border-b-2 border-primary font-body-md text-body-md" data-path="pilotage-operations" href="#">Pilotage</a><a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md h-full flex items-center" data-path="missions-mandats" href="#">Missions &amp; Mandats</a><a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md h-full flex items-center" data-path="vivier-talents" href="#">Vivier Talents</a><a class="text-on-surface-variant hover:text-on-surface transition-colors font-body-md text-body-md h-full flex items-center" data-path="comptes-clients" href="#">Comptes Clients</a></nav><div class="flex items-center gap-space-md"><button class="flex items-center gap-space-sm px-space-md py-space-xs bg-surface-container-lowest border border-surface-container-highest rounded-lg hover:border-primary transition-colors text-left" type="button"><div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Changer de rôle</span><span class="font-label-md text-label-md text-on-surface font-medium">Associé Gérant</span></div><span class="px-space-xs py-0.5 rounded bg-secondary-container text-on-secondary-fixed font-label-sm text-label-sm uppercase tracking-wide">Partner</span><span class="material-symbols-outlined text-[16px] text-on-surface-variant">unfold_more</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-surface min-h-[calc(100vh-64px)]"><div class="max-w-[1440px] mx-auto px-margin-desktop py-space-xl"><div class="flex flex-col w-full">
+<!-- Sub-header metadata band & context identification -->
+<div class="flex flex-col md:flex-row md:items-center justify-between pb-space-lg mb-space-lg bg-surface">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined text-[20px]">campaign</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Intranet Happy Place</span>
+<span class="text-outline-variant font-label-sm text-label-sm">/</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface font-medium">Flash Actus</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-0.5">Publication express d’une actu</h1>
+</div>
+</div>
+<!-- Active User Capsule: Inès -->
+<div class="flex items-center gap-space-sm mt-space-md md:mt-0 p-space-xs pr-space-md bg-surface-container-lowest rounded-full shadow-sm">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-fixed flex items-center justify-center font-label-md text-label-md font-semibold">
+        IN
+      </div>
+<div class="flex flex-col text-left pr-space-xs">
+<span class="font-body-sm text-body-sm text-on-surface font-medium leading-none">Inès</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant leading-none mt-1">Collaboratrice · Dir. Commerciale</span>
+</div>
+<span class="inline-block w-2 h-2 rounded-full bg-error ml-1" title="Erreurs de validation actives"></span>
+</div>
+</div>
+<!-- Global Stepper Progress Track -->
+<div class="w-full bg-surface-container-lowest p-space-md rounded-xl shadow-sm mb-space-xl">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm uppercase text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-primary">flowsheet</span>
+<span class="">Processus d'expédition</span>
+</div>
+<div class="flex items-center gap-space-sm flex-wrap">
+<!-- Step 1: Dicter (Terminé) -->
+<div class="flex items-center gap-space-xs px-space-md py-1.5 rounded-full bg-surface-container-low text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px] text-[#2F7D4A]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="line-through opacity-70">1. Dicter</span>
+</div>
+<span class="material-symbols-outlined text-[14px] text-outline-variant">arrow_forward</span>
+<!-- Step 2: Relire (Actif) -->
+<div class="flex items-center gap-space-xs px-space-md py-1.5 rounded-full bg-secondary-container text-on-secondary-fixed font-label-md text-label-md font-medium shadow-sm">
+<span class="material-symbols-outlined text-[16px]">edit_note</span>
+<span class="">2. Relire (en cours)</span>
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-ping"></span>
+</div>
+<span class="material-symbols-outlined text-[14px] text-outline-variant">arrow_forward</span>
+<!-- Step 3: Audience -->
+<div class="flex items-center gap-space-xs px-space-md py-1.5 rounded-full bg-surface-container-lowest text-on-surface-variant font-label-md text-label-md opacity-60">
+<span class="">3. Audience</span>
+</div>
+<span class="material-symbols-outlined text-[14px] text-outline-variant">arrow_forward</span>
+<!-- Step 4: Envoyer -->
+<div class="flex items-center gap-space-xs px-space-md py-1.5 rounded-full bg-surface-container-lowest text-on-surface-variant font-label-md text-label-md opacity-60">
+<span class="">4. Envoyer</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Workspace Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-start">
+<!-- Left Column: Form & Drafting Canvas (8 cols) -->
+<div class="lg:col-span-8 flex flex-col gap-space-lg">
+<!-- Input Mode Switcher -->
+<div class="flex items-center justify-between p-space-xs bg-surface-container-low rounded-lg">
+<div class="flex items-center gap-1 w-full sm:w-auto">
+<button class="flex items-center gap-space-xs px-space-md py-space-xs rounded bg-surface-container-lowest text-primary font-body-md text-body-md shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">mic</span>
+<span class="font-medium">Dicter</span>
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-xs rounded text-on-surface-variant hover:text-on-surface font-body-md text-body-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">content_paste</span>
+<span class="">Coller des notes</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-xs rounded text-on-surface-variant hover:text-on-surface font-body-md text-body-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span class="">Écrire</span>
+</button>
+</div>
+<div class="hidden sm:flex items-center gap-space-xs pr-space-sm font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">graphic_eq</span>
+<span class="">Audio retranscrit (01:14)</span>
+</div>
+</div>
+<!-- AI Synthesis Notice Banner -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-md relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-secondary"></div>
+<div class="flex items-start gap-space-md pl-space-xs">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-fixed flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">auto_fix_high</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs mb-0.5">
+<span class="font-body-md text-body-md font-medium text-on-surface">Assistant Éditorial IA</span>
+<span class="px-space-xs py-0.5 rounded bg-secondary-container text-on-secondary-fixed font-label-sm text-label-sm uppercase font-medium">En rédaction</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Mis en forme par l'IA à partir de ta dictée. Relis et corrige avant d'envoyer.
+            </p>
+</div>
+</div>
+<button class="shrink-0 flex items-center gap-space-xs font-label-sm text-label-sm uppercase text-on-surface hover:text-primary transition-colors pl-space-xs sm:pl-0" type="button">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+<span class="">Régénérer</span>
+</button>
+</div>
+<!-- Main Form Dossier Card -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col gap-space-lg">
+<!-- SECTION 1: Field Title (ERROR STATE) -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md uppercase font-medium text-on-surface flex items-center gap-space-xs" for="actu-title">
+<span class="">Titre de l'actualité</span>
+<span class="text-error font-body-sm text-body-sm">*</span>
+</label>
+<span class="font-label-sm text-label-sm text-error">0 / 90 caractères</span>
+</div>
+<!-- Empty Input with Red Border -->
+<div class="relative w-full">
+<input class="w-full bg-surface-container-lowest rounded-lg py-3 px-space-md font-body-md text-body-md text-on-surface placeholder:text-outline-variant outline-none shadow-sm transition-all shadow-[inset_0_0_0_1.5px_#ba1a1a]" id="actu-title" placeholder="Ex: Clôture record du Q3 avec 4 nouveaux mandats stratégiques" type="text" value="">
+<div class="absolute right-3 top-1/2 -translate-y-1/2 text-error flex items-center">
+<span class="material-symbols-outlined text-[20px]">error</span>
+</div>
+</div>
+<!-- Error Alert Banner (Required Title) -->
+<div class="flex items-center gap-space-xs px-space-md py-2.5 rounded-lg bg-error-container text-on-error-container text-label-md font-label-md shadow-[inset_0_0_0_1px_rgba(186,26,26,0.3)] mt-1 animate-fadeIn">
+<span class="material-symbols-outlined text-[18px] text-error shrink-0">priority_high</span>
+<span class="font-medium text-error">Erreur : le titre est obligatoire</span>
+</div>
+</div>
+<!-- SECTION 2: Body Text (VALID STATE) -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md uppercase font-medium text-on-surface flex items-center gap-space-xs" for="actu-body">
+<span class="">Corps de publication</span>
+<span class="text-outline-variant font-normal font-label-sm text-label-sm">(Retranscription IA validée)</span>
+</label>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">512 caractères</span>
+</div>
+<div class="relative w-full">
+<textarea class="w-full bg-surface-container-low rounded-lg p-space-md font-body-md text-body-md text-on-surface outline-none resize-none shadow-sm focus:bg-surface-container-lowest transition-colors" id="actu-body" rows="6">Excellente nouvelle pour Bigger Boat et l’ensemble de notre pôle commercial ! Nous venons de sécuriser l'accompagnement exclusif sur les recrutements C-level du groupe Atlas. Bravo à Inès pour la négociation de cette semaine. Le coup d'envoi opérationnel des recherches de candidats démarre dès lundi prochain avec l'équipe dédiée.</textarea>
+</div>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm mt-0.5">
+<span class="material-symbols-outlined text-[14px] text-[#2F7D4A]">check_small</span>
+<span class="">Style synthétique conforme au guide éditorial de l'agence</span>
+</div>
+</div>
+<!-- SECTION 3: Visual Attachment (ERROR STATE) -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md uppercase font-medium text-on-surface">
+              Visuel d’illustration
+            </label>
+<span class="font-label-sm text-label-sm text-on-surface-variant">JPG, PNG, WebP · Max 5 Mo</span>
+</div>
+<!-- Failed File Box with Red Alert Outline -->
+<div class="w-full bg-surface-container-low rounded-lg p-space-md shadow-[inset_0_0_0_1.5px_#ba1a1a] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-12 h-12 rounded-lg bg-error-container text-error flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">broken_image</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-body-md text-body-md text-on-surface font-medium truncate">graphisme_atlas_presentation.raw</span>
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm mt-0.5">
+<span class="text-error font-medium">14.2 Mo</span>
+<span class="text-outline-variant">·</span>
+<span class="text-error uppercase">Format .RAW non autorisé</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0 self-end sm:self-auto">
+<button class="px-space-md py-1.5 rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface transition-colors flex items-center gap-space-xs" type="button">
+<span class="material-symbols-outlined text-[16px]">swap_horiz</span>
+<span class="">Remplacer</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-lowest text-error hover:bg-error-container transition-colors flex items-center justify-center shadow-sm" title="Supprimer" type="button">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Visual Error Alert Banner -->
+<div class="flex items-center gap-space-xs px-space-md py-2.5 rounded-lg bg-error-container text-on-error-container text-label-md font-label-md shadow-[inset_0_0_0_1px_rgba(186,26,26,0.3)] mt-1">
+<span class="material-symbols-outlined text-[18px] text-error shrink-0">warning</span>
+<span class="font-medium text-error">Erreur : format ou poids du visuel (JPG, PNG ou WebP, 5 Mo maximum)</span>
+</div>
+<!-- Suggested Asset Alternatives Preview -->
+
+</div>
+</div>
+</div>
+<!-- Right Column: Settings, Validation Timeline & Sticky CTAs (4 cols) -->
+<div class="lg:col-span-4 flex flex-col gap-space-lg">
+<!-- Card: Audience Target -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs font-label-md text-label-md uppercase font-medium text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary">groups</span>
+<span class="">Audience de diffusion</span>
+</div>
+<span class="px-space-xs py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm uppercase font-mono">Cible</span>
+</div>
+<div class="flex flex-col gap-space-xs"><div class="p-space-md rounded-lg bg-surface-container-low shadow-sm flex items-start gap-space-md relative overflow-hidden"><div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div><div class="w-5 h-5 rounded-full bg-primary flex items-center justify-center shrink-0 mt-0.5"><span class="w-2 h-2 rounded-full bg-surface-container-lowest"></span></div><div class="flex flex-col"><span class="font-body-md text-body-md font-medium text-on-surface">Mon équipe</span><span class="font-body-sm text-body-sm text-on-surface-variant">Direction Commerciale · 18 personnes</span></div></div><div class="p-space-md rounded-lg bg-surface hover:bg-surface-container-low transition-colors flex items-start gap-space-md opacity-70 cursor-pointer"><div class="w-5 h-5 rounded-full bg-surface-container-highest shrink-0 mt-0.5"></div><div class="flex flex-col"><span class="font-body-md text-body-md font-medium text-on-surface">Plusieurs équipes / Tout le cabinet</span><span class="font-body-sm text-body-sm text-on-surface-variant">220 personnes</span></div></div></div>
+</div>
+<!-- Card: "Ce qui va se passer" (Workflow Timeline) -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center gap-space-xs font-label-md text-label-md uppercase font-medium text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary">schema</span>
+<span class="">Ce qui va se passer</span>
+</div>
+<!-- 3-Step Horizontal Timeline -->
+<div class="p-space-md bg-surface-container-low rounded-lg flex flex-col gap-space-md">
+<div class="flex items-center justify-between relative">
+<div class="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-0.5 bg-surface-container-highest -z-0"></div>
+<!-- Step A: Toi -->
+<div class="flex flex-col items-center gap-1 z-10">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-md text-label-md font-medium shadow-sm">
+                1
+              </div>
+<span class="font-label-sm text-label-sm font-medium text-on-surface">Toi</span>
+</div>
+<!-- Flow Connector -->
+<span class="material-symbols-outlined text-[16px] text-outline-variant z-10 bg-surface-container-low px-1">chevron_right</span>
+<!-- Step B: Marc, manager -->
+<div class="flex flex-col items-center gap-1 z-10">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-fixed flex items-center justify-center font-label-md text-label-md font-medium shadow-sm">
+                2
+              </div>
+<span class="font-label-sm text-label-sm font-medium text-on-surface text-center">Marc (Mgr)</span>
+</div>
+<!-- Flow Connector -->
+<span class="material-symbols-outlined text-[16px] text-outline-variant z-10 bg-surface-container-low px-1">chevron_right</span>
+<!-- Step C: Publié -->
+<div class="flex flex-col items-center gap-1 z-10">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-label-md text-label-md font-medium shadow-sm">
+<span class="material-symbols-outlined text-[16px]">done_all</span>
+</div>
+<span class="font-label-sm text-label-sm font-medium text-on-surface-variant">Publié</span>
+</div>
+</div>
+<!-- Explanation Text -->
+<div class="p-space-sm bg-surface-container-lowest rounded text-left">
+<p class="font-body-sm text-body-sm text-on-surface">
+              Ton manager valide, puis l'actu est publiée pour <strong class="font-medium text-primary">Direction Commerciale</strong>.
+            </p>
+</div>
+</div>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span class="">Délai moyen de validation : ~12 minutes</span>
+</div>
+</div>
+<!-- Action Panel & Persistent Submission State -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col gap-space-md">
+<!-- Error Status Summary Header -->
+<div class="flex items-center justify-between text-error font-label-sm text-label-sm uppercase font-semibold">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">report_problem</span>
+<span class="">2 corrections requises</span>
+</span>
+<span class="">Bloquant</span>
+</div>
+<!-- Primary Action Button: REMAINS ACTIVE (as requested) -->
+<button class="w-full py-3.5 px-space-md rounded-lg bg-primary hover:bg-[#2D2F2F] text-on-primary font-body-md text-body-md font-medium flex items-center justify-center gap-space-sm shadow-md transition-all active:scale-[0.99]" id="btn-submit" type="button">
+<span class="material-symbols-outlined text-[18px]">send</span>
+<span class="">Envoyer pour validation</span>
+</button>
+<!-- Secondary Action Button: Enregistrer en brouillon -->
+<button class="w-full py-2.5 px-space-md rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-body-md text-body-md font-medium flex items-center justify-center gap-space-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">draft</span>
+<span class="">Enregistrer en brouillon</span>
+</button>
+<p class="font-label-sm text-label-sm text-on-surface-variant text-center pt-space-xs">
+          Dernière sauvegarde automatique il y a 45s
+        </p>
+</div>
+<!-- Quick Guidance & Help Capsule -->
+
+</div>
+</div>
+</div>
+<script>
+  // Micro-interaction for demo feedback when clicking the active submit button with errors
+  document.getElementById('btn-submit')?.addEventListener('click', function() {
+    const titleInput = document.getElementById('actu-title');
+    if (titleInput) {
+      titleInput.classList.add('animate-pulse');
+      setTimeout(() => {
+        titleInput.classList.remove('animate-pulse');
+        titleInput.focus();
+      }, 500);
+    }
+  });
+</script></div></main><footer class="w-full bg-surface-container-lowest border-t border-surface-container-highest"><div class="max-w-[1440px] mx-auto px-margin-desktop py-space-lg flex flex-col sm:flex-row items-center justify-between gap-space-md"><div class="flex items-center gap-space-sm"><span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Bigger Boat · Executive Operations</span><span class="text-outline-variant font-label-sm text-label-sm">—</span><span class="font-body-sm text-body-sm text-on-surface-variant">Happy Place Recruiting System</span></div><div class="font-label-sm text-label-sm text-outline uppercase tracking-wider">© 2025 Happy Place. Tous droits réservés.</div></div></footer>
+
+</body></html>
