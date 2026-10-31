@@ -9,7 +9,7 @@ Tu es mon développeur sur Happy Place. Lis d'abord `CLAUDE.md`, `AGENTS.md` et 
 **Flow 1-1 · Inès (collaboratrice) publie une actu** → maquettes `publication_express_variante_a_mon_quipe`, `..._b_tout_le_cabinet`, `..._c_erreurs`.
 - « + Nouvelle actu » ouvre l'éditeur : choix **Dicter · Coller des notes · Écrire**.
 - **Dicter** est simulé (faux enregistrement : micro animé, bouton Stop, puis un texte de dictée fictif). **Coller des notes** et **Écrire** sont réels.
-- **Mise en forme par l'IA** : propose un titre et un texte à partir des notes ou de la dictée, modifiables avant envoi. Pour cette étape, appelle une vraie IA seulement si c'est possible sans exposer de clé secrète dans le navigateur (par exemple via une Edge Function Supabase dont la clé reste dans les secrets du projet) ; sinon fais une version simulée mais crédible, derrière une fonction unique `formatActuWithAI(notes)` facile à remplacer. Dis-moi dans le plan ce que tu proposes et pourquoi. Rien n'est envoyé sans que j'aie relu.
+- **Mise en forme par l'IA : appel réel obligatoire** (critères de soutenance A2.2 C1 « appel API IA » et A2.3 C1 « automatisation IA »). L'IA propose un titre et un texte à partir des notes ou de la dictée, modifiables avant envoi ; rien n'est envoyé sans que j'aie relu. La clé de l'IA ne doit **jamais** être dans le navigateur ni dans le dépôt : propose dans le plan l'option la plus simple et la plus robuste parmi (1) une Edge Function Supabase dont la clé est dans les secrets du projet (le CLI Supabase semble lié : vérifie), ou (2) un workflow n8n appelé par webhook. Indique le fournisseur d'IA que tu recommandes (clé gratuite ou peu coûteuse), ce que je dois créer de mon côté, et le coût. Derrière une fonction unique `formatActuWithAI(notes)`, avec un **repli** : si l'appel échoue ou dépasse 10 secondes, un message clair « L'IA n'est pas disponible, rédige ton actu » et l'auteur écrit à la main (le formulaire ne bloque jamais). Limite la taille des notes et le nombre d'appels par utilisateur.
 - Champs : Titre, Texte, Visuel facultatif (JPG, PNG, WebP, 5 Mo max), Audience (deux options). Carte « Ce qui va se passer » avec la frise `CircuitStepper` : **Toi → Marc → Publié** pour « Mon équipe », **Toi → Marc → Relecteur Comm → Publié** pour « Plusieurs équipes / Tout le cabinet ». Les textes viennent de `getCircuit`.
 - Boutons « Envoyer pour validation » (appelle `submit_news`) et « Enregistrer en brouillon ».
 - Messages d'erreur distincts sous chaque champ : « Erreur : le titre est obligatoire », « Erreur : le texte est obligatoire », « Erreur : format ou poids du visuel (JPG, PNG, WebP, 5 Mo maximum) », et un message si l'audience n'est pas choisie.
@@ -29,19 +29,22 @@ Tu es mon développeur sur Happy Place. Lis d'abord `CLAUDE.md`, `AGENTS.md` et 
 
 **Côté auteur : « Mes actus »** (dashboard) : chaque ligne affiche son statut, le commentaire du valideur pour À modifier et Refusé (refus marqué « Refus définitif »), et un bouton « Corriger et renvoyer » (À modifier) ou « Reprendre » (En rédaction). Si l'audience change pendant la correction, le circuit est recalculé.
 
+## Automatisation (après les 4 flows, si le temps le permet)
+Propose dans le plan une automatisation simple et démontrable, au choix : (a) notification (e-mail ou Slack de test) à l'auteur quand son actu change de statut, ou au relecteur quand une actu arrive dans sa file ; (b) le rappel unique du lendemain pour un brouillon de manager (décision D20, l'irritant n°1). Elle doit partir d'un événement de la base (webhook Supabase ou trigger) vers n8n ou une Edge Function, et ne contenir aucune donnée réelle. Décris-la en 5 lignes dans le plan et dis-moi ce que je dois configurer.
+
 ## Données
 - Mets à jour le seed pour qu'Inès voie ses 5 statuts dans « Mes actus » (ajoute une actu En rédaction et une À valider (Comm)) ; renomme « Camille Roux » et « Maxime Caron » des demandes validées pour ne plus entrer en collision avec les personas. Donne-moi le SQL à coller dans Supabase, dans l'ordre, et applique `run_smoke_tests()` après toute migration touchant statuts, ENUM ou trigger.
 - Pas de nouvelle valeur d'ENUM d'audience : garde `tout_le_cabinet` en base.
 
 ## Contraintes
 - Interface en français, prénoms seulement, charte Happy Place déjà en place, desktop d'abord.
-- Aucune clé secrète dans le code ni dans le dépôt ; ne touche pas à `.env`.
+- Aucune clé secrète dans le code ni dans le dépôt ; ne touche pas à `.env`. Les clés d'IA et d'automatisation vivent dans les secrets Supabase ou n8n, jamais dans une variable `VITE_`.
 - Chaque vérification a son propre message d'erreur, sous le champ. Toasts de confirmation pour chaque action réussie (« Actu envoyée à Marc », « Actu publiée »…).
 - Commits en français `type: description`, **un commit par flow** (1-1, 2-1, 2-5, 1-5), `npm run typecheck`, `npm test` et `npm run build` verts avant chaque commit, et un test par ligne de règle si tu ajoutes de la logique. Pas de `git push` : je pousse moi-même.
 - Arrête-toi après chaque commit avec une liste précise de ce que je dois tester dans le navigateur (quelle persona, quel clic, quel résultat attendu).
 
 ## Hors périmètre
-Changement d'audience après publication (4-1), correction après publication (4-2), points bloquants, idées, indicateurs, administration, notifications réelles par e-mail ou Slack.
+Changement d'audience après publication (4-1), correction après publication (4-2), points bloquants, idées, indicateurs, administration, notifications réelles à toute l'audience (seule l'automatisation ci-dessus est attendue).
 
 ## Critères d'acceptation
 Le scénario de démo passe sans erreur : Inès dicte et envoie une actu « Mon équipe » → Marc la valide et elle est publiée → Inès en envoie une pour « Plusieurs équipes / Tout le cabinet » → Marc la transmet → Camille la relit et la publie ; Marc publie une actu « Mon équipe » en un clic ; Camille ne peut pas valider sa propre actu ; un refus et une demande de modification apparaissent dans « Mes actus » de l'auteur avec leur commentaire.
