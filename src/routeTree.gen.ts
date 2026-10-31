@@ -15,6 +15,9 @@ import { Route as ChoisirRoleRouteImport } from './routes/choisir-role'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedManageRouteImport } from './routes/_authenticated/manage'
+import { Route as AuthenticatedNouvelleActuRouteImport } from './routes/_authenticated/nouvelle-actu'
+import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
+import { Route as AuthenticatedRelectureRouteImport } from './routes/_authenticated/relecture'
 import { Route as AuthenticatedManageIndexRouteImport } from './routes/_authenticated/manage.index'
 import { Route as AuthenticatedManageBlockersRouteImport } from './routes/_authenticated/manage.blockers'
 import { Route as AuthenticatedManageMetricsRouteImport } from './routes/_authenticated/manage.metrics'
@@ -49,6 +52,22 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
 const AuthenticatedManageRoute = AuthenticatedManageRouteImport.update({
   id: '/manage',
   path: '/manage',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNouvelleActuRoute =
+  AuthenticatedNouvelleActuRouteImport.update({
+    id: '/nouvelle-actu',
+    path: '/nouvelle-actu',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedParametresRoute = AuthenticatedParametresRouteImport.update({
+  id: '/parametres',
+  path: '/parametres',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRelectureRoute = AuthenticatedRelectureRouteImport.update({
+  id: '/relecture',
+  path: '/relecture',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedManageIndexRoute =
@@ -93,6 +112,9 @@ export interface FileRoutesByFullPath {
   '/choisir-role': typeof ChoisirRoleRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/manage': typeof AuthenticatedManageRouteWithChildren
+  '/nouvelle-actu': typeof AuthenticatedNouvelleActuRoute
+  '/parametres': typeof AuthenticatedParametresRoute
+  '/relecture': typeof AuthenticatedRelectureRoute
   '/manage/blockers': typeof AuthenticatedManageBlockersRoute
   '/manage/metrics': typeof AuthenticatedManageMetricsRoute
   '/manage/news': typeof AuthenticatedManageNewsRoute
@@ -104,6 +126,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/choisir-role': typeof ChoisirRoleRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/nouvelle-actu': typeof AuthenticatedNouvelleActuRoute
+  '/parametres': typeof AuthenticatedParametresRoute
+  '/relecture': typeof AuthenticatedRelectureRoute
   '/': typeof AuthenticatedIndexRoute
   '/manage/blockers': typeof AuthenticatedManageBlockersRoute
   '/manage/metrics': typeof AuthenticatedManageMetricsRoute
@@ -119,6 +144,9 @@ export interface FileRoutesById {
   '/choisir-role': typeof ChoisirRoleRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/manage': typeof AuthenticatedManageRouteWithChildren
+  '/_authenticated/nouvelle-actu': typeof AuthenticatedNouvelleActuRoute
+  '/_authenticated/parametres': typeof AuthenticatedParametresRoute
+  '/_authenticated/relecture': typeof AuthenticatedRelectureRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/manage/blockers': typeof AuthenticatedManageBlockersRoute
   '/_authenticated/manage/metrics': typeof AuthenticatedManageMetricsRoute
@@ -135,6 +163,9 @@ export interface FileRouteTypes {
     | '/choisir-role'
     | '/sitemap.xml'
     | '/manage'
+    | '/nouvelle-actu'
+    | '/parametres'
+    | '/relecture'
     | '/manage/blockers'
     | '/manage/metrics'
     | '/manage/news'
@@ -146,6 +177,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/choisir-role'
     | '/sitemap.xml'
+    | '/nouvelle-actu'
+    | '/parametres'
+    | '/relecture'
     | '/'
     | '/manage/blockers'
     | '/manage/metrics'
@@ -160,6 +194,9 @@ export interface FileRouteTypes {
     | '/choisir-role'
     | '/sitemap.xml'
     | '/_authenticated/manage'
+    | '/_authenticated/nouvelle-actu'
+    | '/_authenticated/parametres'
+    | '/_authenticated/relecture'
     | '/_authenticated/'
     | '/_authenticated/manage/blockers'
     | '/_authenticated/manage/metrics'
@@ -218,6 +255,27 @@ declare module '@tanstack/react-router' {
       path: '/manage'
       fullPath: '/manage'
       preLoaderRoute: typeof AuthenticatedManageRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/nouvelle-actu': {
+      id: '/_authenticated/nouvelle-actu'
+      path: '/nouvelle-actu'
+      fullPath: '/nouvelle-actu'
+      preLoaderRoute: typeof AuthenticatedNouvelleActuRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/parametres': {
+      id: '/_authenticated/parametres'
+      path: '/parametres'
+      fullPath: '/parametres'
+      preLoaderRoute: typeof AuthenticatedParametresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/relecture': {
+      id: '/_authenticated/relecture'
+      path: '/relecture'
+      fullPath: '/relecture'
+      preLoaderRoute: typeof AuthenticatedRelectureRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/manage/': {
@@ -288,11 +346,17 @@ const AuthenticatedManageRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedManageRoute: typeof AuthenticatedManageRouteWithChildren
+  AuthenticatedNouvelleActuRoute: typeof AuthenticatedNouvelleActuRoute
+  AuthenticatedParametresRoute: typeof AuthenticatedParametresRoute
+  AuthenticatedRelectureRoute: typeof AuthenticatedRelectureRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedManageRoute: AuthenticatedManageRouteWithChildren,
+  AuthenticatedNouvelleActuRoute: AuthenticatedNouvelleActuRoute,
+  AuthenticatedParametresRoute: AuthenticatedParametresRoute,
+  AuthenticatedRelectureRoute: AuthenticatedRelectureRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 

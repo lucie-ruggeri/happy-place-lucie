@@ -2,9 +2,11 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import sharkLogo from "@/assets/bigger-boat-shark.png";
 import { supabase } from "@/integrations/supabase/client";
+import { PersonaSwitcher, type PersonaSwitcherProfile } from "@/components/persona-switcher";
 
-export function BrandHeader() {
-  // Version élèves : lien « Changer de rôle » visible dès qu'on est connecté.
+export function BrandHeader({ profile }: { profile?: PersonaSwitcherProfile } = {}) {
+  // Version élèves : sélecteur de persona visible dès qu'on est connecté avec un profil
+  // (sinon simple lien « Changer de rôle », ex. sur /choisir-role ou /auth).
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [signedIn, setSignedIn] = useState(false);
 
@@ -29,12 +31,16 @@ export function BrandHeader() {
         </Link>
         <div className="flex items-center gap-md">
           {signedIn && pathname !== "/choisir-role" && (
-            <Link
-              to="/choisir-role"
-              className="font-label-sm text-label-sm uppercase text-primary underline-offset-2 hover:underline"
-            >
-              Changer de rôle
-            </Link>
+            profile ? (
+              <PersonaSwitcher profile={profile} />
+            ) : (
+              <Link
+                to="/choisir-role"
+                className="font-label-sm text-label-sm uppercase text-primary underline-offset-2 hover:underline"
+              >
+                Changer de rôle
+              </Link>
+            )
           )}
           <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">Happy Place</span>
         </div>

@@ -1,9 +1,19 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchOwnRole, signOut, type AppRole } from "@/lib/auth";
 import { BrandHeader } from "@/components/brand-header";
 import { Button } from "@/components/ui/button";
+
+const PERSONAS = [
+  { key: "ines", label: "Inès", roleLabel: "Collaboratrice", team: "Direction Commerciale" },
+  { key: "marc", label: "Marc", roleLabel: "Manager", team: "Direction Commerciale" },
+  { key: "camille", label: "Camille", roleLabel: "Collaboratrice · Relectrice Comm", team: "Communication" },
+  { key: "julien", label: "Julien", roleLabel: "Collaborateur · Relecteur Comm", team: "Communication" },
+  { key: "sophie", label: "Sophie", roleLabel: "Manager", team: "Communication" },
+  { key: "karim", label: "Karim", roleLabel: "Admin", team: "IT" },
+] as const;
 
 // Version élèves : chaque personne connectée choisit son rôle et son équipe,
 // et peut revenir ici à tout moment pour en changer (lien « Changer de rôle » dans l'en-tête).
@@ -48,6 +58,19 @@ function ChoisirRolePage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [personaBusy, setPersonaBusy] = useState<string | null>(null);
+
+  async function choosePersona(key: string) {
+    setPersonaBusy(key);
+    const { error: err } = await supabase.rpc("choisir_persona", { _persona: key });
+    if (err) {
+      setPersonaBusy(null);
+      toast.error(err.message);
+      return;
+    }
+    await supabase.auth.refreshSession();
+    window.location.replace("/");
+  }
 
   useEffect(() => {
     (async () => {
@@ -124,12 +147,42 @@ function ChoisirRolePage() {
       <main className="flex flex-1 items-center justify-center px-md py-lg">
         <section className="w-[min(100%,34rem)] border border-outline-variant bg-surface-container-lowest p-lg shadow-sm">
           <div className="space-y-xs">
+            <p className="font-label-sm text-label-sm uppercase text-on-surface-variant">Personas de démonstration</p>
+            <h1 className="font-headline-lg text-headline-lg text-primary">Entrer dans une persona</h1>
+            <p className="font-body-md text-body-md text-on-surface-variant">
+              Un clic suffit pour tester l'app sous l'angle d'Inès, Marc, Camille, Julien, Sophie ou Karim.
+            </p>
+          </div>
+
+          <div className="mt-md grid grid-cols-1 gap-xs sm:grid-cols-2">
+            {PERSONAS.map((p) => (
+              <button
+                key={p.key}
+                type="button"
+                disabled={personaBusy !== null}
+                onClick={() => choosePersona(p.key)}
+                className="flex flex-col gap-0.5 border border-outline-variant p-sm text-left hover:border-primary hover:bg-surface-container disabled:opacity-50"
+              >
+                <span className="font-body-md text-primary">
+                  {p.label}
+                  {personaBusy === p.key && " · patiente…"}
+                </span>
+                <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">
+                  {p.roleLabel} · {p.team}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className="my-lg border-t border-outline-variant" />
+
+          <div className="space-y-xs">
             <p className="font-label-sm text-label-sm uppercase text-on-surface-variant">
               {current ? `Rôle actuel : ${current}` : "Première connexion"}
             </p>
-            <h1 className="font-headline-lg text-headline-lg text-primary">Choisis ton rôle</h1>
+            <h2 className="font-headline-sm text-headline-sm text-primary">Profil personnalisé</h2>
             <p className="font-body-md text-body-md text-on-surface-variant">
-              Tu pourras en changer à tout moment pour tester l'app sous un autre angle.
+              Choisis plutôt ton propre prénom, rôle et équipe pour tester l'app sous un autre angle.
             </p>
           </div>
 

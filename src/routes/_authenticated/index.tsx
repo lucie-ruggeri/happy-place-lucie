@@ -13,10 +13,12 @@ import { Linkify } from "@/components/linkify";
 import { SubmissionReader } from "@/components/submission-reader";
 import { NewsReader } from "@/components/news-reader";
 import { DepartureNotices } from "@/components/departure-notices";
-import { NewsImage, NewsLinks, NewsMediaEditor } from "@/components/news-media";
-import { emptyMedia, linkErrors, mediaFromNews, toNewsLinks, type MediaDraft } from "@/lib/news-media";
+import { NewsImage, NewsLinks } from "@/components/news-media";
 import { BlockerArchive, ValidatedSubmissions } from "@/components/dashboard-extras";
 import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/status-badge";
+import { AudienceBadge } from "@/components/audience-badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   fetchBlockers,
   fetchMetrics,
@@ -28,9 +30,6 @@ import {
   REJECTION_CATEGORIES,
   type News,
   type Submission,
-  saveDraftNews,
-  publishDraftNews,
-  deleteDraftNews,
   reviewSubmission,
   submitIdea,
   timeAgo,
@@ -98,22 +97,10 @@ function metricLabel(metric: Metric | undefined, fallback: string) {
 
 function ManagerSpace() {
   const qc = useQueryClient();
-  const { role, email, user } = Route.useRouteContext();
+  const { role, email, firstName, team, isReviewer } = Route.useRouteContext();
   const isAdmin = role === "admin";
   const canReview = role === "admin" || role === "manager";
-  const canWriteNews = canReview;
   const myEmail = (email ?? "").toLowerCase();
-  const meta = (user?.user_metadata ?? {}) as Record<string, unknown>;
-  const myName =
-    (typeof meta.full_name === "string" && meta.full_name) ||
-    (typeof meta.name === "string" && meta.name) ||
-    myEmail;
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [editingNewsId, setEditingNewsId] = useState<string | null>(null);
-  const [media, setMedia] = useState<MediaDraft>(emptyMedia);
-  const [showLinkErrs, setShowLinkErrs] = useState(false);
-  const newsLinkErrs = showLinkErrs ? linkErrors(media.links) : {};
   const [nps, setNps] = useState<string>("");
   const [submissionForm, setSubmissionForm] = useState<SubmissionInput | null>(null);
   const [submissionErrors, setSubmissionErrors] = useState<FieldErrors>({});
@@ -164,38 +151,6 @@ function ManagerSpace() {
         return;
       }
       toast.success(`${count} soumission${count > 1 ? "s" : ""} exportée${count > 1 ? "s" : ""} au format CSV.`);
-    },
-    onError,
-  });
-
-  const saveDraft = useMutation({
-    mutationFn: saveDraftNews,
-    onSuccess: () => {
-      setTitle("");
-      setBody("");
-      setEditingNewsId(null);
-      setMedia(emptyMedia());
-      setShowLinkErrs(false);
-      toast.success("Brouillon enregistré");
-      qc.invalidateQueries({ queryKey: ["news"] });
-    },
-    onError,
-  });
-
-  const publishDraft = useMutation({
-    mutationFn: publishDraftNews,
-    onSuccess: () => {
-      toast.success("Actualité publiée");
-      qc.invalidateQueries({ queryKey: ["news"] });
-    },
-    onError,
-  });
-
-  const removeDraft = useMutation({
-    mutationFn: (n: { id: string; image_path?: string | null }) => deleteDraftNews(n.id, n.image_path),
-    onSuccess: () => {
-      toast.success("Brouillon supprimé");
-      qc.invalidateQueries({ queryKey: ["news"] });
     },
     onError,
   });
@@ -252,9 +207,8 @@ function ManagerSpace() {
     onError,
   });
 
-  const visibleDrafts = news.data?.filter((n) => n.status === "brouillon") ?? [];
-  const drafts = visibleDrafts.length;
   const published = news.data?.filter((n) => n.status === "publiée") ?? [];
+  const myNews = news.data?.filter((n) => (n.author_email ?? "").toLowerCase() === myEmail) ?? [];
   const npsMetric = metricOf(metrics.data, "nps");
   const roleLabel = role === "admin" ? "ADMIN" : role === "manager" ? "MANAGER" : "COLLABORATEUR";
 
@@ -275,7 +229,7 @@ function ManagerSpace() {
 
   return (
     <div className="bg-background text-on-surface font-body-md min-h-screen flex flex-col">
-      <BrandHeader />
+      <BrandHeader profile={{ firstName, role, team }} />
       <main className="flex-grow w-full max-w-interface mx-auto p-sm md:p-md space-y-md">
         {email && <DepartureNotices email={email} />}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-sm mb-lg">
@@ -284,21 +238,24 @@ function ManagerSpace() {
               Vue d'ensemble
             </p>
             <h1 className="font-headline-lg text-headline-lg text-primary">Happy Place</h1>
-            <button
-              onClick={() => {
-                setSubmissionErrors({});
-                const only = role === "manager" && myTeams.data?.length === 1 ? myTeams.data[0] : "";
-                setSubmissionForm({ author_name: "", team: only, content: "", status: "en attente" });
-              }}
-              className="flex items-center gap-xs px-md py-xs bg-primary text-on-primary font-label-md text-label-md hover:opacity-90 transition-all shadow-sm"
-            >
-              <Icon name="add" /> SOUMETTRE UNE IDÉE
-            </button>
           </div>
           <div className="flex flex-wrap gap-xs items-center md:items-end md:justify-end">
             <span className="font-label-sm text-label-sm text-on-surface-variant">
               {email} · {roleLabel}
             </span>
+            {!isAdmin && (
+              <span className="flex items-center gap-xs px-md py-xs border border-primary bg-surface text-primary font-label-md text-label-md">
+                <Icon name="folder" /> MES CONTENUS
+              </span>
+            )}
+            {isReviewer && (
+              <Link
+                to="/relecture"
+                className="flex items-center gap-xs px-md py-xs border border-outline bg-surface text-primary font-label-md text-label-md hover:bg-surface-container"
+              >
+                <Icon name="fact_check" /> RELECTURE
+              </Link>
+            )}
             <button
               onClick={() => signOut()}
               className="flex items-center gap-xs px-md py-xs border border-outline bg-surface text-primary font-label-md text-label-md hover:bg-surface-container"
@@ -310,6 +267,12 @@ function ManagerSpace() {
               className="flex items-center gap-xs px-md py-xs border border-outline bg-surface text-primary font-label-md text-label-md hover:bg-surface-container transition-all"
             >
               <Icon name="database" /> GÉRER LES DONNÉES
+            </Link>)}
+            {isAdmin && (<Link
+              to="/parametres"
+              className="flex items-center gap-xs px-md py-xs border border-outline bg-surface text-primary font-label-md text-label-md hover:bg-surface-container transition-all"
+            >
+              <Icon name="settings" /> PARAMÈTRES
             </Link>)}
             <Button
               type="button"
@@ -324,191 +287,86 @@ function ManagerSpace() {
         </div>
 
         <div className="bento-grid">
-          {/* News Management & Input */}
-          <section className="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant p-md flex flex-col gap-md">
+          {/* Les 4 modules : Actus actif, les autres bientôt disponibles */}
+          <section className="col-span-12 grid grid-cols-2 gap-sm sm:grid-cols-4">
+            <Link
+              to="/nouvelle-actu"
+              className="flex flex-col gap-xs border-2 border-primary bg-surface-container-lowest p-sm hover:bg-surface-container"
+            >
+              <Icon name="article" className="text-primary" />
+              <span className="font-headline-sm text-headline-sm text-primary">Actus</span>
+              <span className="font-label-sm text-label-sm uppercase text-primary">+ Nouvelle actu</span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                setSubmissionErrors({});
+                const only = role === "manager" && myTeams.data?.length === 1 ? myTeams.data[0] : "";
+                setSubmissionForm({ author_name: "", team: only, content: "", status: "en attente" });
+              }}
+              className="flex flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm text-left hover:border-primary"
+            >
+              <Icon name="lightbulb" className="text-on-surface-variant" />
+              <span className="font-headline-sm text-headline-sm text-primary">Idées</span>
+              <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Idée</span>
+            </button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="flex cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                    <Icon name="report" className="text-on-surface-variant" />
+                    <span className="font-headline-sm text-headline-sm text-primary">Points bloquants</span>
+                    <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Point bloquant</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Bientôt disponible</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="flex cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                    <Icon name="bar_chart" className="text-on-surface-variant" />
+                    <span className="font-headline-sm text-headline-sm text-primary">Indicateurs</span>
+                    <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Indicateur</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Bientôt disponible</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </section>
+
+          {/* Actualités du cabinet / Mes actus */}
+          <section className="col-span-12 lg:col-span-6 min-w-0 bg-surface-container-lowest border border-outline-variant p-md flex flex-col gap-sm">
             <div className="flex items-center justify-between border-b border-outline-variant pb-sm">
               <h2 className="font-headline-sm text-headline-sm text-primary">
                 Actualités du cabinet
               </h2>
-              <span className="font-label-sm text-label-sm text-on-surface-variant">
-                {drafts} brouillon{drafts > 1 ? "s" : ""} en attente
-              </span>
             </div>
-            {canWriteNews && <form
-              className="space-y-md"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!title.trim()) return;
-                setShowLinkErrs(true);
-                if (Object.keys(linkErrors(media.links)).length) {
-                  toast.error("Corrige les liens invalides avant d'enregistrer.");
-                  return;
-                }
-                saveDraft.mutate({
-                  links: toNewsLinks(media.links),
-                  media,
-                  id: editingNewsId ?? undefined,
-                  title: title.trim(),
-                  body,
-                  author: myName,
-                  author_email: myEmail,
-                });
-              }}
-            >
-              <div className="space-y-xs">
-                <label className="font-label-md text-label-md text-on-surface-variant block">
-                  TITRE
-                </label>
-                <input
-                  className="w-full bg-transparent border-b border-outline-variant focus:border-primary focus:outline-none transition-colors font-headline-sm text-headline-sm px-0 py-xs"
-                   placeholder="Saisis un titre…"
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </div>
-              <div className="space-y-xs">
-                <label className="font-label-md text-label-md text-on-surface-variant block">
-                  CONTENU
-                </label>
-                <textarea
-                  className="w-full bg-card border border-outline-variant focus:border-primary focus:outline-none p-sm font-body-md"
-                   placeholder="Rédige l'actualité…"
-                  rows={4}
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-sm">
-                <NewsMediaEditor
-                  value={media}
-                  onChange={setMedia}
-                  linkErrs={newsLinkErrs}
-                  disabled={saveDraft.isPending}
-                  title={title}
-                />
-                <div className="flex items-center gap-sm">
-                  {editingNewsId && (
-                    <button
-                      type="button"
-                      className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary"
-                      onClick={() => {
-                        setEditingNewsId(null);
-                        setTitle("");
-                        setBody("");
-                        setMedia(emptyMedia());
-                        setShowLinkErrs(false);
-                      }}
-                    >
-                      Annuler
-                    </button>
-                  )}
-                  <button
-                    type="submit"
-                    disabled={saveDraft.isPending}
-                    className="px-lg py-xs bg-primary text-on-primary font-label-md text-label-md disabled:opacity-50"
-                  >
-                    {saveDraft.isPending ? "Enregistrement…" : "Enregistrer le brouillon"}
-                  </button>
-                </div>
-              </div>
-            </form>}
-            <div className="mt-md pt-md border-t border-outline-variant">
-              {canWriteNews && visibleDrafts.length > 0 && (
-                <>
-                  <h3 className="font-label-md text-label-md text-on-surface-variant mb-sm">
-                    BROUILLONS
-                  </h3>
-                  <div className="space-y-xs mb-md">
-                    {visibleDrafts.map((n) => {
-                      const own = (n.author_email ?? "").toLowerCase() === myEmail;
-                      const allowed = isAdmin || own;
-                      return (
-                        <div
-                          key={n.id}
-                          className="flex items-center justify-between gap-sm p-sm bg-surface-container"
-                        >
-                          <div className="flex items-center gap-md min-w-0">
-                            <Icon name="draft" className="text-on-surface-variant" />
-                            <div className="min-w-0">
-                              <p className="font-body-md text-primary flex items-center gap-xs">
-                                <span className="truncate">{n.title}</span>
-                                <span className="shrink-0 border border-outline-variant px-xs font-label-sm text-label-sm text-on-surface-variant">
-                                  Brouillon
-                                </span>
-                              </p>
-                              <p className="text-xs text-on-surface-variant uppercase font-label-sm">
-                                Créé {timeAgo(n.created_at)} • Par {n.author}
-                              </p>
-                            </div>
-                          </div>
-                          {allowed && (
-                            <div className="flex items-center gap-sm shrink-0">
-                              <button
-                                type="button"
-                                className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary"
-                                onClick={() => {
-                                  setEditingNewsId(n.id);
-                                  setTitle(n.title);
-                                  setBody(n.body ?? "");
-                                  setMedia(mediaFromNews(n));
-                                  setShowLinkErrs(false);
-                                }}
-                              >
-                                Modifier
-                              </button>
-                              <button
-                                type="button"
-                                className="font-label-sm text-label-sm text-error"
-                                disabled={removeDraft.isPending}
-                                onClick={() => {
-                                  if (window.confirm(`Supprimer le brouillon « ${n.title} » ?`))
-                                    removeDraft.mutate(n);
-                                }}
-                              >
-                                Supprimer
-                              </button>
-                              <button
-                                type="button"
-                                className="px-sm py-1 bg-primary text-on-primary font-label-sm text-label-sm disabled:opacity-50"
-                                disabled={publishDraft.isPending}
-                                onClick={() => {
-                                  if (window.confirm(`Publier l'actualité « ${n.title} » ? Elle sera visible par tous.`))
-                                    publishDraft.mutate(n.id);
-                                }}
-                              >
-                                Publier
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
+            <div className="space-y-xs">
+              {news.isLoading && (
+                <p className="text-body-sm text-on-surface-variant">Chargement…</p>
               )}
-              <h3 className="font-label-md text-label-md text-on-surface-variant mb-sm">
-                PUBLIÉES RÉCEMMENT
-              </h3>
-              <div className="space-y-xs">
-                {news.isLoading && (
-                  <p className="text-body-sm text-on-surface-variant">Chargement…</p>
-                )}
-                {news.isError && (
-                  <p className="text-body-sm text-error">
-                    Les actualités sont indisponibles.
-                  </p>
-                )}
-                {published.slice(0, 4).map((n) => (
-                  <button
-                    type="button"
-                    key={n.id}
-                    onClick={() => setReadingNews(n)}
-                    aria-haspopup="dialog"
-                    className="w-full text-left p-sm bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer group min-w-0 overflow-hidden space-y-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    {n.image_path && <NewsImage path={n.image_path} alt={n.title} />}
-                    <div className="flex items-center justify-between gap-sm min-w-0">
+              {news.isError && (
+                <p className="text-body-sm text-error">
+                  Les actualités sont indisponibles.
+                </p>
+              )}
+              {!news.isLoading && published.length === 0 && (
+                <p className="text-body-sm italic text-on-surface-variant">
+                  Aucune actualité publiée pour l'instant.
+                </p>
+              )}
+              {published.slice(0, 6).map((n) => (
+                <button
+                  type="button"
+                  key={n.id}
+                  onClick={() => setReadingNews(n)}
+                  aria-haspopup="dialog"
+                  className="w-full text-left p-sm bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer group min-w-0 overflow-hidden space-y-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  {n.image_path && <NewsImage path={n.image_path} alt={n.title} />}
+                  <div className="flex items-center justify-between gap-sm min-w-0">
                     <div className="flex items-center gap-md min-w-0">
                       <Icon name="article" className="text-on-surface-variant" />
                       <div className="min-w-0">
@@ -518,12 +376,50 @@ function ManagerSpace() {
                         </p>
                       </div>
                     </div>
-                    {isAdmin && <Icon name="edit" className="text-on-surface-variant" />}
+                    <AudienceBadge audience={n.audience ?? "tout_le_cabinet"} className="shrink-0" />
+                  </div>
+                  <NewsLinks links={n.links} />
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="col-span-12 lg:col-span-6 min-w-0 bg-surface-container-lowest border border-outline-variant p-md flex flex-col gap-sm">
+            <div className="flex items-center justify-between border-b border-outline-variant pb-sm">
+              <h2 className="font-headline-sm text-headline-sm text-primary">Mes actus</h2>
+            </div>
+            <div className="space-y-xs">
+              {myNews.length === 0 && (
+                <p className="text-body-sm italic text-on-surface-variant">
+                  Tu n'as pas encore écrit d'actu.{" "}
+                  <Link to="/nouvelle-actu" className="text-primary underline">
+                    Commence ici
+                  </Link>
+                  .
+                </p>
+              )}
+              {myNews.slice(0, 6).map((n) => (
+                <button
+                  type="button"
+                  key={n.id}
+                  onClick={() => setReadingNews(n)}
+                  aria-haspopup="dialog"
+                  className="w-full text-left p-sm bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer group min-w-0 overflow-hidden space-y-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <div className="flex items-center justify-between gap-sm min-w-0">
+                    <div className="flex items-center gap-md min-w-0">
+                      <Icon name="draft" className="text-on-surface-variant" />
+                      <div className="min-w-0">
+                        <p className="font-body-md text-primary group-hover:underline wrap-anywhere">{n.title}</p>
+                        <p className="text-xs text-on-surface-variant uppercase font-label-sm">
+                          {timeAgo(n.created_at)}
+                        </p>
+                      </div>
                     </div>
-                    <NewsLinks links={n.links} />
-                  </button>
-                ))}
-              </div>
+                    <StatusBadge status={n.status} className="shrink-0" />
+                  </div>
+                </button>
+              ))}
             </div>
           </section>
 

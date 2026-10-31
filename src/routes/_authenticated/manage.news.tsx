@@ -25,6 +25,7 @@ import {
 } from "@/lib/dashboard";
 import { NewsImage, NewsLinks, NewsMediaEditor } from "@/components/news-media";
 import { emptyMedia, linkErrors, mediaFromNews, toNewsLinks, type MediaDraft } from "@/lib/news-media";
+import { NEWS_STATUS_LABELS } from "@/components/status-badge";
 
 export const Route = createFileRoute("/_authenticated/manage/news")({
   head: () => ({
@@ -39,11 +40,6 @@ export const Route = createFileRoute("/_authenticated/manage/news")({
   }),
   component: ManageNews,
 });
-
-const newsStatusLabels: Record<string, string> = {
-  brouillon: "Brouillon",
-  publiée: "Publiée",
-};
 
 const empty: NewsInput = { title: "", body: "", author: "Direction Recrutement", status: "brouillon" };
 
@@ -140,7 +136,7 @@ function ManageNews() {
               <p className="text-body-sm text-on-surface-variant line-clamp-2 wrap-anywhere">{n.body}</p>
               <NewsLinks links={n.links} />
               <p className="text-[11px] font-label-sm text-on-surface-variant uppercase mt-xs">
-                 {newsStatusLabels[n.status] ?? n.status} • {n.author} • {timeAgo(n.created_at)}
+                 {NEWS_STATUS_LABELS[n.status as keyof typeof NEWS_STATUS_LABELS] ?? n.status} • {n.author} • {timeAgo(n.created_at)}
               </p>
             </div>
             <RowActions
@@ -197,17 +193,38 @@ function ManageNews() {
               <TextInput
                 value={form.author}
                 maxLength={80}
+                disabled={!!editing}
                 onChange={(e) => setForm({ ...form, author: e.target.value })}
               />
+              {editing && (
+                <p className="mt-xs text-body-sm text-on-surface-variant">
+                  L'auteur d'une actu existante ne se change pas depuis cet écran (il est fixé par
+                  la base).
+                </p>
+              )}
             </Field>
             <Field label="Statut" error={errors.status}>
-              <Select
-                value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value })}
-              >
-                <option value="brouillon">Brouillon</option>
-                <option value="publiée">Publiée</option>
-              </Select>
+              {editing ? (
+                <>
+                  <Select value={form.status} disabled onChange={() => {}}>
+                    <option value={form.status}>
+                      {NEWS_STATUS_LABELS[form.status as keyof typeof NEWS_STATUS_LABELS] ?? form.status}
+                    </option>
+                  </Select>
+                  <p className="mt-xs text-body-sm text-on-surface-variant">
+                    Le statut d'une actu existante se change uniquement via le circuit de
+                    publication (bientôt disponible), pas depuis cet écran.
+                  </p>
+                </>
+              ) : (
+                <Select
+                  value={form.status}
+                  onChange={(e) => setForm({ ...form, status: e.target.value })}
+                >
+                  <option value="brouillon">Brouillon</option>
+                  <option value="publiée">Publiée</option>
+                </Select>
+              )}
             </Field>
             <FormActions pending={save.isPending} onCancel={close} />
           </form>
