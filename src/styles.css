@@ -46,6 +46,8 @@
   --color-error: var(--error);
   --color-error-container: var(--error-container);
   --color-on-error-container: var(--on-error-container);
+  --color-success-container: var(--success-container);
+  --color-on-success-container: var(--on-success-container);
   --color-border: var(--outline-variant);
   --color-outline: var(--outline);
   --color-outline-variant: var(--outline-variant);
@@ -60,13 +62,14 @@
   --color-surface-container-highest: var(--surface-container-highest);
   --color-success: var(--success);
 
-  --font-display: "Bodoni Moda", Georgia, serif;
-  --font-headline-lg: "Bodoni Moda", Georgia, serif;
-  --font-headline-sm: "Bodoni Moda", Georgia, serif;
-  --font-body-md: "Inter Tight", system-ui, sans-serif;
-  --font-body-sm: "Inter Tight", system-ui, sans-serif;
-  --font-label-md: "Space Grotesk", system-ui, sans-serif;
-  --font-label-sm: "Space Grotesk", system-ui, sans-serif;
+  /* Charte Happy Place : titres en Comfortaa, texte en Inter, étiquettes/badges en JetBrains Mono. */
+  --font-display: "Comfortaa", ui-sans-serif, sans-serif;
+  --font-headline-lg: "Comfortaa", ui-sans-serif, sans-serif;
+  --font-headline-sm: "Comfortaa", ui-sans-serif, sans-serif;
+  --font-body-md: "Inter", system-ui, sans-serif;
+  --font-body-sm: "Inter", system-ui, sans-serif;
+  --font-label-md: "JetBrains Mono", ui-monospace, monospace;
+  --font-label-sm: "JetBrains Mono", ui-monospace, monospace;
 
   --text-headline-lg: 2.75rem;
   --text-headline-lg--line-height: 1.05;
@@ -95,34 +98,39 @@
 }
 
 :root {
-  --radius: 0rem;
-  --background: oklch(0.968 0.004 90);
-  --foreground: oklch(0.26 0.008 285);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.26 0.008 285);
+  /* Charte Happy Place (CLAUDE.md) : fond écru #FBF9F8, cartes blanches, bordure
+     1px #E6E6E1, rayon 8px, texte/bouton principal anthracite #171818, accent
+     rose poudré #FCDBDB/#DEBFBF, validation #DFF3E4/#2F7D4A, erreur #BA1A1A/#FFDAD6. */
+  --radius: 0.5rem;
+  --background: oklch(0.983 0.003 48.7); /* #FBF9F8 */
+  --foreground: oklch(0.208 0.002 197); /* #171818 */
+  --card: oklch(1 0 0); /* #FFFFFF */
+  --card-foreground: oklch(0.208 0.002 197);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.26 0.008 285);
-  --primary: oklch(0.28 0.009 285);
-  --on-primary: oklch(0.98 0.004 90);
-  --secondary: oklch(0.72 0.062 20);
-  --on-secondary: oklch(0.24 0.01 20);
-  --secondary-fixed: oklch(0.9 0.036 20);
-  --tertiary-fixed: oklch(0.88 0.045 55);
-  --on-tertiary-fixed: oklch(0.32 0.05 45);
-  --muted: oklch(0.94 0.003 90);
-  --accent: oklch(0.92 0.03 20);
-  --error: oklch(0.53 0.19 25);
-  --error-container: oklch(0.9 0.05 25);
-  --on-error-container: oklch(0.35 0.14 25);
-  --success: oklch(0.55 0.13 150);
-  --outline: oklch(0.45 0.008 285);
-  --outline-variant: oklch(0.85 0.005 285);
-  --surface: oklch(0.98 0.003 90);
-  --on-surface-variant: oklch(0.52 0.008 285);
-  --surface-container-lowest: oklch(1 0 0);
-  --surface-container: oklch(0.945 0.004 90);
-  --surface-container-high: oklch(0.92 0.005 90);
-  --surface-container-highest: oklch(0.895 0.005 90);
+  --popover-foreground: oklch(0.208 0.002 197);
+  --primary: oklch(0.208 0.002 197); /* #171818 */
+  --on-primary: oklch(1 0 0);
+  --secondary: oklch(0.831 0.035 17.9); /* #DEBFBF */
+  --on-secondary: oklch(0.208 0.002 197);
+  --secondary-fixed: oklch(0.919 0.037 17.8); /* #FCDBDB */
+  --tertiary-fixed: oklch(0.831 0.035 17.9); /* #DEBFBF */
+  --on-tertiary-fixed: oklch(0.208 0.002 197);
+  --muted: oklch(0.965 0.003 48.7);
+  --accent: oklch(0.919 0.037 17.8); /* #FCDBDB */
+  --error: oklch(0.506 0.193 27.7); /* #BA1A1A */
+  --error-container: oklch(0.918 0.042 25.2); /* #FFDAD6 */
+  --on-error-container: oklch(0.506 0.193 27.7); /* #BA1A1A */
+  --success: oklch(0.528 0.111 152); /* #2F7D4A */
+  --success-container: oklch(0.945 0.029 153.3); /* #DFF3E4 */
+  --on-success-container: oklch(0.528 0.111 152); /* #2F7D4A */
+  --outline: oklch(0.55 0.005 100);
+  --outline-variant: oklch(0.924 0.007 106.5); /* #E6E6E1 */
+  --surface: oklch(0.983 0.003 48.7); /* #FBF9F8 */
+  --on-surface-variant: oklch(0.477 0.003 228.8); /* #5B5D5E */
+  --surface-container-lowest: oklch(1 0 0); /* #FFFFFF */
+  --surface-container: oklch(0.965 0.003 48.7);
+  --surface-container-high: oklch(0.93 0.004 48.7);
+  --surface-container-highest: oklch(0.9 0.005 48.7);
   --sidebar: var(--surface);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
