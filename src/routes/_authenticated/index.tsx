@@ -425,6 +425,11 @@ function ManagerSpace() {
                         <StatusBadge status={n.status} className="shrink-0" />
                       </div>
                     </button>
+                    {isDraft && n.draft_reminder_at && (
+                      <p className="font-label-sm text-label-sm uppercase text-on-surface-variant">
+                        Brouillon en attente depuis hier
+                      </p>
+                    )}
                     {(needsFix || isRefused) && n.review_note && (
                       <div className="p-xs bg-error-container text-on-error-container text-body-sm wrap-anywhere">
                         {n.review_category && <p className="font-bold">Motif : {n.review_category}</p>}

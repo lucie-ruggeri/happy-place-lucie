@@ -65,3 +65,19 @@ export async function fetchMyManagerName(): Promise<string | null> {
   if (error) throw error;
   return (data as string | null) ?? null;
 }
+
+/** Équipes gérées par le manager connecté (même requête que index.tsx). */
+export async function fetchMyManagedTeams(email: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("manager_teams")
+    .select("team, allowed_users!inner(email)")
+    .eq("allowed_users.email", email.toLowerCase());
+  if (error) throw error;
+  return (data ?? []).map((t) => t.team).sort();
+}
+
+/** Équipe émettrice d'une actu "Mon équipe" (nécessaire pour submit_news si le manager en gère plusieurs). */
+export async function setAudienceTeam(newsId: string, team: string): Promise<void> {
+  const { error } = await supabase.from("news_audience_teams").upsert({ news_id: newsId, team });
+  if (error) throw error;
+}

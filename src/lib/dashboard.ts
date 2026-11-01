@@ -22,6 +22,7 @@ export type News = {
   manager_validated_by_email?: string | null;
   review_category?: string | null;
   review_note?: string | null;
+  draft_reminder_at?: string | null;
   created_at: string;
   image_path?: string | null;
   links?: unknown;

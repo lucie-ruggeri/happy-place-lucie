@@ -8,7 +8,14 @@ import { CircuitStepper, type CircuitStep } from "@/components/circuit-stepper";
 import { getCircuit, type CircuitAudience, type CircuitKind } from "@/lib/circuit";
 import { emptyMedia, linkErrors, mediaFromNews, toNewsLinks, type MediaDraft } from "@/lib/news-media";
 import { formatActuWithAI, type AiMode } from "@/lib/ai";
-import { createNewsDraft, fetchMyManagerName, submitNews, updateNewsDraft } from "@/lib/news-circuit";
+import {
+  createNewsDraft,
+  fetchMyManagedTeams,
+  fetchMyManagerName,
+  setAudienceTeam,
+  submitNews,
+  updateNewsDraft,
+} from "@/lib/news-circuit";
 import type { News } from "@/lib/dashboard";
 
 const FAKE_DICTATION =
@@ -46,7 +53,7 @@ function buildCircuitSteps(kind: CircuitKind, managerName: string | null): Circu
 }
 
 export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () => void }) {
-  const { role } = useRouteContext({ from: "/_authenticated" });
+  const { role, email } = useRouteContext({ from: "/_authenticated" });
   const roleAuteur = role === "manager" ? "manager" : "collaborateur";
 
   const [mode, setMode] = useState<AiMode>((news?.input_mode as AiMode) ?? "notes");
@@ -69,6 +76,23 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
     enabled: roleAuteur === "collaborateur",
     staleTime: 5 * 60 * 1000,
   });
+
+  const managedTeams = useQuery({
+    queryKey: ["manager_teams", "mine", email],
+    queryFn: () => fetchMyManagedTeams(email ?? ""),
+    enabled: roleAuteur === "manager" && !!email,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Choix de "l'équipe émettrice" : requis par submit_news seulement quand un
+  // manager gérant plusieurs équipes vise "Mon équipe" (sinon la base ne sait
+  // pas laquelle de ses équipes est concernée). Pour "Plusieurs équipes", il
+  // n'y a pas de notion d'équipe ciblée (audience = tout le cabinet).
+  const needsTeamChoice = roleAuteur === "manager" && audience === "mon_equipe" && (managedTeams.data?.length ?? 0) > 1;
+  const [emittingTeam, setEmittingTeam] = useState("");
+  if (needsTeamChoice && !emittingTeam && managedTeams.data?.[0]) {
+    setEmittingTeam(managedTeams.data[0]);
+  }
 
   const circuitAudience: CircuitAudience = audience === "tout_le_cabinet" ? "plusieurs_equipes" : "mon_equipe";
   const circuit = getCircuit("actu", circuitAudience, roleAuteur);
@@ -122,9 +146,16 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
       };
       const saved = news?.id ? await updateNewsDraft(news.id, input) : await createNewsDraft(input);
       if (action === "draft") {
-        toast.success("Brouillon enregistré.");
+        toast.success(
+          roleAuteur === "manager" && circuit.kind === "aucun"
+            ? "Brouillon enregistré. Tu recevras un rappel demain si elle n'est pas publiée."
+            : "Brouillon enregistré.",
+        );
         onDone();
         return;
+      }
+      if (needsTeamChoice) {
+        await setAudienceTeam(saved.id, emittingTeam);
       }
       await submitNews(saved.id);
       toast.success(circuit.announcement);
@@ -263,6 +294,22 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
         </div>
       </fieldset>
 
+      {needsTeamChoice && (
+        <Field label="Équipe émettrice">
+          <select
+            value={emittingTeam}
+            onChange={(e) => setEmittingTeam(e.target.value)}
+            className="w-full bg-card border border-outline-variant p-sm font-body-md text-on-surface focus:outline-none focus:border-primary"
+          >
+            {managedTeams.data?.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+        </Field>
+      )}
+
       <div className="space-y-xs border border-outline-variant bg-surface-container-lowest p-sm">
         <p className="font-label-sm text-label-sm uppercase text-on-surface-variant">Ce qui va se passer</p>
         <CircuitStepper steps={steps} />
@@ -270,22 +317,66 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
       </div>
 
       <div className="flex flex-wrap gap-sm pt-sm">
-        <button
-          type="button"
-          disabled={pending}
-          onClick={() => handleSubmit("draft")}
-          className="px-md py-xs border border-outline text-primary font-label-md text-label-md hover:bg-surface-container disabled:opacity-50"
-        >
-          Enregistrer en brouillon
-        </button>
-        <button
-          type="button"
-          disabled={pending}
-          onClick={() => handleSubmit("submit")}
-          className="px-md py-xs bg-primary text-on-primary font-label-md text-label-md disabled:opacity-50"
-        >
-          Envoyer pour validation
-        </button>
+        {roleAuteur === "manager" ? (
+          circuit.kind === "aucun" ? (
+            <>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => handleSubmit("submit")}
+                className="px-md py-xs bg-primary text-on-primary font-label-md text-label-md disabled:opacity-50"
+              >
+                Publier maintenant
+              </button>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => handleSubmit("draft")}
+                className="px-md py-xs border border-outline text-primary font-label-md text-label-md hover:bg-surface-container disabled:opacity-50"
+              >
+                Plus tard (rappel demain)
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => handleSubmit("submit")}
+                className="px-md py-xs bg-primary text-on-primary font-label-md text-label-md disabled:opacity-50"
+              >
+                Envoyer à la relecture Comm
+              </button>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => handleSubmit("draft")}
+                className="px-md py-xs border border-outline text-primary font-label-md text-label-md hover:bg-surface-container disabled:opacity-50"
+              >
+                Enregistrer en brouillon
+              </button>
+            </>
+          )
+        ) : (
+          <>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => handleSubmit("draft")}
+              className="px-md py-xs border border-outline text-primary font-label-md text-label-md hover:bg-surface-container disabled:opacity-50"
+            >
+              Enregistrer en brouillon
+            </button>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => handleSubmit("submit")}
+              className="px-md py-xs bg-primary text-on-primary font-label-md text-label-md disabled:opacity-50"
+            >
+              Envoyer pour validation
+            </button>
+          </>
+        )}
       </div>
     </form>
   );
