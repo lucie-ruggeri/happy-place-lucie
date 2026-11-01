@@ -50,9 +50,39 @@ function getSpeechRecognitionCtor(): (new () => SpeechRecognitionLike) | null {
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
-const UNSUPPORTED_MSG = "Dictée indisponible sur ce navigateur, utilise Chrome ou colle tes notes.";
-const MIC_DENIED_MSG = "Micro refusé : autorise l'accès au micro ou utilise la dictée simulée ci-dessous.";
-const NO_SPEECH_MSG = "Aucune parole détectée. Réessaie ou parle plus près du micro.";
+export const UNSUPPORTED_MSG = "Dictée indisponible sur ce navigateur, utilise Chrome ou colle tes notes.";
+export const MIC_DENIED_MSG = "Micro refusé : autorise l'accès au micro ou utilise la dictée simulée ci-dessous.";
+export const NO_SPEECH_MSG = "Aucune parole détectée. Réessaie ou parle plus près du micro.";
+
+/**
+ * Décide le message et le repli à appliquer à la fin d'une tentative de
+ * dictée (erreur, fin naturelle, ou minuteur de 8s sans résultat). Logique
+ * pure, séparée du composant pour être testée sans navigateur :
+ *   - micro refusé → message dédié + repli simulé ;
+ *   - aucun texte reconnu (quelle qu'en soit la cause : erreur "no-speech",
+ *     fin sans résultat, ou minuteur) → message "aucune parole détectée",
+ *     SANS repli (l'utilisateur retente une vraie dictée) ;
+ *   - une autre erreur après au moins un résultat reconnu → repli simulé.
+ */
+export function resolveDictationOutcome(input: {
+  hadResult: boolean;
+  errorCode?: string;
+}): { message: string | null; fallback: boolean } {
+  if (
+    input.errorCode === "not-allowed" ||
+    input.errorCode === "permission-denied" ||
+    input.errorCode === "service-not-allowed"
+  ) {
+    return { message: MIC_DENIED_MSG, fallback: true };
+  }
+  if (!input.hadResult) {
+    return { message: NO_SPEECH_MSG, fallback: false };
+  }
+  if (input.errorCode) {
+    return { message: UNSUPPORTED_MSG, fallback: true };
+  }
+  return { message: null, fallback: false };
+}
 
 const FAKE_DICTATION =
   "Nous signons un nouveau partenariat avec une école de code pour accueillir des alternants " +
@@ -98,6 +128,8 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
   const [dictationError, setDictationError] = useState<string | null>(null);
   const [useFallbackDictation, setUseFallbackDictation] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const hasResultRef = useRef(false);
+  const noSpeechTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
   const [title, setTitle] = useState(news?.title ?? "");
@@ -152,9 +184,29 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
     toast.success("Texte proposé par l'IA — relis-le avant d'envoyer.");
   }
 
+  function clearNoSpeechTimer() {
+    if (noSpeechTimerRef.current) {
+      clearTimeout(noSpeechTimerRef.current);
+      noSpeechTimerRef.current = null;
+    }
+  }
+
   useEffect(() => {
-    return () => recognitionRef.current?.stop();
+    return () => {
+      recognitionRef.current?.stop();
+      clearNoSpeechTimer();
+    };
   }, []);
+
+  /** Fin de tentative (erreur, fin naturelle, ou minuteur) : un seul endroit
+   *  applique resolveDictationOutcome, pour ne jamais oublier un cas. */
+  function finishDictationAttempt(errorCode?: string) {
+    clearNoSpeechTimer();
+    const outcome = resolveDictationOutcome({ hadResult: hasResultRef.current, errorCode });
+    if (outcome.message) setDictationError(outcome.message);
+    setUseFallbackDictation(outcome.fallback);
+    setRecording(false);
+  }
 
   function startDictation() {
     setDictationError(null);
@@ -166,12 +218,15 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
       return;
     }
     setUseFallbackDictation(false);
+    hasResultRef.current = false;
     const recognition = new Ctor();
     recognition.lang = "fr-FR";
     recognition.continuous = true;
     recognition.interimResults = true;
     let finalTranscript = "";
     recognition.onresult = (event) => {
+      hasResultRef.current = true;
+      clearNoSpeechTimer();
       let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
@@ -180,23 +235,25 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
       }
       setNotes((finalTranscript + interim).trim());
     };
-    recognition.onerror = (event) => {
-      if (event.error === "not-allowed" || event.error === "permission-denied" || event.error === "service-not-allowed") {
-        setDictationError(MIC_DENIED_MSG);
-        setUseFallbackDictation(true);
-      } else if (event.error === "no-speech") {
-        setDictationError(NO_SPEECH_MSG);
-      } else {
-        setDictationError(UNSUPPORTED_MSG);
-        setUseFallbackDictation(true);
-      }
-      setRecording(false);
-    };
-    recognition.onend = () => setRecording(false);
+    recognition.onerror = (event) => finishDictationAttempt(event.error);
+    recognition.onend = () => finishDictationAttempt();
     recognitionRef.current = recognition;
     try {
       recognition.start();
       setRecording(true);
+      clearNoSpeechTimer();
+      // Filet de sécurité : certains navigateurs se terminent silencieusement
+      // (ni onerror "no-speech" ni onend rapide) quand rien n'est détecté.
+      noSpeechTimerRef.current = setTimeout(() => {
+        if (!hasResultRef.current) {
+          try {
+            recognition.stop();
+          } catch {
+            // ignore
+          }
+          finishDictationAttempt();
+        }
+      }, 8000);
     } catch {
       setDictationError(UNSUPPORTED_MSG);
       setUseFallbackDictation(true);
@@ -204,6 +261,7 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
   }
 
   function stopDictation() {
+    clearNoSpeechTimer();
     setRecording(false);
     if (useFallbackDictation) {
       setNotes(FAKE_DICTATION);
