@@ -1,14 +1,15 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { BrandHeader } from "@/components/brand-header";
+import { NewsEditor } from "@/components/news-editor";
 
-// Formulaire de publication réel hors périmètre de cette étape (flow 1-1,
-// roadmap) : stub pour que le bouton « + Nouvelle actu » mène quelque part.
 export const Route = createFileRoute("/_authenticated/nouvelle-actu")({
   head: () => ({ meta: [{ title: "Nouvelle actu — Happy Place" }] }),
   component: NouvelleActuPage,
 });
 
 function NouvelleActuPage() {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-background text-on-surface font-body-md min-h-screen">
       <BrandHeader profile={Route.useRouteContext()} />
@@ -18,13 +19,7 @@ function NouvelleActuPage() {
           <h1 className="font-headline-lg text-headline-lg text-primary">Nouvelle actu</h1>
         </div>
         <section className="border border-outline-variant bg-surface-container-lowest p-lg">
-          <p className="font-body-md text-on-surface-variant">
-            Le formulaire de publication express (avec circuit de validation automatique selon
-            ton rôle et l'audience choisie) arrive à l'étape suivante.
-          </p>
-          <Link to="/" className="mt-md inline-block font-label-md text-label-md uppercase text-primary underline">
-            ← Retour au tableau de bord
-          </Link>
+          <NewsEditor onDone={() => navigate({ to: "/" })} />
         </section>
       </main>
     </div>

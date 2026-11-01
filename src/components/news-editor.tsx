@@ -1,0 +1,292 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useRouteContext } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { Field } from "@/components/manage/crud-ui";
+import { NewsMediaEditor } from "@/components/news-media";
+import { CircuitStepper, type CircuitStep } from "@/components/circuit-stepper";
+import { getCircuit, type CircuitAudience, type CircuitKind } from "@/lib/circuit";
+import { emptyMedia, linkErrors, mediaFromNews, toNewsLinks, type MediaDraft } from "@/lib/news-media";
+import { formatActuWithAI, type AiMode } from "@/lib/ai";
+import { createNewsDraft, fetchMyManagerName, submitNews, updateNewsDraft } from "@/lib/news-circuit";
+import type { News } from "@/lib/dashboard";
+
+const FAKE_DICTATION =
+  "Nous signons un nouveau partenariat avec une école de code pour accueillir des alternants " +
+  "Data dès janvier. Trois postes sont concernés sur le pôle Data et IA, avec un démarrage prévu " +
+  "au premier trimestre.";
+
+const MODE_LABELS: Record<AiMode, string> = { dictee: "Dicter", notes: "Coller des notes", ecrit: "Écrire" };
+
+function buildCircuitSteps(kind: CircuitKind, managerName: string | null): CircuitStep[] {
+  const manager = managerName ?? "Ton manager";
+  switch (kind) {
+    case "aucun":
+      return [{ label: "Toi", state: "current" }, { label: "Publié", state: "todo" }];
+    case "manager":
+      return [
+        { label: "Toi", state: "done" },
+        { label: manager, state: "current" },
+        { label: "Publié", state: "todo" },
+      ];
+    case "relecteur_comm":
+      return [
+        { label: "Toi", state: "done" },
+        { label: "Relecteur Comm", state: "current" },
+        { label: "Publié", state: "todo" },
+      ];
+    case "manager_puis_relecteur_comm":
+      return [
+        { label: "Toi", state: "done" },
+        { label: manager, state: "todo" },
+        { label: "Relecteur Comm", state: "todo" },
+        { label: "Publié", state: "todo" },
+      ];
+  }
+}
+
+export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () => void }) {
+  const { role } = useRouteContext({ from: "/_authenticated" });
+  const roleAuteur = role === "manager" ? "manager" : "collaborateur";
+
+  const [mode, setMode] = useState<AiMode>((news?.input_mode as AiMode) ?? "notes");
+  const [notes, setNotes] = useState("");
+  const [recording, setRecording] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+
+  const [title, setTitle] = useState(news?.title ?? "");
+  const [body, setBody] = useState(news?.body ?? "");
+  const [audience, setAudience] = useState(news?.audience ?? "mon_equipe");
+  const [media, setMedia] = useState<MediaDraft>(() => (news ? mediaFromNews(news) : emptyMedia()));
+  const [showLinkErrs, setShowLinkErrs] = useState(false);
+  const [titleError, setTitleError] = useState<string | null>(null);
+  const [bodyError, setBodyError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  const managerName = useQuery({
+    queryKey: ["my-manager-name"],
+    queryFn: fetchMyManagerName,
+    enabled: roleAuteur === "collaborateur",
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const circuitAudience: CircuitAudience = audience === "tout_le_cabinet" ? "plusieurs_equipes" : "mon_equipe";
+  const circuit = getCircuit("actu", circuitAudience, roleAuteur);
+  const steps = buildCircuitSteps(circuit.kind, managerName.data ?? null);
+
+  async function runAI() {
+    if (!notes.trim()) return;
+    setAiLoading(true);
+    const result = await formatActuWithAI(notes.trim(), mode);
+    setAiLoading(false);
+    if (!result) {
+      toast.error("L'assistant IA est indisponible, continue en écrivant toi-même.");
+      setBody((b) => b || notes.trim());
+      return;
+    }
+    setTitle(result.title);
+    setBody(result.body);
+    toast.success("Texte proposé par l'IA — relis-le avant d'envoyer.");
+  }
+
+  function startDictation() {
+    setRecording(true);
+  }
+  function stopDictation() {
+    setRecording(false);
+    setNotes(FAKE_DICTATION);
+  }
+
+  async function handleSubmit(action: "draft" | "submit") {
+    const tErr = !title.trim() ? "Erreur : le titre est obligatoire" : null;
+    const bErr = !body.trim() ? "Erreur : le texte est obligatoire" : null;
+    setTitleError(tErr);
+    setBodyError(bErr);
+    if (tErr || bErr) return;
+
+    setShowLinkErrs(true);
+    if (Object.keys(linkErrors(media.links)).length) {
+      toast.error("Corrige les liens invalides avant d'enregistrer.");
+      return;
+    }
+
+    setPending(true);
+    try {
+      const input = {
+        title: title.trim(),
+        body: body.trim(),
+        audience,
+        input_mode: mode,
+        links: toNewsLinks(media.links),
+        media,
+      };
+      const saved = news?.id ? await updateNewsDraft(news.id, input) : await createNewsDraft(input);
+      if (action === "draft") {
+        toast.success("Brouillon enregistré.");
+        onDone();
+        return;
+      }
+      await submitNews(saved.id);
+      toast.success(circuit.announcement);
+      onDone();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <form className="space-y-md" onSubmit={(e) => e.preventDefault()} noValidate>
+      <fieldset className="space-y-xs">
+        <legend className="font-label-sm text-label-sm uppercase text-on-surface-variant">Mode de saisie</legend>
+        <div className="flex flex-wrap gap-xs">
+          {(["dictee", "notes", "ecrit"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setMode(m)}
+              className={
+                mode === m
+                  ? "px-md py-xs bg-primary text-on-primary font-label-md text-label-md"
+                  : "px-md py-xs border border-outline-variant text-on-surface-variant font-label-md text-label-md hover:bg-surface-container"
+              }
+            >
+              {MODE_LABELS[m]}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      {mode !== "ecrit" && (
+        <div className="space-y-sm border border-outline-variant bg-surface-container p-sm">
+          {mode === "dictee" ? (
+            <div className="space-y-xs">
+              {!recording && !notes && (
+                <button
+                  type="button"
+                  onClick={startDictation}
+                  className="flex items-center gap-xs px-md py-xs border border-outline bg-surface text-primary font-label-md text-label-md hover:bg-surface-container"
+                >
+                  <span aria-hidden="true" className="material-symbols-outlined">mic</span> Dicter
+                </button>
+              )}
+              {recording && (
+                <div className="flex items-center gap-sm">
+                  <span className="flex items-center gap-xs font-label-sm text-label-sm text-error">
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-error" aria-hidden="true" /> Enregistrement…
+                  </span>
+                  <button
+                    type="button"
+                    onClick={stopDictation}
+                    className="px-md py-xs border border-outline text-primary font-label-md text-label-md hover:bg-surface-container"
+                  >
+                    Stop
+                  </button>
+                </div>
+              )}
+              {!recording && notes && (
+                <p className="font-body-sm text-body-sm italic text-on-surface-variant">« {notes} »</p>
+              )}
+            </div>
+          ) : (
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={4}
+              placeholder="Colle tes notes en vrac, l'IA s'occupe de la mise en forme…"
+              className="w-full bg-card border border-outline-variant p-sm font-body-md text-on-surface focus:outline-none focus:border-primary"
+            />
+          )}
+          <button
+            type="button"
+            disabled={!notes.trim() || aiLoading}
+            onClick={runAI}
+            className="px-md py-xs bg-primary text-on-primary font-label-md text-label-md disabled:opacity-50"
+          >
+            {aiLoading ? "Mise en forme…" : "Mettre en forme avec l'IA"}
+          </button>
+        </div>
+      )}
+
+      <Field label="Titre" error={titleError ?? undefined}>
+        <input
+          value={title}
+          maxLength={160}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full bg-card border border-outline-variant p-sm font-body-md text-on-surface focus:outline-none focus:border-primary"
+        />
+      </Field>
+
+      <Field label="Texte" error={bodyError ?? undefined}>
+        <textarea
+          value={body}
+          rows={6}
+          onChange={(e) => setBody(e.target.value)}
+          className="w-full bg-card border border-outline-variant p-sm font-body-md text-on-surface focus:outline-none focus:border-primary"
+        />
+      </Field>
+
+      <Field label="Visuel (facultatif)">
+        <NewsMediaEditor
+          value={media}
+          onChange={setMedia}
+          linkErrs={showLinkErrs ? linkErrors(media.links) : {}}
+          disabled={pending}
+          title={title}
+        />
+      </Field>
+
+      <fieldset className="space-y-xs">
+        <legend className="font-label-sm text-label-sm uppercase text-on-surface-variant">Audience</legend>
+        <div className="flex flex-col gap-xs sm:flex-row">
+          {([
+            { value: "mon_equipe", label: "Mon équipe" },
+            { value: "tout_le_cabinet", label: "Plusieurs équipes / Tout le cabinet" },
+          ] as const).map((opt) => (
+            <label
+              key={opt.value}
+              className={`flex-1 cursor-pointer border p-sm ${
+                audience === opt.value ? "border-primary bg-surface-container" : "border-outline-variant"
+              }`}
+            >
+              <input
+                type="radio"
+                name="audience"
+                className="mr-xs"
+                checked={audience === opt.value}
+                onChange={() => setAudience(opt.value)}
+              />
+              {opt.label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <div className="space-y-xs border border-outline-variant bg-surface-container-lowest p-sm">
+        <p className="font-label-sm text-label-sm uppercase text-on-surface-variant">Ce qui va se passer</p>
+        <CircuitStepper steps={steps} />
+        <p className="font-body-sm text-body-sm text-on-surface-variant">{circuit.announcement}</p>
+      </div>
+
+      <div className="flex flex-wrap gap-sm pt-sm">
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => handleSubmit("draft")}
+          className="px-md py-xs border border-outline text-primary font-label-md text-label-md hover:bg-surface-container disabled:opacity-50"
+        >
+          Enregistrer en brouillon
+        </button>
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => handleSubmit("submit")}
+          className="px-md py-xs bg-primary text-on-primary font-label-md text-label-md disabled:opacity-50"
+        >
+          Envoyer pour validation
+        </button>
+      </div>
+    </form>
+  );
+}

@@ -12,6 +12,7 @@ import { CharCounter, SubmissionPreview, rejectionErrorMessage } from "@/compone
 import { Linkify } from "@/components/linkify";
 import { SubmissionReader } from "@/components/submission-reader";
 import { NewsReader } from "@/components/news-reader";
+import { NewsEditor } from "@/components/news-editor";
 import { DepartureNotices } from "@/components/departure-notices";
 import { NewsImage, NewsLinks } from "@/components/news-media";
 import { BlockerArchive, ValidatedSubmissions } from "@/components/dashboard-extras";
@@ -120,6 +121,7 @@ function ManagerSpace() {
   const [rejecting, setRejecting] = useState<Submission | null>(null);
   const [reading, setReading] = useState<Submission | null>(null);
   const [readingNews, setReadingNews] = useState<News | null>(null);
+  const [editingNews, setEditingNews] = useState<News | null>(null);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [rejectForm, setRejectForm] = useState({ rejection_category: "", rejection_note: "" });
   const [rejectErrors, setRejectErrors] = useState<FieldErrors>({});
@@ -398,28 +400,50 @@ function ManagerSpace() {
                   .
                 </p>
               )}
-              {myNews.slice(0, 6).map((n) => (
-                <button
-                  type="button"
-                  key={n.id}
-                  onClick={() => setReadingNews(n)}
-                  aria-haspopup="dialog"
-                  className="w-full text-left p-sm bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer group min-w-0 overflow-hidden space-y-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <div className="flex items-center justify-between gap-sm min-w-0">
-                    <div className="flex items-center gap-md min-w-0">
-                      <Icon name="draft" className="text-on-surface-variant" />
-                      <div className="min-w-0">
-                        <p className="font-body-md text-primary group-hover:underline wrap-anywhere">{n.title}</p>
-                        <p className="text-xs text-on-surface-variant uppercase font-label-sm">
-                          {timeAgo(n.created_at)}
-                        </p>
+              {myNews.slice(0, 6).map((n) => {
+                const needsFix = n.status === "a_modifier_manager" || n.status === "a_modifier_comm";
+                const isDraft = n.status === "brouillon";
+                const isRefused = n.status === "refusée";
+                return (
+                  <div key={n.id} className="bg-surface-container p-sm space-y-xs min-w-0 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setReadingNews(n)}
+                      aria-haspopup="dialog"
+                      className="w-full text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <div className="flex items-center justify-between gap-sm min-w-0">
+                        <div className="flex items-center gap-md min-w-0">
+                          <Icon name="draft" className="text-on-surface-variant" />
+                          <div className="min-w-0">
+                            <p className="font-body-md text-primary group-hover:underline wrap-anywhere">{n.title}</p>
+                            <p className="text-xs text-on-surface-variant uppercase font-label-sm">
+                              {timeAgo(n.created_at)}
+                            </p>
+                          </div>
+                        </div>
+                        <StatusBadge status={n.status} className="shrink-0" />
                       </div>
-                    </div>
-                    <StatusBadge status={n.status} className="shrink-0" />
+                    </button>
+                    {(needsFix || isRefused) && n.review_note && (
+                      <div className="p-xs bg-error-container text-on-error-container text-body-sm wrap-anywhere">
+                        {n.review_category && <p className="font-bold">Motif : {n.review_category}</p>}
+                        <p className="whitespace-pre-line">{n.review_note}</p>
+                        {isRefused && <p className="mt-xs font-label-sm text-label-sm uppercase">Refus définitif</p>}
+                      </div>
+                    )}
+                    {(needsFix || isDraft) && (
+                      <button
+                        type="button"
+                        onClick={() => setEditingNews(n)}
+                        className="font-label-sm text-label-sm uppercase text-primary underline"
+                      >
+                        {needsFix ? "Corriger et renvoyer" : "Reprendre"}
+                      </button>
+                    )}
                   </div>
-                </button>
-              ))}
+                );
+              })}
             </div>
           </section>
 
@@ -675,6 +699,20 @@ function ManagerSpace() {
       </main>
       <BlockerArchive open={archiveOpen} onClose={() => setArchiveOpen(false)} />
       <NewsReader news={readingNews} onClose={() => setReadingNews(null)} />
+      {editingNews && (
+        <Modal
+          title={editingNews.status === "brouillon" ? "Reprendre le brouillon" : "Corriger et renvoyer"}
+          onClose={() => setEditingNews(null)}
+        >
+          <NewsEditor
+            news={editingNews}
+            onDone={() => {
+              setEditingNews(null);
+              qc.invalidateQueries({ queryKey: ["news"] });
+            }}
+          />
+        </Modal>
+      )}
       <SubmissionReader
         submission={reading}
         onClose={() => setReading(null)}

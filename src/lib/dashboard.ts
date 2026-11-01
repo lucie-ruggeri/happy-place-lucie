@@ -16,6 +16,12 @@ export type News = {
   author_email?: string | null;
   status: string;
   audience?: string | null;
+  input_mode?: string | null;
+  submitted_at?: string | null;
+  published_at?: string | null;
+  manager_validated_by_email?: string | null;
+  review_category?: string | null;
+  review_note?: string | null;
   created_at: string;
   image_path?: string | null;
   links?: unknown;

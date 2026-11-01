@@ -597,6 +597,14 @@ export type Database = {
         Args: { _persona: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      my_manager_name: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      check_and_bump_ai_usage: {
+        Args: { _limit?: number; _user_id: string }
+        Returns: boolean
+      }
       submit_news: {
         Args: { _news_id: string }
         Returns: Database["public"]["Enums"]["news_status"]

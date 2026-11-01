@@ -152,7 +152,17 @@ VALUES
 ('Charte de sobriété numérique',
  'Projet de charte limitant les notifications hors horaires de travail, proposé pour tout le cabinet.',
  'Inès', 'refusée', 'tout_le_cabinet', now() - interval '8 days', NULL, NULL, 'en désaccord avec les process',
- 'Le sujet relève de la Direction Générale, pas d''une actu individuelle.', now() - interval '10 days');
+ 'Le sujet relève de la Direction Générale, pas d''une actu individuelle.', now() - interval '10 days'),
+
+-- Tranche Actus (1 nov. 2026) : les 2 statuts manquants pour qu'Inès voie ses 5 statuts
+-- dans "Mes actus", et un cas "circuit D" (déjà validée par Marc) pour la relecture Comm.
+('Nouveau partenariat école de code',
+ 'Un partenariat est en discussion avec une école de code pour accueillir des alternants Data dès janvier.',
+ 'Inès', 'brouillon', 'mon_equipe', NULL, NULL, NULL, NULL, NULL, now() - interval '1 day'),
+
+('Lancement de la newsletter mensuelle du cabinet',
+ 'Une newsletter mensuelle réunira les temps forts du cabinet pour l''ensemble des équipes, toutes directions confondues.',
+ 'Inès', 'a_valider_comm', 'tout_le_cabinet', now() - interval '2 days', NULL, NULL, NULL, NULL, now() - interval '3 days');
 
 UPDATE public.news n SET author_email = a.email
 FROM (VALUES
@@ -162,9 +172,16 @@ FROM (VALUES
   ('Mise à jour du référentiel candidats',                    'ines@happyplace.test'),
   ('Résultats du T3 de la Direction Commerciale',             'marc@happyplace.test'),
   ('Nouvel accord télétravail',                                'marc@happyplace.test'),
-  ('Charte de sobriété numérique',                             'ines@happyplace.test')
+  ('Charte de sobriété numérique',                             'ines@happyplace.test'),
+  ('Nouveau partenariat école de code',                        'ines@happyplace.test'),
+  ('Lancement de la newsletter mensuelle du cabinet',          'ines@happyplace.test')
 ) AS a(title, email)
 WHERE n.title = a.title;
+
+-- Circuit D : la newsletter a déjà été validée par Marc avant d'arriver chez la Comm
+-- (contrairement à "Bienvenue à nos 3 nouveaux consultants", écrite par Marc lui-même).
+UPDATE public.news SET manager_validated_by_email = 'marc@happyplace.test', manager_validated_at = now() - interval '2 days'
+WHERE title = 'Lancement de la newsletter mensuelle du cabinet';
 
 -- Équipe ciblée par les actus « Mon équipe » (table de liaison contrôlée par submit_news
 -- lors d'un vrai envoi ; on la renseigne nous-mêmes puisque le seed insère directement).
@@ -174,7 +191,8 @@ WHERE n.audience = 'mon_equipe'
   AND n.title IN ('Signature du contrat Atlas : 12 postes à pourvoir au T1',
                    'Nouveau processus de relance candidats',
                    'Mise à jour du référentiel candidats',
-                   'Nouvel accord télétravail')
+                   'Nouvel accord télétravail',
+                   'Nouveau partenariat école de code')
 ON CONFLICT DO NOTHING;
 
 -- 4. Soumissions (idées et demandes des équipes)
@@ -186,7 +204,7 @@ INSERT INTO public.submissions (author_name, team, content, status, created_at) 
 ('Maxime Caron',   'Marketing',             'Publier chaque mois une analyse courte des tendances de recrutement dans la tech.', 'validée', now() - interval '18 days'),
 ('Sofia Benali',   'Direction Commerciale', 'Mettre en place un compte rendu client systématique sous 24 heures après chaque entretien candidat.', 'validée', now() - interval '17 days'),
 ('Antoine Mercier','Product',               'Organiser une session de sourcing dédiée aux profils SRE et Platform Engineer disponibles sous deux mois.', 'validée', now() - interval '17 days'),
-('Camille Roux',   'Product',               'Créer une fiche de brief standardisée pour les recrutements Product Manager et Product Designer.', 'validée', now() - interval '17 days'),
+('Léna Roux',      'Product',               'Créer une fiche de brief standardisée pour les recrutements Product Manager et Product Designer.', 'validée', now() - interval '17 days'),
 -- En attente : de quoi tester la validation côté manager… et l'absence de relance
 ('Nina Petit',     'Product',               'À qui dois-je m’adresser pour obtenir un accès au job board premium ?', 'en attente', now() - interval '12 days'),
 ('Thomas Diallo',  'Direction Commerciale', 'Les indicateurs du dashboard ne correspondent pas aux chiffres de notre tableau d’équipe.', 'en attente', now() - interval '9 days'),
