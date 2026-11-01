@@ -53,6 +53,16 @@ export const blockerSchema = z.object({
   }),
 });
 
+export const blockerCreateSchema = z.object({
+  title: z.string().trim().min(1, "Erreur : le titre est obligatoire").max(160, "160 caractères maximum"),
+  description: z.string().trim().max(1000, "1000 caractères maximum"),
+  tool: z.string().trim().min(1, "Erreur : choisis l'outil ou le pôle concerné"),
+  severity: z.enum(["critical", "warning", "info"], {
+    errorMap: () => ({ message: "Erreur : choisis critique, avertissement ou info" }),
+  }),
+  audience: z.enum(["mon_equipe", "tout_le_cabinet"]),
+});
+
 export const metricSchema = z.object({
   key: z
     .string()

@@ -113,36 +113,126 @@ export type Database = {
       }
       blockers: {
         Row: {
+          audience: Database["public"]["Enums"]["news_audience"]
           created_at: string
+          created_by_email: string | null
           department: string
           description: string | null
           id: string
+          published_at: string | null
+          pub_review_note: string | null
+          reviewed_audience: Database["public"]["Enums"]["news_audience"] | null
           severity: Database["public"]["Enums"]["blocker_severity"]
           status: Database["public"]["Enums"]["blocker_status"]
+          statut_publication: Database["public"]["Enums"]["publication_status"]
+          team: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          audience?: Database["public"]["Enums"]["news_audience"]
           created_at?: string
+          created_by_email?: string | null
           department?: string
           description?: string | null
           id?: string
+          published_at?: string | null
+          pub_review_note?: string | null
+          reviewed_audience?: Database["public"]["Enums"]["news_audience"] | null
           severity?: Database["public"]["Enums"]["blocker_severity"]
           status?: Database["public"]["Enums"]["blocker_status"]
+          statut_publication?: Database["public"]["Enums"]["publication_status"]
+          team?: string | null
           title: string
           updated_at?: string
         }
         Update: {
+          audience?: Database["public"]["Enums"]["news_audience"]
           created_at?: string
+          created_by_email?: string | null
           department?: string
           description?: string | null
           id?: string
+          published_at?: string | null
+          pub_review_note?: string | null
+          reviewed_audience?: Database["public"]["Enums"]["news_audience"] | null
           severity?: Database["public"]["Enums"]["blocker_severity"]
           status?: Database["public"]["Enums"]["blocker_status"]
+          statut_publication?: Database["public"]["Enums"]["publication_status"]
+          team?: string | null
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "blockers_team_fkey"
+            columns: ["team"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["name"]
+          },
+        ]
+      }
+      blocker_followers: {
+        Row: {
+          blocker_id: string
+          created_at: string
+          email: string
+        }
+        Insert: {
+          blocker_id: string
+          created_at?: string
+          email: string
+        }
+        Update: {
+          blocker_id?: string
+          created_at?: string
+          email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocker_followers_blocker_id_fkey"
+            columns: ["blocker_id"]
+            isOneToOne: false
+            referencedRelation: "blockers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      blocker_notifications: {
+        Row: {
+          blocker_id: string | null
+          created_at: string
+          id: string
+          message: string
+          read_at: string | null
+          recipient_email: string
+        }
+        Insert: {
+          blocker_id?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          read_at?: string | null
+          recipient_email: string
+        }
+        Update: {
+          blocker_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          read_at?: string | null
+          recipient_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocker_notifications_blocker_id_fkey"
+            columns: ["blocker_id"]
+            isOneToOne: false
+            referencedRelation: "blockers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       departure_notices: {
         Row: {
@@ -567,6 +657,32 @@ export type Database = {
         }
         Relationships: []
       }
+      tools: {
+        Row: {
+          created_at: string
+          department: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          department: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          department?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tools_department_fkey"
+            columns: ["department"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["name"]
+          },
+        ]
+      }
     }
     Views: {
       metrics_with_trend: {
@@ -626,6 +742,31 @@ export type Database = {
         Args: { _id: string }
         Returns: undefined
       }
+      set_blocker_status: {
+        Args: {
+          _id: string
+          _status: Database["public"]["Enums"]["blocker_status"]
+        }
+        Returns: Database["public"]["Enums"]["blocker_status"]
+      }
+      withdraw_blocker: {
+        Args: { _id: string; _note: string }
+        Returns: Database["public"]["Enums"]["publication_status"]
+      }
+      resubmit_blocker: {
+        Args: {
+          _audience?: Database["public"]["Enums"]["news_audience"] | null
+          _description: string
+          _id: string
+          _severity?: Database["public"]["Enums"]["blocker_severity"] | null
+          _title: string
+        }
+        Returns: Database["public"]["Enums"]["publication_status"]
+      }
+      follow_blocker: {
+        Args: { _id: string }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "admin" | "manager" | "collaborateur"
@@ -634,6 +775,14 @@ export type Database = {
       news_audience: "mon_equipe" | "tout_le_cabinet"
       news_input_mode: "dictee" | "notes" | "ecrit"
       news_status:
+        | "brouillon"
+        | "a_valider_manager"
+        | "a_valider_comm"
+        | "a_modifier_manager"
+        | "a_modifier_comm"
+        | "publiée"
+        | "refusée"
+      publication_status:
         | "brouillon"
         | "a_valider_manager"
         | "a_valider_comm"
@@ -780,6 +929,15 @@ export const Constants = {
       news_audience: ["mon_equipe", "tout_le_cabinet"],
       news_input_mode: ["dictee", "notes", "ecrit"],
       news_status: [
+        "brouillon",
+        "a_valider_manager",
+        "a_valider_comm",
+        "a_modifier_manager",
+        "a_modifier_comm",
+        "publiée",
+        "refusée",
+      ],
+      publication_status: [
         "brouillon",
         "a_valider_manager",
         "a_valider_comm",

@@ -15,6 +15,7 @@ import { Route as ChoisirRoleRouteImport } from './routes/choisir-role'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedManageRouteImport } from './routes/_authenticated/manage'
+import { Route as AuthenticatedNouveauPointBloquantRouteImport } from './routes/_authenticated/nouveau-point-bloquant'
 import { Route as AuthenticatedNouvelleActuRouteImport } from './routes/_authenticated/nouvelle-actu'
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
 import { Route as AuthenticatedRelectureRouteImport } from './routes/_authenticated/relecture'
@@ -54,6 +55,12 @@ const AuthenticatedManageRoute = AuthenticatedManageRouteImport.update({
   path: '/manage',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedNouveauPointBloquantRoute =
+  AuthenticatedNouveauPointBloquantRouteImport.update({
+    id: '/nouveau-point-bloquant',
+    path: '/nouveau-point-bloquant',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedNouvelleActuRoute =
   AuthenticatedNouvelleActuRouteImport.update({
     id: '/nouvelle-actu',
@@ -112,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/choisir-role': typeof ChoisirRoleRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/manage': typeof AuthenticatedManageRouteWithChildren
+  '/nouveau-point-bloquant': typeof AuthenticatedNouveauPointBloquantRoute
   '/nouvelle-actu': typeof AuthenticatedNouvelleActuRoute
   '/parametres': typeof AuthenticatedParametresRoute
   '/relecture': typeof AuthenticatedRelectureRoute
@@ -126,6 +134,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/choisir-role': typeof ChoisirRoleRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/nouveau-point-bloquant': typeof AuthenticatedNouveauPointBloquantRoute
   '/nouvelle-actu': typeof AuthenticatedNouvelleActuRoute
   '/parametres': typeof AuthenticatedParametresRoute
   '/relecture': typeof AuthenticatedRelectureRoute
@@ -144,6 +153,7 @@ export interface FileRoutesById {
   '/choisir-role': typeof ChoisirRoleRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/manage': typeof AuthenticatedManageRouteWithChildren
+  '/_authenticated/nouveau-point-bloquant': typeof AuthenticatedNouveauPointBloquantRoute
   '/_authenticated/nouvelle-actu': typeof AuthenticatedNouvelleActuRoute
   '/_authenticated/parametres': typeof AuthenticatedParametresRoute
   '/_authenticated/relecture': typeof AuthenticatedRelectureRoute
@@ -163,6 +173,7 @@ export interface FileRouteTypes {
     | '/choisir-role'
     | '/sitemap.xml'
     | '/manage'
+    | '/nouveau-point-bloquant'
     | '/nouvelle-actu'
     | '/parametres'
     | '/relecture'
@@ -177,6 +188,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/choisir-role'
     | '/sitemap.xml'
+    | '/nouveau-point-bloquant'
     | '/nouvelle-actu'
     | '/parametres'
     | '/relecture'
@@ -194,6 +206,7 @@ export interface FileRouteTypes {
     | '/choisir-role'
     | '/sitemap.xml'
     | '/_authenticated/manage'
+    | '/_authenticated/nouveau-point-bloquant'
     | '/_authenticated/nouvelle-actu'
     | '/_authenticated/parametres'
     | '/_authenticated/relecture'
@@ -255,6 +268,13 @@ declare module '@tanstack/react-router' {
       path: '/manage'
       fullPath: '/manage'
       preLoaderRoute: typeof AuthenticatedManageRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/nouveau-point-bloquant': {
+      id: '/_authenticated/nouveau-point-bloquant'
+      path: '/nouveau-point-bloquant'
+      fullPath: '/nouveau-point-bloquant'
+      preLoaderRoute: typeof AuthenticatedNouveauPointBloquantRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/nouvelle-actu': {
@@ -346,6 +366,7 @@ const AuthenticatedManageRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedManageRoute: typeof AuthenticatedManageRouteWithChildren
+  AuthenticatedNouveauPointBloquantRoute: typeof AuthenticatedNouveauPointBloquantRoute
   AuthenticatedNouvelleActuRoute: typeof AuthenticatedNouvelleActuRoute
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRoute
   AuthenticatedRelectureRoute: typeof AuthenticatedRelectureRoute
@@ -354,6 +375,8 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedManageRoute: AuthenticatedManageRouteWithChildren,
+  AuthenticatedNouveauPointBloquantRoute:
+    AuthenticatedNouveauPointBloquantRoute,
   AuthenticatedNouvelleActuRoute: AuthenticatedNouvelleActuRoute,
   AuthenticatedParametresRoute: AuthenticatedParametresRoute,
   AuthenticatedRelectureRoute: AuthenticatedRelectureRoute,

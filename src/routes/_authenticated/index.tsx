@@ -326,18 +326,29 @@ function ManagerSpace() {
               <span className="font-headline-sm text-headline-sm text-primary">Idées</span>
               <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Idée</span>
             </button>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="flex cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
-                    <Icon name="report" className="text-on-surface-variant" />
-                    <span className="font-headline-sm text-headline-sm text-primary">Points bloquants</span>
-                    <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Point bloquant</span>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>Bientôt disponible</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            {isAdmin ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="flex cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                      <Icon name="report" className="text-on-surface-variant" />
+                      <span className="font-headline-sm text-headline-sm text-primary">Points bloquants</span>
+                      <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Point bloquant</span>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>Les admins ne signalent pas de point bloquant.</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <Link
+                to="/nouveau-point-bloquant"
+                className="flex flex-col gap-xs border-2 border-primary bg-surface-container-lowest p-sm hover:bg-surface-container"
+              >
+                <Icon name="report" className="text-primary" />
+                <span className="font-headline-sm text-headline-sm text-primary">Points bloquants</span>
+                <span className="font-label-sm text-label-sm uppercase text-primary">+ Point bloquant</span>
+              </Link>
+            )}
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>

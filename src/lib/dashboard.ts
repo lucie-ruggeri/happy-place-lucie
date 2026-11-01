@@ -58,6 +58,14 @@ export type Blocker = {
   severity: string;
   status: string;
   updated_at: string;
+  created_at?: string;
+  created_by_email?: string | null;
+  team?: string | null;
+  audience?: string | null;
+  statut_publication?: string | null;
+  published_at?: string | null;
+  reviewed_audience?: string | null;
+  pub_review_note?: string | null;
 };
 
 export type Metric = {
