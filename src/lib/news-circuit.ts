@@ -81,3 +81,20 @@ export async function setAudienceTeam(newsId: string, team: string): Promise<voi
   const { error } = await supabase.from("news_audience_teams").upsert({ news_id: newsId, team });
   if (error) throw error;
 }
+
+/** Décision du valideur : 'valider' | 'modifier' | 'refuser' (voir review_news). */
+export async function reviewNews(input: {
+  id: string;
+  decision: "valider" | "modifier" | "refuser";
+  category?: string;
+  note?: string;
+}): Promise<string> {
+  const { data, error } = await supabase.rpc("review_news", {
+    _news_id: input.id,
+    _decision: input.decision,
+    _category: (input.category ?? null) as never,
+    _note: input.note ?? null,
+  });
+  if (error) throw error;
+  return data as string;
+}

@@ -13,6 +13,8 @@ import { Linkify } from "@/components/linkify";
 import { SubmissionReader } from "@/components/submission-reader";
 import { NewsReader } from "@/components/news-reader";
 import { NewsEditor } from "@/components/news-editor";
+import { NewsReviewPanel } from "@/components/news-review-panel";
+import { reviewNews } from "@/lib/news-circuit";
 import { DepartureNotices } from "@/components/departure-notices";
 import { NewsImage, NewsLinks } from "@/components/news-media";
 import { BlockerArchive, ValidatedSubmissions } from "@/components/dashboard-extras";
@@ -122,6 +124,7 @@ function ManagerSpace() {
   const [reading, setReading] = useState<Submission | null>(null);
   const [readingNews, setReadingNews] = useState<News | null>(null);
   const [editingNews, setEditingNews] = useState<News | null>(null);
+  const [reviewingNews, setReviewingNews] = useState<News | null>(null);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [rejectForm, setRejectForm] = useState({ rejection_category: "", rejection_note: "" });
   const [rejectErrors, setRejectErrors] = useState<FieldErrors>({});
@@ -171,6 +174,15 @@ function ManagerSpace() {
     onError: (e: unknown) => toast.error(rejectionErrorMessage(e)),
   });
 
+  const reviewNewsMutation = useMutation({
+    mutationFn: reviewNews,
+    onSuccess: () => {
+      setReviewingNews(null);
+      qc.invalidateQueries({ queryKey: ["news"] });
+    },
+    onError: (e: unknown) => toast.error((e as Error).message),
+  });
+
   function startReject(s: Submission) {
     setReading(null);
     setRejecting(s);
@@ -211,6 +223,8 @@ function ManagerSpace() {
 
   const published = news.data?.filter((n) => n.status === "publiée") ?? [];
   const myNews = news.data?.filter((n) => (n.author_email ?? "").toLowerCase() === myEmail) ?? [];
+  // "a_modifier_manager" n'est pas dans cette file : c'est à l'auteur de corriger, pas à Marc de redécider.
+  const managerQueue = role === "manager" ? news.data?.filter((n) => n.status === "a_valider_manager") ?? [] : [];
   const npsMetric = metricOf(metrics.data, "nps");
   const roleLabel = role === "admin" ? "ADMIN" : role === "manager" ? "MANAGER" : "COLLABORATEUR";
 
@@ -463,6 +477,30 @@ function ManagerSpace() {
               </div>
             </div>
             <div className="space-y-sm flex-grow min-w-0">
+              {managerQueue.length > 0 && (
+                <div className="space-y-xs border-b border-outline-variant pb-sm mb-xs">
+                  <p className="font-label-sm text-label-sm uppercase text-on-surface-variant">Actus à valider</p>
+                  {managerQueue.map((n) => (
+                    <button
+                      key={n.id}
+                      type="button"
+                      onClick={() => setReviewingNews(n)}
+                      aria-haspopup="dialog"
+                      className="w-full text-left p-sm bg-card border border-outline-variant hover:bg-surface-container transition-colors min-w-0 overflow-hidden"
+                    >
+                      <div className="flex items-center justify-between gap-sm min-w-0">
+                        <div className="min-w-0">
+                          <p className="font-body-md text-primary wrap-anywhere">{n.title}</p>
+                          <p className="text-xs text-on-surface-variant uppercase font-label-sm">
+                            {n.author} • {timeAgo(n.submitted_at ?? n.created_at)}
+                          </p>
+                        </div>
+                        <AudienceBadge audience={n.audience ?? "tout_le_cabinet"} className="shrink-0" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
               {submissions.isError && (
                 <p className="text-body-sm text-error">
                   Les soumissions sont indisponibles.
@@ -704,6 +742,16 @@ function ManagerSpace() {
       </main>
       <BlockerArchive open={archiveOpen} onClose={() => setArchiveOpen(false)} />
       <NewsReader news={readingNews} onClose={() => setReadingNews(null)} />
+      <NewsReviewPanel
+        news={reviewingNews}
+        circuitLabel={reviewingNews?.audience === "tout_le_cabinet" ? "Valider et transmettre à la Comm" : "Valider et publier"}
+        isSelfAuthor={(reviewingNews?.author_email ?? "").toLowerCase() === myEmail}
+        pending={reviewNewsMutation.isPending}
+        onReview={(decision, category, note) =>
+          reviewingNews && reviewNewsMutation.mutate({ id: reviewingNews.id, decision, category, note })
+        }
+        onClose={() => setReviewingNews(null)}
+      />
       {editingNews && (
         <Modal
           title={editingNews.status === "brouillon" ? "Reprendre le brouillon" : "Corriger et renvoyer"}
