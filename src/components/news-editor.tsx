@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouteContext } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -17,6 +17,42 @@ import {
   updateNewsDraft,
 } from "@/lib/news-circuit";
 import type { News } from "@/lib/dashboard";
+
+// La Web Speech API n'est pas dans les typings DOM standard de TypeScript :
+// on déclare juste ce dont on se sert, sans "any".
+interface SpeechRecognitionResultLike {
+  isFinal: boolean;
+  [index: number]: { transcript: string };
+}
+interface SpeechRecognitionEventLike extends Event {
+  resultIndex: number;
+  results: { length: number; [index: number]: SpeechRecognitionResultLike };
+}
+interface SpeechRecognitionErrorEventLike extends Event {
+  error: string;
+}
+interface SpeechRecognitionLike extends EventTarget {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  start(): void;
+  stop(): void;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
+  onend: (() => void) | null;
+}
+
+function getSpeechRecognitionCtor(): (new () => SpeechRecognitionLike) | null {
+  const w = window as unknown as {
+    SpeechRecognition?: new () => SpeechRecognitionLike;
+    webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+  };
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+}
+
+const UNSUPPORTED_MSG = "Dictée indisponible sur ce navigateur, utilise Chrome ou colle tes notes.";
+const MIC_DENIED_MSG = "Micro refusé : autorise l'accès au micro ou utilise la dictée simulée ci-dessous.";
+const NO_SPEECH_MSG = "Aucune parole détectée. Réessaie ou parle plus près du micro.";
 
 const FAKE_DICTATION =
   "Nous signons un nouveau partenariat avec une école de code pour accueillir des alternants " +
@@ -59,6 +95,9 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
   const [mode, setMode] = useState<AiMode>((news?.input_mode as AiMode) ?? "notes");
   const [notes, setNotes] = useState("");
   const [recording, setRecording] = useState(false);
+  const [dictationError, setDictationError] = useState<string | null>(null);
+  const [useFallbackDictation, setUseFallbackDictation] = useState(false);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
   const [title, setTitle] = useState(news?.title ?? "");
@@ -113,12 +152,64 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
     toast.success("Texte proposé par l'IA — relis-le avant d'envoyer.");
   }
 
+  useEffect(() => {
+    return () => recognitionRef.current?.stop();
+  }, []);
+
   function startDictation() {
-    setRecording(true);
+    setDictationError(null);
+    const Ctor = getSpeechRecognitionCtor();
+    if (!Ctor) {
+      setDictationError(UNSUPPORTED_MSG);
+      setUseFallbackDictation(true);
+      setRecording(true);
+      return;
+    }
+    setUseFallbackDictation(false);
+    const recognition = new Ctor();
+    recognition.lang = "fr-FR";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    let finalTranscript = "";
+    recognition.onresult = (event) => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result.isFinal) finalTranscript += result[0].transcript + " ";
+        else interim += result[0].transcript;
+      }
+      setNotes((finalTranscript + interim).trim());
+    };
+    recognition.onerror = (event) => {
+      if (event.error === "not-allowed" || event.error === "permission-denied" || event.error === "service-not-allowed") {
+        setDictationError(MIC_DENIED_MSG);
+        setUseFallbackDictation(true);
+      } else if (event.error === "no-speech") {
+        setDictationError(NO_SPEECH_MSG);
+      } else {
+        setDictationError(UNSUPPORTED_MSG);
+        setUseFallbackDictation(true);
+      }
+      setRecording(false);
+    };
+    recognition.onend = () => setRecording(false);
+    recognitionRef.current = recognition;
+    try {
+      recognition.start();
+      setRecording(true);
+    } catch {
+      setDictationError(UNSUPPORTED_MSG);
+      setUseFallbackDictation(true);
+    }
   }
+
   function stopDictation() {
     setRecording(false);
-    setNotes(FAKE_DICTATION);
+    if (useFallbackDictation) {
+      setNotes(FAKE_DICTATION);
+      return;
+    }
+    recognitionRef.current?.stop();
   }
 
   async function handleSubmit(action: "draft" | "submit") {
@@ -193,16 +284,20 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
         <div className="space-y-sm border border-outline-variant bg-surface-container p-sm">
           {mode === "dictee" ? (
             <div className="space-y-xs">
-              {!recording && !notes && (
+              {dictationError && (
+                <p role="alert" className="text-body-sm text-error">
+                  {dictationError}
+                </p>
+              )}
+              {!recording ? (
                 <button
                   type="button"
                   onClick={startDictation}
                   className="flex items-center gap-xs px-md py-xs border border-outline bg-surface text-primary font-label-md text-label-md hover:bg-surface-container"
                 >
-                  <span aria-hidden="true" className="material-symbols-outlined">mic</span> Dicter
+                  <span aria-hidden="true" className="material-symbols-outlined">mic</span> {notes ? "Redicter" : "Dicter"}
                 </button>
-              )}
-              {recording && (
+              ) : (
                 <div className="flex items-center gap-sm">
                   <span className="flex items-center gap-xs font-label-sm text-label-sm text-error">
                     <span className="h-2 w-2 animate-pulse rounded-full bg-error" aria-hidden="true" /> Enregistrement…
@@ -216,7 +311,7 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
                   </button>
                 </div>
               )}
-              {!recording && notes && (
+              {notes && (
                 <p className="font-body-sm text-body-sm italic text-on-surface-variant">« {notes} »</p>
               )}
             </div>
