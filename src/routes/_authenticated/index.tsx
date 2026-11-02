@@ -22,7 +22,13 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge, BlockerStatusBadge } from "@/components/status-badge";
 import { AudienceBadge } from "@/components/audience-badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { setBlockerStatus, fetchMyBlockers, withdrawBlocker } from "@/lib/blocker-circuit";
+import {
+  setBlockerStatus,
+  fetchMyBlockers,
+  withdrawBlocker,
+  abandonBlocker,
+  fetchBlockersIWithdrew,
+} from "@/lib/blocker-circuit";
 import { BlockerReviewPanel } from "@/components/blocker-review-panel";
 import { BlockerResubmitForm } from "@/components/blocker-resubmit-form";
 import {
@@ -132,6 +138,7 @@ function ManagerSpace() {
   const [rejectErrors, setRejectErrors] = useState<FieldErrors>({});
   const [withdrawingBlocker, setWithdrawingBlocker] = useState<Blocker | null>(null);
   const [editingBlocker, setEditingBlocker] = useState<Blocker | null>(null);
+  const [abandoningId, setAbandoningId] = useState<string | null>(null);
 
   const news = useQuery({ queryKey: ["news"], queryFn: fetchNews, retry: false });
   // Flow 2-7 : seul le manager traite les idées en attente (RLS can_review_team les
@@ -154,6 +161,13 @@ function ManagerSpace() {
     queryKey: ["blockers", "mine", email],
     queryFn: () => fetchMyBlockers(email ?? ""),
     enabled: !!email && !isAdmin,
+    retry: false,
+  });
+  // "Points retirés" (D85) : trace en lecture seule, pour le manager qui a retiré.
+  const withdrawnByMe = useQuery({
+    queryKey: ["blockers", "withdrawn-by-me", email],
+    queryFn: () => fetchBlockersIWithdrew(email ?? ""),
+    enabled: role === "manager" && !!email,
     retry: false,
   });
   const metrics = useQuery({ queryKey: ["metrics"], queryFn: fetchMetrics, retry: false });
@@ -265,6 +279,16 @@ function ManagerSpace() {
     onSuccess: () => {
       toast.success("Point retiré, l'auteur est notifié.");
       setWithdrawingBlocker(null);
+      qc.invalidateQueries({ queryKey: ["blockers"] });
+    },
+    onError,
+  });
+
+  const abandon = useMutation({
+    mutationFn: abandonBlocker,
+    onSuccess: () => {
+      toast.success("Point abandonné.");
+      setAbandoningId(null);
       qc.invalidateQueries({ queryKey: ["blockers"] });
     },
     onError,
@@ -693,18 +717,76 @@ function ManagerSpace() {
                           <p className="whitespace-pre-line">{b.pub_review_note}</p>
                         </div>
                       )}
-                      {needsFix && (
-                        <button
-                          type="button"
-                          onClick={() => setEditingBlocker(b)}
-                          className="font-label-sm text-label-sm uppercase text-primary underline"
-                        >
-                          Corriger et renvoyer
-                        </button>
+                      {needsFix && abandoningId !== b.id && (
+                        <div className="flex gap-sm">
+                          <button
+                            type="button"
+                            onClick={() => setEditingBlocker(b)}
+                            className="font-label-sm text-label-sm uppercase text-primary underline"
+                          >
+                            Corriger et renvoyer
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setAbandoningId(b.id)}
+                            className="font-label-sm text-label-sm uppercase text-error underline"
+                          >
+                            Abandonner le point
+                          </button>
+                        </div>
+                      )}
+                      {needsFix && abandoningId === b.id && (
+                        <div className="space-y-xs border border-error/40 bg-error-container/20 p-sm">
+                          <p className="font-body-sm text-body-sm font-bold text-error">
+                            Cette action est définitive. Le point sera clôturé et ne pourra pas être rouvert.
+                          </p>
+                          <div className="flex gap-xs">
+                            <button
+                              type="button"
+                              onClick={() => setAbandoningId(null)}
+                              className="px-md py-xs border border-outline text-primary font-label-md text-label-md hover:bg-surface-container"
+                            >
+                              Annuler
+                            </button>
+                            <button
+                              type="button"
+                              disabled={abandon.isPending}
+                              onClick={() => abandon.mutate(b.id)}
+                              className="px-md py-xs bg-error text-on-error font-label-md text-label-md disabled:opacity-50"
+                            >
+                              Confirmer l'abandon
+                            </button>
+                          </div>
+                        </div>
                       )}
                     </div>
                   );
                 })}
+              </div>
+            </section>
+          )}
+
+          {/* Points retirés (D85) : trace en lecture seule pour le manager qui a retiré. */}
+          {role === "manager" && withdrawnByMe.data && withdrawnByMe.data.length > 0 && (
+            <section className="col-span-12 min-w-0 bg-surface-container-lowest border border-outline-variant p-md">
+              <h2 className="font-headline-sm text-headline-sm text-primary border-b border-outline-variant pb-sm mb-md">
+                Points retirés
+              </h2>
+              <div className="space-y-xs">
+                {withdrawnByMe.data.map((r) => (
+                  <div key={r.content_id} className="p-sm border border-outline-variant bg-card min-w-0 overflow-hidden space-y-xs">
+                    <div className="flex items-center justify-between gap-sm min-w-0">
+                      <p className="font-body-md text-primary wrap-anywhere">{r.title}</p>
+                      <StatusBadge status={r.current_status} className="shrink-0" />
+                    </div>
+                    <p className="text-[11px] font-label-sm text-on-surface-variant uppercase">
+                      {r.department} • Retiré {timeAgo(r.changed_at)}
+                    </p>
+                    {r.note && (
+                      <p className="text-body-sm text-on-surface-variant italic wrap-anywhere">« {r.note} »</p>
+                    )}
+                  </div>
+                ))}
               </div>
             </section>
           )}

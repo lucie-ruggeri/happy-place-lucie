@@ -238,9 +238,12 @@ export async function reviewSubmission(
 }
 
 export async function fetchBlockers(): Promise<Blocker[]> {
+  // D85 : un point retiré ("a_modifier_manager") ou abandonné ne doit plus apparaître
+  // dans la liste principale du module, pour personne (y compris l'admin).
   const { data, error } = await db
     .from("blockers")
     .select("*")
+    .eq("statut_publication", "publiée")
     .neq("status", "RÉSOLU")
     .order("updated_at", { ascending: false });
   if (error) throw error;

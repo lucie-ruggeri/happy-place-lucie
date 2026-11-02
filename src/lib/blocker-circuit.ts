@@ -72,12 +72,14 @@ export async function setBlockerStatus(input: { id: string; status: string }): P
   return data as string;
 }
 
-/** Points bloquants signalés par l'appelant, tous statuts (pour "Mes points bloquants"). */
+/** Points bloquants signalés par l'appelant, hors abandonnés (D85 : ils sortent de ses listes),
+ * pour "Mes points bloquants". */
 export async function fetchMyBlockers(email: string): Promise<Blocker[]> {
   const { data, error } = await supabase
     .from("blockers")
     .select("*")
     .ilike("created_by_email", email)
+    .neq("statut_publication", "abandonnée")
     .order("created_at", { ascending: false })
     .limit(10);
   if (error) throw error;
@@ -108,4 +110,63 @@ export async function resubmitBlocker(input: {
   });
   if (error) throw error;
   return data as string;
+}
+
+/** Abandon définitif par l'auteur d'un point « à modifier » (D85) : pas de réouverture possible. */
+export async function abandonBlocker(id: string): Promise<string> {
+  const { data, error } = await supabase.rpc("abandon_blocker", { _id: id });
+  if (error) throw error;
+  return data as string;
+}
+
+export type WithdrawnByMeRecord = {
+  content_id: string;
+  title: string;
+  department: string;
+  note: string | null;
+  changed_at: string;
+  current_status: string;
+};
+
+/** Points que l'appelant (manager) a retirés, pour "Points retirés" (lecture seule, trace
+ * historique) : lit public.publication_history (déjà accessible par RLS à son auteur du
+ * changement), pas de nouvelle colonne/migration nécessaire. */
+export async function fetchBlockersIWithdrew(email: string): Promise<WithdrawnByMeRecord[]> {
+  const { data: history, error } = await supabase
+    .from("publication_history")
+    .select("content_id, note, changed_at")
+    .eq("module", "point_bloquant")
+    .eq("new_status", "a_modifier_manager")
+    .ilike("changed_by_email", email)
+    .order("changed_at", { ascending: false })
+    .limit(20);
+  if (error) throw error;
+
+  const seen = new Set<string>();
+  const unique = (history ?? []).filter((h) => {
+    if (seen.has(h.content_id)) return false;
+    seen.add(h.content_id);
+    return true;
+  }).slice(0, 10);
+  if (unique.length === 0) return [];
+
+  const { data: blockers, error: bErr } = await supabase
+    .from("blockers")
+    .select("id, title, department, statut_publication")
+    .in("id", unique.map((h) => h.content_id));
+  if (bErr) throw bErr;
+  const byId = new Map((blockers ?? []).map((b) => [b.id, b]));
+
+  return unique.flatMap((h) => {
+    const b = byId.get(h.content_id);
+    if (!b) return [];
+    return [{
+      content_id: h.content_id,
+      title: b.title,
+      department: b.department,
+      note: h.note,
+      changed_at: h.changed_at,
+      current_status: b.statut_publication,
+    }];
+  });
 }

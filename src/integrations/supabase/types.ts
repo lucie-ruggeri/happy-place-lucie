@@ -312,6 +312,54 @@ export type Database = {
           },
         ]
       }
+      publication_history: {
+        Row: {
+          action: string | null
+          audience: Database["public"]["Enums"]["news_audience"] | null
+          author_email: string | null
+          changed_at: string
+          changed_by_email: string | null
+          content_id: string
+          id: string
+          is_automatic: boolean
+          module: string
+          new_status: Database["public"]["Enums"]["publication_status"]
+          note: string | null
+          old_status: Database["public"]["Enums"]["publication_status"] | null
+          rejection_category: Database["public"]["Enums"]["rejection_category"] | null
+        }
+        Insert: {
+          action?: string | null
+          audience?: Database["public"]["Enums"]["news_audience"] | null
+          author_email?: string | null
+          changed_at?: string
+          changed_by_email?: string | null
+          content_id: string
+          id?: string
+          is_automatic?: boolean
+          module: string
+          new_status: Database["public"]["Enums"]["publication_status"]
+          note?: string | null
+          old_status?: Database["public"]["Enums"]["publication_status"] | null
+          rejection_category?: Database["public"]["Enums"]["rejection_category"] | null
+        }
+        Update: {
+          action?: string | null
+          audience?: Database["public"]["Enums"]["news_audience"] | null
+          author_email?: string | null
+          changed_at?: string
+          changed_by_email?: string | null
+          content_id?: string
+          id?: string
+          is_automatic?: boolean
+          module?: string
+          new_status?: Database["public"]["Enums"]["publication_status"]
+          note?: string | null
+          old_status?: Database["public"]["Enums"]["publication_status"] | null
+          rejection_category?: Database["public"]["Enums"]["rejection_category"] | null
+        }
+        Relationships: []
+      }
       metrics: {
         Row: {
           key: string
@@ -767,6 +815,10 @@ export type Database = {
         Args: { _id: string }
         Returns: number
       }
+      abandon_blocker: {
+        Args: { _id: string }
+        Returns: Database["public"]["Enums"]["publication_status"]
+      }
     }
     Enums: {
       app_role: "admin" | "manager" | "collaborateur"
@@ -790,6 +842,7 @@ export type Database = {
         | "a_modifier_comm"
         | "publiée"
         | "refusée"
+        | "abandonnée"
       rejection_category:
         | "à clarifier"
         | "en désaccord avec les process"
@@ -945,6 +998,7 @@ export const Constants = {
         "a_modifier_comm",
         "publiée",
         "refusée",
+        "abandonnée",
       ],
       rejection_category: [
         "à clarifier",

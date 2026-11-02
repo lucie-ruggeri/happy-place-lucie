@@ -70,13 +70,23 @@ Labels centralisés dans `src/components/status-badge.tsx` (`NEWS_STATUS_LABELS`
 | Actu | Mon équipe | Manager | Publiée tout de suite |
 | Actu | Plusieurs équipes | Manager, puis relecteur Comm | Relecteur Comm |
 
-Pour le module Actu, `getCircuit` **reflète** la logique déjà en base (`public.submit_news`/`public.review_news`, migration `20261030120100_news_v2_audience_circuits_rls.sql`) — elle ne la duplique pas en vue d'un vrai flow : aucun formulaire de soumission réel n'est encore branché (hors périmètre de cette étape). Pour les 3 autres modules, aucune infrastructure BDD de circuit n'existe encore.
+Pour le module Actu, `getCircuit` **reflète** la logique déjà en base (`public.submit_news`/`public.review_news`, migration `20261030120100_news_v2_audience_circuits_rls.sql`) — elle ne la duplique pas en vue d'un vrai flow : aucun formulaire de soumission réel n'est encore branché (hors périmètre de cette étape). Pour Point bloquant, une infrastructure BDD réelle existe désormais (voir « Points bloquants — R8 » ci-dessous) ; pour Idée et Indicateur, aucune n'existe encore.
 
 ### Règles transverses
 
 - Pas d'auto-validation : un relecteur ne valide jamais son propre contenu (message : « Un autre relecteur doit valider : tu ne peux pas valider ton propre contenu. »).
 - Trois actions pour un valideur : Valider et publier · Demander une modification (commentaire obligatoire) · Refuser (motif en liste `à clarifier` / `en désaccord avec les process` / `doublon` / `autre` + commentaire ≤ 500 caractères, définitif).
 - Si l'audience change pendant une correction, le circuit est recalculé (`reviewed_audience` vs `audience` dans `public.news`).
+
+## Points bloquants — R8 (contrôle après coup, décision D85)
+
+Un manager peut retirer après coup un point publié par un collaborateur de son équipe (`withdraw_blocker`, commentaire obligatoire) : le point passe en `a_modifier_manager`, disparaît de la liste principale du module pour tout le monde (y compris l'admin, `fetchBlockers` filtre `statut_publication = 'publiée'`), et apparaît dans « Mes points bloquants » de l'auteur avec le commentaire. Trois issues pour l'auteur :
+
+1. **Corriger et republier** (`resubmit_blocker`) — retour à `publiée`.
+2. **Abandonner** (`abandon_blocker`) — statut `abandonnée` (valeur d'ENUM ajoutée dans sa propre migration, voir `20261102110000_*`), définitif : aucune fonction ne permet d'y revenir. Sort de toutes les listes (y compris « Mes points bloquants »), reste dans l'historique (`public.publication_history`, déjà alimenté par le trigger existant, aucune colonne ajoutée).
+3. **Ne rien faire** — un seul rappel après un délai paramétrable (3 jours par défaut, `private.automation_config`) : **prévu, pas encore livré** (sous-commit 3c).
+
+Un point peut être retiré à nouveau après republication, sans limite en V1. Le manager retrouve la trace de ses propres retraits dans le bloc « Points retirés » (lecture seule, lit `public.publication_history` par `changed_by_email`, pas de colonne dédiée).
 
 ## Charte graphique
 
@@ -102,6 +112,7 @@ Pour le module Actu, `getCircuit` **reflète** la logique déjà en base (`publi
 - **Pas de case « Relecteur Comm » éditable dans l'interface admin** (`manage.users.tsx`) : la colonne `allowed_users.is_reviewer` existe et est câblée pour les 6 personas (seed), mais aucun écran ne permet encore à Karim de la cocher pour un autre compte.
 - **L'admin peut encore créer dans `submissions` et `metrics` côté base** (D26 : l'admin ne publie rien, ne garde que le paramétrage). Policies historiques jamais fermées : `"Allowed create pending submissions"` (aucun filtre de rôle) et `"Admins manage submissions"` (`FOR ALL`, jamais supprimée depuis le 1er oct.) sur `submissions` ; `"Admin write"` (`FOR ALL`) sur `metrics`. Les onglets « Soumissions » et « Indicateurs » de `/manage` sont désactivés côté interface (routes redirigées vers `/manage/users`), mais la base elle-même laisse encore passer une création admin. À fermer avec la migration des Idées et des Indicateurs (migration en réserve), pas avant — modifier `submissions`/`metrics` est hors périmètre de la tranche Points bloquants.
 - **Aucun rôle ne peut modifier le NPS dans l'interface depuis la mise en lecture seule pour l'admin** ; la saisie par les managers viendra avec la migration des Indicateurs (après le jury).
+- **R8, point 3 (rappel unique après un retrait) pas encore livré** : si l'auteur d'un point retiré ne fait rien, aucune relance n'est envoyée pour l'instant. Prévu pour le sous-commit 3c (cron + colonne `withdraw_reminder_at` + clé dans `private.automation_config`) ; livré seulement si le temps le permet avant la mise en ligne du 2 nov.
 
 ## Pour aller plus loin
 

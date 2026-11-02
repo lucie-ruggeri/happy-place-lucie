@@ -1,9 +1,12 @@
 import type { Database } from "@/integrations/supabase/types";
 
 type NewsStatus = Database["public"]["Enums"]["news_status"];
+// "abandonnée" n'existe que sur publication_status (blockers), jamais sur news_status
+// (types Postgres séparés, voir CLAUDE.md) : StatusBadge est réutilisé pour les deux colonnes.
+type DisplayStatus = NewsStatus | "abandonnée";
 
 // Les 7 statuts (CLAUDE.md) : « brouillon » = En rédaction en base.
-export const NEWS_STATUS_LABELS: Record<NewsStatus, string> = {
+export const NEWS_STATUS_LABELS: Record<DisplayStatus, string> = {
   brouillon: "En rédaction",
   a_valider_manager: "À valider (manager)",
   a_valider_comm: "À valider (Comm)",
@@ -11,9 +14,10 @@ export const NEWS_STATUS_LABELS: Record<NewsStatus, string> = {
   a_modifier_comm: "À modifier (Comm)",
   publiée: "Publié",
   refusée: "Refusé",
+  abandonnée: "Abandonné",
 };
 
-const STATUS_STYLES: Record<NewsStatus, string> = {
+const STATUS_STYLES: Record<DisplayStatus, string> = {
   brouillon: "bg-surface-container-high text-on-surface-variant",
   a_valider_manager: "bg-secondary-fixed text-on-tertiary-fixed",
   a_valider_comm: "bg-secondary-fixed text-on-tertiary-fixed",
@@ -21,10 +25,11 @@ const STATUS_STYLES: Record<NewsStatus, string> = {
   a_modifier_comm: "bg-tertiary-fixed text-on-tertiary-fixed",
   publiée: "bg-success-container text-on-success-container",
   refusée: "bg-error-container text-on-error-container",
+  abandonnée: "bg-surface-container-high text-on-surface-variant",
 };
 
 export function StatusBadge({ status, className = "" }: { status: string; className?: string }) {
-  const known = status in NEWS_STATUS_LABELS ? (status as NewsStatus) : null;
+  const known = status in NEWS_STATUS_LABELS ? (status as DisplayStatus) : null;
   const label = known ? NEWS_STATUS_LABELS[known] : status;
   const style = known ? STATUS_STYLES[known] : "bg-surface-container-high text-on-surface-variant";
   return (
