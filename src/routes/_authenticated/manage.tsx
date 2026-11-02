@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BrandHeader } from "@/components/brand-header";
+import { BackLink } from "@/components/back-link";
 import { processAttachmentDeletionQueue } from "@/lib/dashboard";
 
 export const Route = createFileRoute("/_authenticated/manage")({
@@ -52,19 +53,12 @@ function ManageLayout() {
     <div className="bg-background text-on-surface font-body-md min-h-screen">
       <BrandHeader />
       <main className="w-full max-w-interface mx-auto p-sm md:p-md space-y-md">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-sm">
-          <div className="space-y-1">
-            <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">
-              Gestion des données
-            </p>
-            <h1 className="font-headline-lg text-headline-lg text-primary">Gestion des données</h1>
-          </div>
-          <Link
-            to="/"
-            className="px-md py-xs border border-outline bg-surface text-primary font-label-md text-label-md hover:bg-surface-container"
-          >
-            ← RETOUR À LA VUE D'ENSEMBLE
-          </Link>
+        <BackLink to="/" />
+        <div className="space-y-1">
+          <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">
+            Gestion des données
+          </p>
+          <h1 className="font-headline-lg text-headline-lg text-primary">Gestion des données</h1>
         </div>
 
         <nav className="flex flex-wrap gap-xs border-b border-outline-variant pb-sm">

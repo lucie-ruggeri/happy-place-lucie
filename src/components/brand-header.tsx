@@ -42,7 +42,12 @@ export function BrandHeader({ profile }: { profile?: PersonaSwitcherProfile } = 
               </Link>
             )
           )}
-          <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">Happy Place</span>
+          <Link
+            to="/"
+            className="font-label-sm text-label-sm uppercase text-on-surface-variant hover:text-primary hover:underline"
+          >
+            Happy Place
+          </Link>
         </div>
       </div>
     </header>

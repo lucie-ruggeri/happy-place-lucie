@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchOwnRole, signOut, type AppRole } from "@/lib/auth";
 import { BrandHeader } from "@/components/brand-header";
+import { BackLink } from "@/components/back-link";
 import { Button } from "@/components/ui/button";
 
 const PERSONAS = [
@@ -146,6 +147,8 @@ function ChoisirRolePage() {
       <BrandHeader />
       <main className="flex flex-1 items-center justify-center px-md py-lg">
         <section className="w-[min(100%,34rem)] border border-outline-variant bg-surface-container-lowest p-lg shadow-sm">
+          {/* Pas de retour si l'on arrive ici sans profil : il n'y a pas encore de tableau de bord. */}
+          {current && <BackLink to="/" className="mb-md" />}
           <div className="space-y-xs">
             <p className="font-label-sm text-label-sm uppercase text-on-surface-variant">Personas de démonstration</p>
             <h1 className="font-headline-lg text-headline-lg text-primary">Entrer dans une persona</h1>

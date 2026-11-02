@@ -1,5 +1,6 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { BrandHeader } from "@/components/brand-header";
+import { BackLink } from "@/components/back-link";
 import { NewsEditor } from "@/components/news-editor";
 
 export const Route = createFileRoute("/_authenticated/nouvelle-actu")({
@@ -18,6 +19,7 @@ function NouvelleActuPage() {
     <div className="bg-background text-on-surface font-body-md min-h-screen">
       <BrandHeader profile={Route.useRouteContext()} />
       <main className="w-full max-w-interface mx-auto p-sm md:p-md space-y-md">
+        <BackLink to="/" />
         <div className="space-y-1">
           <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Actus</p>
           <h1 className="font-headline-lg text-headline-lg text-primary">Nouvelle actu</h1>

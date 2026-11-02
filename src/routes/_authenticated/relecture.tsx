@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { BrandHeader } from "@/components/brand-header";
+import { BackLink } from "@/components/back-link";
 import { AudienceBadge } from "@/components/audience-badge";
 import { NewsReviewPanel } from "@/components/news-review-panel";
 import { reviewNews } from "@/lib/news-circuit";
@@ -51,6 +52,7 @@ function RelecturePage() {
     <div className="bg-background text-on-surface font-body-md min-h-screen">
       <BrandHeader profile={Route.useRouteContext()} />
       <main className="w-full max-w-interface mx-auto p-sm md:p-md space-y-md">
+        <BackLink to="/" />
         <div className="space-y-1">
           <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">
             Relecture Comm
