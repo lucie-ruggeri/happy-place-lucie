@@ -849,6 +849,11 @@ function ManagerSpace() {
                           <p className="whitespace-pre-line">{b.pub_review_note}</p>
                         </div>
                       )}
+                      {needsFix && b.withdraw_reminder_at && (
+                        <p className="font-label-sm text-label-sm uppercase text-on-surface-variant">
+                          Rappel envoyé {timeAgo(b.withdraw_reminder_at)}
+                        </p>
+                      )}
                       {needsFix && abandoningId !== b.id && (
                         <div className="flex gap-sm">
                           <button

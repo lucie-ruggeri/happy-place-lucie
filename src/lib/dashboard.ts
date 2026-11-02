@@ -66,6 +66,7 @@ export type Blocker = {
   published_at?: string | null;
   reviewed_audience?: string | null;
   pub_review_note?: string | null;
+  withdraw_reminder_at?: string | null;
 };
 
 export type Metric = {

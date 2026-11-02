@@ -128,6 +128,7 @@ export type Database = {
           team: string | null
           title: string
           updated_at: string
+          withdraw_reminder_at: string | null
         }
         Insert: {
           audience?: Database["public"]["Enums"]["news_audience"]
@@ -145,6 +146,7 @@ export type Database = {
           team?: string | null
           title: string
           updated_at?: string
+          withdraw_reminder_at?: string | null
         }
         Update: {
           audience?: Database["public"]["Enums"]["news_audience"]
@@ -162,6 +164,7 @@ export type Database = {
           team?: string | null
           title?: string
           updated_at?: string
+          withdraw_reminder_at?: string | null
         }
         Relationships: [
           {
