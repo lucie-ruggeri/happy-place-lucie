@@ -142,7 +142,7 @@ function ManagerSpace() {
   const mine = useQuery({
     queryKey: ["submissions", "mine", email],
     queryFn: () => fetchMySubmissions(email ?? ""),
-    enabled: !!email,
+    enabled: !!email && !isAdmin,
     retry: false,
   });
   const blockers = useQuery({ queryKey: ["blockers"], queryFn: fetchBlockers, retry: false });
@@ -466,6 +466,8 @@ function ManagerSpace() {
             </div>
           </section>
 
+          {/* Mes actus : l'admin n'a aucun contenu à lui (D26) */}
+          {!isAdmin && (
           <section className="col-span-12 lg:col-span-6 min-w-0 bg-surface-container-lowest border border-outline-variant p-md flex flex-col gap-sm">
             <div className="flex items-center justify-between border-b border-outline-variant pb-sm">
               <h2 className="font-headline-sm text-headline-sm text-primary">Mes actus</h2>
@@ -531,6 +533,7 @@ function ManagerSpace() {
               })}
             </div>
           </section>
+          )}
 
           {/* Idées de mon équipe à traiter (flow 2-7 : seul le manager de l'équipe traite) */}
           {role === "manager" && (
@@ -617,8 +620,8 @@ function ManagerSpace() {
           </section>
           )}
 
-          {/* Mes idées */}
-          {mine.data && mine.data.length > 0 && (
+          {/* Mes idées : l'admin n'a aucun contenu à lui (D26) */}
+          {!isAdmin && mine.data && mine.data.length > 0 && (
             <section className="col-span-12 min-w-0 bg-surface-container-lowest border border-outline-variant p-md">
               <h2 className="font-headline-sm text-headline-sm text-primary border-b border-outline-variant pb-sm mb-md">
                 Mes idées
