@@ -201,3 +201,12 @@ export async function fetchBlockerFollowerCounts(): Promise<Map<string, number>>
   if (error) throw error;
   return new Map((data ?? []).map((r) => [r.blocker_id, r.follower_count]));
 }
+
+/** Points que l'appelant suit déjà, pour afficher "Suivre ce point" ou "Tu suis ce point" sur
+ * toute une liste en un seul appel. blocker_followers_select ne laisse lire QUE sa propre ligne
+ * (ou tout, pour l'admin) : pas de WHERE nécessaire, la RLS filtre déjà à "moi". */
+export async function fetchMyFollowedBlockerIds(): Promise<Set<string>> {
+  const { data, error } = await supabase.from("blocker_followers").select("blocker_id");
+  if (error) throw error;
+  return new Set((data ?? []).map((r) => r.blocker_id));
+}

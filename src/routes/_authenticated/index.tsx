@@ -30,6 +30,8 @@ import {
   abandonBlocker,
   fetchBlockersIWithdrew,
   fetchBlockerFollowerCounts,
+  fetchMyFollowedBlockerIds,
+  followBlocker,
   followerCountLabel,
 } from "@/lib/blocker-circuit";
 import { BlockerReviewPanel } from "@/components/blocker-review-panel";
@@ -163,6 +165,13 @@ function ManagerSpace() {
   const followerCounts = useQuery({
     queryKey: ["blockers", "follower-counts"],
     queryFn: fetchBlockerFollowerCounts,
+    retry: false,
+  });
+  // Points déjà suivis par l'appelant : un seul appel, blocker_followers_select ne lit que "moi".
+  const myFollows = useQuery({
+    queryKey: ["blockers", "my-follows"],
+    queryFn: fetchMyFollowedBlockerIds,
+    enabled: !isAdmin,
     retry: false,
   });
   // Mes points bloquants : l'admin n'a aucun contenu à lui (D26), voir "Mes actus"/"Mes idées".
@@ -299,6 +308,20 @@ function ManagerSpace() {
       toast.success("Point abandonné.");
       setAbandoningId(null);
       qc.invalidateQueries({ queryKey: ["blockers"] });
+    },
+    onError,
+  });
+
+  const follow = useMutation({
+    mutationFn: followBlocker,
+    onSuccess: (n, id) => {
+      toast.success(`Tu suis ce point · ${followerCountLabel(n)}.`);
+      qc.setQueryData<Map<string, number>>(["blockers", "follower-counts"], (old) => {
+        const next = new Map(old ?? []);
+        next.set(id, n);
+        return next;
+      });
+      qc.setQueryData<Set<string>>(["blockers", "my-follows"], (old) => new Set(old).add(id));
     },
     onError,
   });
@@ -773,9 +796,27 @@ function ManagerSpace() {
                       />
                       <div className="min-w-0">
                         <p className="font-body-md text-primary font-bold wrap-anywhere">{b.title}</p>
-                        <p className="text-[11px] font-label-sm text-on-surface-variant">
-                          {followerCountLabel(followerCounts.data?.get(b.id) ?? 0)}
-                        </p>
+                        <div className="flex items-center gap-xs">
+                          <p className="text-[11px] font-label-sm text-on-surface-variant">
+                            {followerCountLabel(followerCounts.data?.get(b.id) ?? 0)}
+                          </p>
+                          {!isAdmin && (
+                            myFollows.data?.has(b.id) ? (
+                              <span className="text-[11px] font-label-sm text-on-surface-variant italic">
+                                Tu suis ce point
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled={follow.isPending}
+                                onClick={() => follow.mutate(b.id)}
+                                className="text-[11px] font-label-sm text-primary underline disabled:opacity-50"
+                              >
+                                Suivre ce point
+                              </button>
+                            )
+                          )}
+                        </div>
                         <p className="text-body-sm text-on-surface-variant wrap-anywhere">{b.description}</p>
                         <div className="flex items-center gap-sm mt-xs flex-wrap">
                           <span className="text-[11px] font-label-sm bg-surface-container-highest px-xs py-0.5">
