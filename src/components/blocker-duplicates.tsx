@@ -1,13 +1,13 @@
 import type { Blocker } from "@/lib/dashboard";
 import { timeAgo } from "@/lib/dashboard";
 
-const SEVERITY_LABELS: Record<string, string> = {
+export const SEVERITY_LABELS: Record<string, string> = {
   critical: "Critique",
   warning: "Avertissement",
   info: "Info",
 };
 
-const SEVERITY_STYLES: Record<string, string> = {
+export const SEVERITY_STYLES: Record<string, string> = {
   critical: "bg-error-container text-on-error-container",
   warning: "bg-secondary-fixed text-on-tertiary-fixed",
   info: "bg-surface-container text-on-surface-variant",

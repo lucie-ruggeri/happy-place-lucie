@@ -11,7 +11,7 @@ import { blockerCreateSchema, validate, type FieldErrors } from "@/lib/manage-sc
 import { createBlockerReport, fetchBlockerDuplicates, fetchTools, followBlocker } from "@/lib/blocker-circuit";
 import type { Blocker } from "@/lib/dashboard";
 
-const SEVERITY_OPTIONS = [
+export const SEVERITY_OPTIONS = [
   { value: "critical", label: "Critique", hint: "Bloque le travail d'une équipe ou un flux majeur" },
   { value: "warning", label: "Avertissement", hint: "Gêne le travail quotidien mais contournement possible" },
   { value: "info", label: "Info", hint: "Remarque mineure ou question de configuration" },

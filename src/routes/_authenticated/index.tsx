@@ -22,7 +22,9 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge, BlockerStatusBadge } from "@/components/status-badge";
 import { AudienceBadge } from "@/components/audience-badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { setBlockerStatus } from "@/lib/blocker-circuit";
+import { setBlockerStatus, fetchMyBlockers, withdrawBlocker } from "@/lib/blocker-circuit";
+import { BlockerReviewPanel } from "@/components/blocker-review-panel";
+import { BlockerResubmitForm } from "@/components/blocker-resubmit-form";
 import {
   fetchBlockers,
   fetchMetrics,
@@ -34,6 +36,7 @@ import {
   REJECTION_CATEGORIES,
   type News,
   type Submission,
+  type Blocker,
   reviewSubmission,
   submitIdea,
   timeAgo,
@@ -127,6 +130,8 @@ function ManagerSpace() {
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [rejectForm, setRejectForm] = useState({ rejection_category: "", rejection_note: "" });
   const [rejectErrors, setRejectErrors] = useState<FieldErrors>({});
+  const [withdrawingBlocker, setWithdrawingBlocker] = useState<Blocker | null>(null);
+  const [editingBlocker, setEditingBlocker] = useState<Blocker | null>(null);
 
   const news = useQuery({ queryKey: ["news"], queryFn: fetchNews, retry: false });
   // Flow 2-7 : seul le manager traite les idées en attente (RLS can_review_team les
@@ -144,6 +149,13 @@ function ManagerSpace() {
     retry: false,
   });
   const blockers = useQuery({ queryKey: ["blockers"], queryFn: fetchBlockers, retry: false });
+  // Mes points bloquants : l'admin n'a aucun contenu à lui (D26), voir "Mes actus"/"Mes idées".
+  const myBlockers = useQuery({
+    queryKey: ["blockers", "mine", email],
+    queryFn: () => fetchMyBlockers(email ?? ""),
+    enabled: !!email && !isAdmin,
+    retry: false,
+  });
   const metrics = useQuery({ queryKey: ["metrics"], queryFn: fetchMetrics, retry: false });
   // Noms d'équipe existants : permet de reproduire côté UI la règle de set_blocker_status
   // ("l'admin agit seulement si le pôle du point ne correspond à aucune équipe").
@@ -163,6 +175,19 @@ function ManagerSpace() {
     if (role === "manager") return (myTeams.data ?? []).some((t) => t.toLowerCase() === dept);
     if (isAdmin) return !(teamNames.data ?? []).includes(dept);
     return false;
+  }
+
+  // Flow 2-8 (R8) : contrôle après coup, réservé au manager de l'équipe de
+  // l'AUTEUR (team), pas du pôle responsable (department) — withdraw_blocker
+  // refuse de toute façon si l'auteur n'est pas un collaborateur ou si le point
+  // n'est pas publié, voir le message d'erreur renvoyé par la base.
+  function canWithdrawBlocker(b: Blocker) {
+    return (
+      role === "manager" &&
+      !!b.team &&
+      (myTeams.data ?? []).some((t) => t.toLowerCase() === (b.team ?? "").toLowerCase()) &&
+      (b.statut_publication ?? "publiée") === "publiée"
+    );
   }
 
   const exportReport = useMutation({
@@ -230,6 +255,16 @@ function ManagerSpace() {
     mutationFn: setBlockerStatus,
     onSuccess: () => {
       toast.success("Statut mis à jour");
+      qc.invalidateQueries({ queryKey: ["blockers"] });
+    },
+    onError,
+  });
+
+  const withdraw = useMutation({
+    mutationFn: withdrawBlocker,
+    onSuccess: () => {
+      toast.success("Point retiré, l'auteur est notifié.");
+      setWithdrawingBlocker(null);
       qc.invalidateQueries({ queryKey: ["blockers"] });
     },
     onError,
@@ -635,6 +670,45 @@ function ManagerSpace() {
             </section>
           )}
 
+          {/* Mes points bloquants : l'admin n'a aucun contenu à lui (D26) */}
+          {!isAdmin && myBlockers.data && myBlockers.data.length > 0 && (
+            <section className="col-span-12 min-w-0 bg-surface-container-lowest border border-outline-variant p-md">
+              <h2 className="font-headline-sm text-headline-sm text-primary border-b border-outline-variant pb-sm mb-md">
+                Mes points bloquants
+              </h2>
+              <div className="space-y-xs">
+                {myBlockers.data.map((b) => {
+                  const needsFix = b.statut_publication === "a_modifier_manager";
+                  return (
+                    <div key={b.id} className="p-sm border border-outline-variant bg-card min-w-0 overflow-hidden space-y-xs">
+                      <div className="flex items-center justify-between gap-sm min-w-0">
+                        <p className="font-body-md text-primary wrap-anywhere">{b.title}</p>
+                        <StatusBadge status={b.statut_publication ?? "publiée"} className="shrink-0" />
+                      </div>
+                      <p className="text-[11px] font-label-sm text-on-surface-variant uppercase">
+                        {b.department} • {timeAgo(b.updated_at)}
+                      </p>
+                      {needsFix && b.pub_review_note && (
+                        <div className="p-xs bg-error-container text-on-error-container text-body-sm wrap-anywhere">
+                          <p className="whitespace-pre-line">{b.pub_review_note}</p>
+                        </div>
+                      )}
+                      {needsFix && (
+                        <button
+                          type="button"
+                          onClick={() => setEditingBlocker(b)}
+                          className="font-label-sm text-label-sm uppercase text-primary underline"
+                        >
+                          Corriger et renvoyer
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
           <ValidatedSubmissions
             role={role}
             email={myEmail}
@@ -727,6 +801,15 @@ function ManagerSpace() {
                         </p>
                       </div>
                     )}
+                    {canWithdrawBlocker(b) && (
+                      <button
+                        type="button"
+                        onClick={() => setWithdrawingBlocker(b)}
+                        className="ml-sm shrink-0 font-label-sm text-label-sm text-error underline"
+                      >
+                        Retirer
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -802,6 +885,23 @@ function ManagerSpace() {
         }
         onClose={() => setReviewingNews(null)}
       />
+      <BlockerReviewPanel
+        blocker={withdrawingBlocker}
+        pending={withdraw.isPending}
+        onWithdraw={(note) => withdrawingBlocker && withdraw.mutate({ id: withdrawingBlocker.id, note })}
+        onClose={() => setWithdrawingBlocker(null)}
+      />
+      {editingBlocker && (
+        <Modal title="Corriger et renvoyer" onClose={() => setEditingBlocker(null)}>
+          <BlockerResubmitForm
+            blocker={editingBlocker}
+            onDone={() => {
+              setEditingBlocker(null);
+              qc.invalidateQueries({ queryKey: ["blockers"] });
+            }}
+          />
+        </Modal>
+      )}
       {editingNews && (
         <Modal
           title={editingNews.status === "brouillon" ? "Reprendre le brouillon" : "Corriger et renvoyer"}

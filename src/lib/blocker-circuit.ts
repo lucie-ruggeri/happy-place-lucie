@@ -71,3 +71,41 @@ export async function setBlockerStatus(input: { id: string; status: string }): P
   if (error) throw error;
   return data as string;
 }
+
+/** Points bloquants signalés par l'appelant, tous statuts (pour "Mes points bloquants"). */
+export async function fetchMyBlockers(email: string): Promise<Blocker[]> {
+  const { data, error } = await supabase
+    .from("blockers")
+    .select("*")
+    .ilike("created_by_email", email)
+    .order("created_at", { ascending: false })
+    .limit(10);
+  if (error) throw error;
+  return (data ?? []) as Blocker[];
+}
+
+/** Retrait après coup par un manager de l'équipe de l'auteur collaborateur (flow 2-8, R8). */
+export async function withdrawBlocker(input: { id: string; note: string }): Promise<string> {
+  const { data, error } = await supabase.rpc("withdraw_blocker", { _id: input.id, _note: input.note });
+  if (error) throw error;
+  return data as string;
+}
+
+/** L'auteur corrige et republie directement un point retiré (flow 2-8, R8). */
+export async function resubmitBlocker(input: {
+  id: string;
+  title: string;
+  description: string;
+  severity: "critical" | "warning" | "info";
+  audience: string;
+}): Promise<string> {
+  const { data, error } = await supabase.rpc("resubmit_blocker", {
+    _id: input.id,
+    _title: input.title,
+    _description: input.description,
+    _severity: input.severity as never,
+    _audience: input.audience as never,
+  });
+  if (error) throw error;
+  return data as string;
+}
