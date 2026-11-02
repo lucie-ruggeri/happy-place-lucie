@@ -20,6 +20,7 @@ import { NewsImage, NewsLinks } from "@/components/news-media";
 import { BlockerArchive, ValidatedSubmissions } from "@/components/dashboard-extras";
 import { Button } from "@/components/ui/button";
 import { StatusBadge, BlockerStatusBadge } from "@/components/status-badge";
+import { SEVERITY_LABELS } from "@/components/blocker-duplicates";
 import { AudienceBadge } from "@/components/audience-badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -750,9 +751,10 @@ function ManagerSpace() {
                 return (
                   <div
                     key={b.id}
-                    className={`${critical ? "accent-bar " : ""}bg-card border border-outline-variant p-sm flex items-start justify-between`}
+                    className={`${critical ? "accent-bar " : ""}bg-card border border-outline-variant p-sm grid grid-cols-[minmax(0,1fr)_200px_100px] gap-md items-start`}
                   >
-                    <div className="flex gap-md">
+                    {/* Colonne 1 (flexible) : titre, description, pôle, gravité, date */}
+                    <div className="flex gap-md min-w-0">
                       <Icon
                         name={critical ? "error" : "warning"}
                         className={
@@ -761,12 +763,15 @@ function ManagerSpace() {
                             : "text-secondary mt-1"
                         }
                       />
-                      <div>
-                        <p className="font-body-md text-primary font-bold">{b.title}</p>
-                        <p className="text-body-sm text-on-surface-variant">{b.description}</p>
-                        <div className="flex items-center gap-sm mt-xs">
+                      <div className="min-w-0">
+                        <p className="font-body-md text-primary font-bold wrap-anywhere">{b.title}</p>
+                        <p className="text-body-sm text-on-surface-variant wrap-anywhere">{b.description}</p>
+                        <div className="flex items-center gap-sm mt-xs flex-wrap">
                           <span className="text-[11px] font-label-sm bg-surface-container-highest px-xs py-0.5">
                             {b.department}
+                          </span>
+                          <span className="text-[11px] font-label-sm text-on-surface-variant">
+                            {SEVERITY_LABELS[b.severity] ?? b.severity}
                           </span>
                           <span className="text-[11px] font-label-sm text-on-surface-variant">
                             Mis à jour {timeAgo(b.updated_at)}
@@ -774,41 +779,47 @@ function ManagerSpace() {
                         </div>
                       </div>
                     </div>
-                    {canAdvance ? (
-                      <select
-                        aria-label={`Statut de ${b.title}`}
-                        value={b.status}
-                        disabled={setBlocker.isPending}
-                        onChange={(e) => setBlocker.mutate({ id: b.id, status: e.target.value })}
-                        className={`bg-transparent border-none text-xs font-label-sm focus:outline-none cursor-pointer disabled:opacity-50 ${critical ? "text-error" : "text-on-surface-variant"}`}
-                      >
-                        <option>OUVERT</option>
-                        <option>EN COURS</option>
-                        <option>SURVEILLANCE</option>
-                        <option
-                          disabled={b.status === "OUVERT"}
-                          title={b.status === "OUVERT" ? "Passe d'abord par EN COURS" : undefined}
+                    {/* Colonne 2 (largeur fixe, alignée à gauche) : statut de traitement */}
+                    <div className="flex flex-col items-start gap-1 min-w-0">
+                      {canAdvance ? (
+                        <select
+                          aria-label={`Statut de ${b.title}`}
+                          value={b.status}
+                          disabled={setBlocker.isPending}
+                          onChange={(e) => setBlocker.mutate({ id: b.id, status: e.target.value })}
+                          className={`bg-transparent border-none text-xs font-label-sm focus:outline-none cursor-pointer disabled:opacity-50 ${critical ? "text-error" : "text-on-surface-variant"}`}
                         >
-                          RÉSOLU
-                        </option>
-                      </select>
-                    ) : (
-                      <div className="flex flex-col items-end gap-1 text-right max-w-[160px]">
-                        <BlockerStatusBadge status={b.status} />
-                        <p className="font-label-sm text-label-sm text-on-surface-variant">
-                          Seuls les managers du pôle responsable font avancer ce point.
-                        </p>
-                      </div>
-                    )}
-                    {canWithdrawBlocker(b) && (
-                      <button
-                        type="button"
-                        onClick={() => setWithdrawingBlocker(b)}
-                        className="ml-sm shrink-0 font-label-sm text-label-sm text-error underline"
-                      >
-                        Retirer
-                      </button>
-                    )}
+                          <option>OUVERT</option>
+                          <option>EN COURS</option>
+                          <option>SURVEILLANCE</option>
+                          <option
+                            disabled={b.status === "OUVERT"}
+                            title={b.status === "OUVERT" ? "Passe d'abord par EN COURS" : undefined}
+                          >
+                            RÉSOLU
+                          </option>
+                        </select>
+                      ) : (
+                        <>
+                          <BlockerStatusBadge status={b.status} />
+                          <p className="font-label-sm text-label-sm text-on-surface-variant">
+                            Seuls les managers du pôle responsable font avancer ce point.
+                          </p>
+                        </>
+                      )}
+                    </div>
+                    {/* Colonne 3 (largeur fixe, alignée à droite) : action, ou cellule vide */}
+                    <div className="flex justify-end">
+                      {canWithdrawBlocker(b) && (
+                        <button
+                          type="button"
+                          onClick={() => setWithdrawingBlocker(b)}
+                          className="shrink-0 font-label-sm text-label-sm text-error underline"
+                        >
+                          Retirer
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
