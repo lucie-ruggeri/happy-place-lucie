@@ -1,9 +1,13 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { BrandHeader } from "@/components/brand-header";
 import { NewsEditor } from "@/components/news-editor";
 
 export const Route = createFileRoute("/_authenticated/nouvelle-actu")({
   head: () => ({ meta: [{ title: "Nouvelle actu — Happy Place" }] }),
+  beforeLoad: ({ context }) => {
+    // Seuls collaborateurs et managers publient des actus (D26, policy news_insert) : l'admin n'a pas ce droit.
+    if (context.role === "admin") throw redirect({ to: "/" });
+  },
   component: NouvelleActuPage,
 });
 

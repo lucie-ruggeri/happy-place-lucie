@@ -305,14 +305,29 @@ function ManagerSpace() {
         <div className="bento-grid">
           {/* Les 4 modules : Actus actif, les autres bientôt disponibles */}
           <section className="col-span-12 grid grid-cols-2 gap-sm sm:grid-cols-4">
-            <Link
-              to="/nouvelle-actu"
-              className="flex flex-col gap-xs border-2 border-primary bg-surface-container-lowest p-sm hover:bg-surface-container"
-            >
-              <Icon name="article" className="text-primary" />
-              <span className="font-headline-sm text-headline-sm text-primary">Actus</span>
-              <span className="font-label-sm text-label-sm uppercase text-primary">+ Nouvelle actu</span>
-            </Link>
+            {isAdmin ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="flex cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                      <Icon name="article" className="text-on-surface-variant" />
+                      <span className="font-headline-sm text-headline-sm text-primary">Actus</span>
+                      <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Nouvelle actu</span>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>Le compte admin ne publie pas d'actu.</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <Link
+                to="/nouvelle-actu"
+                className="flex flex-col gap-xs border-2 border-primary bg-surface-container-lowest p-sm hover:bg-surface-container"
+              >
+                <Icon name="article" className="text-primary" />
+                <span className="font-headline-sm text-headline-sm text-primary">Actus</span>
+                <span className="font-label-sm text-label-sm uppercase text-primary">+ Nouvelle actu</span>
+              </Link>
+            )}
             {isAdmin ? (
               <TooltipProvider>
                 <Tooltip>
