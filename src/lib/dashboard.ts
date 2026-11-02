@@ -284,14 +284,6 @@ export async function fetchValidatedSubmissions(): Promise<ValidatedSubmission[]
     .sort((a, b) => (b.validated_at ?? b.created_at).localeCompare(a.validated_at ?? a.created_at));
 }
 
-export async function updateBlockerStatus(input: { id: string; status: string }) {
-  const { error } = await db
-    .from("blockers")
-    .update({ status: input.status as Enums["blocker_status"], updated_at: new Date().toISOString() })
-    .eq("id", input.id);
-  if (error) throw error;
-}
-
 export async function fetchMetrics(): Promise<Metric[]> {
   const { data, error } = await db.from("metrics_with_trend").select("*");
   if (error) throw error;

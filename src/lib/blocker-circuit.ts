@@ -60,3 +60,14 @@ export async function followBlocker(id: string): Promise<number> {
   if (error) throw error;
   return data as number;
 }
+
+/** Fait avancer le statut de traitement (OUVERT → RÉSOLU) : seuls les managers du pôle
+ * responsable (ou l'admin si le pôle ne correspond à aucune équipe), voir set_blocker_status. */
+export async function setBlockerStatus(input: { id: string; status: string }): Promise<string> {
+  const { data, error } = await supabase.rpc("set_blocker_status", {
+    _id: input.id,
+    _status: input.status as never,
+  });
+  if (error) throw error;
+  return data as string;
+}

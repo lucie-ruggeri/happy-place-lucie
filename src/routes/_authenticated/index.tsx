@@ -19,9 +19,10 @@ import { DepartureNotices } from "@/components/departure-notices";
 import { NewsImage, NewsLinks } from "@/components/news-media";
 import { BlockerArchive, ValidatedSubmissions } from "@/components/dashboard-extras";
 import { Button } from "@/components/ui/button";
-import { StatusBadge } from "@/components/status-badge";
+import { StatusBadge, BlockerStatusBadge } from "@/components/status-badge";
 import { AudienceBadge } from "@/components/audience-badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { setBlockerStatus } from "@/lib/blocker-circuit";
 import {
   fetchBlockers,
   fetchMetrics,
@@ -36,7 +37,6 @@ import {
   reviewSubmission,
   submitIdea,
   timeAgo,
-  updateBlockerStatus,
   updateMetric,
   TREND_LABELS,
   type Metric,
@@ -143,7 +143,25 @@ function ManagerSpace() {
   });
   const blockers = useQuery({ queryKey: ["blockers"], queryFn: fetchBlockers, retry: false });
   const metrics = useQuery({ queryKey: ["metrics"], queryFn: fetchMetrics, retry: false });
+  // Noms d'équipe existants : permet de reproduire côté UI la règle de set_blocker_status
+  // ("l'admin agit seulement si le pôle du point ne correspond à aucune équipe").
+  const teamNames = useQuery({
+    queryKey: ["teams", "names"],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("teams").select("name");
+      if (error) throw error;
+      return (data ?? []).map((t) => t.name.toLowerCase());
+    },
+  });
   const onError = (e: unknown) => toast.error((e as Error).message);
+
+  function canAdvanceBlocker(department: string) {
+    const dept = department.trim().toLowerCase();
+    if (role === "manager") return (myTeams.data ?? []).some((t) => t.toLowerCase() === dept);
+    if (isAdmin) return !(teamNames.data ?? []).includes(dept);
+    return false;
+  }
 
   const exportReport = useMutation({
     mutationFn: () => {
@@ -207,8 +225,11 @@ function ManagerSpace() {
   });
 
   const setBlocker = useMutation({
-    mutationFn: updateBlockerStatus,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["blockers"] }),
+    mutationFn: setBlockerStatus,
+    onSuccess: () => {
+      toast.success("Statut mis à jour");
+      qc.invalidateQueries({ queryKey: ["blockers"] });
+    },
     onError,
   });
 
@@ -654,6 +675,7 @@ function ManagerSpace() {
               )}
               {blockers.data?.map((b) => {
                 const critical = b.severity === "critical";
+                const canAdvance = canAdvanceBlocker(b.department);
                 return (
                   <div
                     key={b.id}
@@ -681,23 +703,30 @@ function ManagerSpace() {
                         </div>
                       </div>
                     </div>
-                    <select
-                      aria-label={`Statut de ${b.title}`}
-                      value={b.status}
-                      disabled={!isAdmin}
-                      onChange={(e) => setBlocker.mutate({ id: b.id, status: e.target.value })}
-                      className={`bg-transparent border-none text-xs font-label-sm focus:outline-none cursor-pointer ${critical ? "text-error" : "text-on-surface-variant"}`}
-                    >
-                      <option>OUVERT</option>
-                      <option>EN COURS</option>
-                      <option>SURVEILLANCE</option>
-                      <option
-                        disabled={b.status === "OUVERT"}
-                        title={b.status === "OUVERT" ? "Passe d'abord par EN COURS" : undefined}
+                    {canAdvance ? (
+                      <select
+                        aria-label={`Statut de ${b.title}`}
+                        value={b.status}
+                        disabled={setBlocker.isPending}
+                        onChange={(e) => setBlocker.mutate({ id: b.id, status: e.target.value })}
+                        className={`bg-transparent border-none text-xs font-label-sm focus:outline-none cursor-pointer disabled:opacity-50 ${critical ? "text-error" : "text-on-surface-variant"}`}
                       >
-                        RÉSOLU
-                      </option>
-                    </select>
+                        <option>OUVERT</option>
+                        <option>EN COURS</option>
+                        <option>SURVEILLANCE</option>
+                        <option
+                          disabled={b.status === "OUVERT"}
+                          title={b.status === "OUVERT" ? "Passe d'abord par EN COURS" : undefined}
+                        >
+                          RÉSOLU
+                        </option>
+                      </select>
+                    ) : (
+                      <BlockerStatusBadge
+                        status={b.status}
+                        title="Seuls les managers du pôle responsable font avancer ce point."
+                      />
+                    )}
                   </div>
                 );
               })}
