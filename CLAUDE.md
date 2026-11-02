@@ -86,7 +86,7 @@ Un manager peut retirer après coup un point publié par un collaborateur de son
 2. **Abandonner** (`abandon_blocker`) — statut `abandonnée` (valeur d'ENUM ajoutée dans sa propre migration, voir `20261102110000_*`), définitif : aucune fonction ne permet d'y revenir. Sort de toutes les listes (y compris « Mes points bloquants »), reste dans l'historique (`public.publication_history`, déjà alimenté par le trigger existant, aucune colonne ajoutée).
 3. **Ne rien faire** — un seul rappel après un délai paramétrable (3 jours par défaut, `private.automation_config`, clé `blocker_withdraw_reminder_days`), envoyé par le job quotidien `private.run_blocker_withdraw_reminders()` (colonne `withdraw_reminder_at` verrouille l'envoi à un seul rappel par retrait). Visible dans « Mes points bloquants » (« Rappel envoyé … »), pas de centre de notifications.
 
-Un point peut être retiré à nouveau après republication, sans limite en V1. Le manager retrouve la trace de ses propres retraits dans le bloc « Points retirés » (lecture seule, lit `public.publication_history` par `changed_by_email`, pas de colonne dédiée).
+Un point peut être retiré à nouveau après republication, sans limite en V1. Le manager retrouve la trace de ses propres retraits dans le bloc « Points retirés » (lecture seule) : il part de l'état **actuel** du point (`public.blockers`, affiché seulement si `statut_publication` est `a_modifier_manager` ou `abandonnée`) et ne lit `public.publication_history` (par `changed_by_email`) que pour retrouver qui a retiré et quand — pas de colonne dédiée. Un point republié (repassé à `publiée`) disparaît donc du bloc, même s'il reste dans l'historique.
 
 ## Charte graphique
 
