@@ -37,7 +37,6 @@ import {
   reviewSubmission,
   submitIdea,
   timeAgo,
-  updateMetric,
   TREND_LABELS,
   type Metric,
   type SubmissionInput,
@@ -105,7 +104,6 @@ function ManagerSpace() {
   // D26 : l'admin ne valide ni ne refuse rien (seuls les managers relisent les soumissions).
   const canReview = role === "manager";
   const myEmail = (email ?? "").toLowerCase();
-  const [nps, setNps] = useState<string>("");
   const [submissionForm, setSubmissionForm] = useState<SubmissionInput | null>(null);
   const [submissionErrors, setSubmissionErrors] = useState<FieldErrors>({});
   const myTeams = useQuery({
@@ -233,15 +231,6 @@ function ManagerSpace() {
     onSuccess: () => {
       toast.success("Statut mis à jour");
       qc.invalidateQueries({ queryKey: ["blockers"] });
-    },
-    onError,
-  });
-
-  const saveMetric = useMutation({
-    mutationFn: updateMetric,
-    onSuccess: () => {
-      toast.success("KPI mis à jour");
-      qc.invalidateQueries({ queryKey: ["metrics"] });
     },
     onError,
   });
@@ -748,7 +737,6 @@ function ManagerSpace() {
           <section className="col-span-12 md:col-span-5 bg-surface-container-lowest border border-outline-variant p-md flex flex-col">
             <div className="flex items-center justify-between mb-md">
               <h2 className="font-headline-sm text-headline-sm text-primary">Indicateurs</h2>
-              {isAdmin && <Icon name="settings" className="text-on-surface-variant cursor-pointer" />}
             </div>
             <div className="grid grid-cols-2 gap-sm mb-md">
               <div className="p-sm bg-card border border-outline-variant text-center">
@@ -778,38 +766,19 @@ function ManagerSpace() {
                 </p>
               </div>
             </div>
-            {isAdmin && <div className="space-y-xs">
-              <label className="font-label-sm text-label-sm text-on-surface-variant block">
-                MODIFIER LE NPS CANDIDATS
-              </label>
-              <div className="flex gap-xs">
-                <input
-                  className="flex-grow bg-card border border-outline-variant p-xs font-label-md focus:outline-none focus:border-primary"
-                  type="number"
-                  value={nps !== "" ? nps : (npsMetric?.value ?? "")}
-                  onChange={(e) => setNps(e.target.value)}
-                />
-                <button
-                  onClick={() =>
-                    saveMetric.mutate({
-                      key: "nps",
-                      value: Number(nps !== "" ? nps : (npsMetric?.value ?? 0)),
-                    })
-                  }
-                  disabled={saveMetric.isPending}
-                  className="bg-primary text-on-primary px-sm font-label-md text-label-md disabled:opacity-50"
-                >
-                  METTRE À JOUR
-                </button>
+            {isAdmin && (
+              <div className="space-y-xs">
+                <p className="font-label-sm text-label-sm text-on-surface-variant block">NPS CANDIDATS</p>
+                <p className="font-display text-[28px] text-primary">{formatMetric(npsMetric, "—")}</p>
+                <p className="text-[10px] text-on-surface-variant italic">
+                  {npsMetric
+                    ? `Tendance : ${trendText(npsMetric)}${
+                        deltaText(npsMetric) ? ` · ${deltaText(npsMetric)}` : ""
+                      }`
+                    : "Mis à jour à partir des retours candidats."}
+                </p>
               </div>
-              <p className="text-[10px] text-on-surface-variant italic">
-                {npsMetric
-                  ? `Tendance : ${trendText(npsMetric)}${
-                      deltaText(npsMetric) ? ` · ${deltaText(npsMetric)}` : ""
-                    }`
-                  : "Mis à jour à partir des retours candidats."}
-              </p>
-            </div>}
+            )}
             <div className="mt-auto pt-md">
               <img
                 src={PERF_IMAGE}
