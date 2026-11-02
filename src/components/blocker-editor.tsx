@@ -8,7 +8,14 @@ import { BlockerDuplicates } from "@/components/blocker-duplicates";
 import { getCircuit, type CircuitAudience } from "@/lib/circuit";
 import { fetchMyManagedTeams, fetchMyManagerName } from "@/lib/news-circuit";
 import { blockerCreateSchema, validate, type FieldErrors } from "@/lib/manage-schemas";
-import { createBlockerReport, fetchBlockerDuplicates, fetchTools, followBlocker } from "@/lib/blocker-circuit";
+import {
+  createBlockerReport,
+  fetchBlockerDuplicates,
+  fetchBlockerFollowerCounts,
+  fetchTools,
+  followBlocker,
+  followerCountLabel,
+} from "@/lib/blocker-circuit";
 import type { Blocker } from "@/lib/dashboard";
 
 export const SEVERITY_OPTIONS = [
@@ -42,6 +49,7 @@ export function BlockerEditor({ onDone }: { onDone: () => void }) {
 
   const [view, setView] = useState<"form" | "duplicates">("form");
   const [duplicates, setDuplicates] = useState<Blocker[]>([]);
+  const [followerCounts, setFollowerCounts] = useState<Map<string, number>>(new Map());
   const [pendingDepartment, setPendingDepartment] = useState<string | null>(null);
   const [followingId, setFollowingId] = useState<string | null>(null);
 
@@ -112,6 +120,7 @@ export function BlockerEditor({ onDone }: { onDone: () => void }) {
       const dups = await fetchBlockerDuplicates(department);
       if (dups.length > 0) {
         setDuplicates(dups);
+        setFollowerCounts(await fetchBlockerFollowerCounts());
         setPendingDepartment(department);
         setView("duplicates");
         return;
@@ -127,8 +136,8 @@ export function BlockerEditor({ onDone }: { onDone: () => void }) {
   async function handleFollow(id: string) {
     setFollowingId(id);
     try {
-      await followBlocker(id);
-      toast.success("Tu suis désormais ce point.");
+      const n = await followBlocker(id);
+      toast.success(`Tu suis ce point · ${followerCountLabel(n)}.`);
       onDone();
     } catch (e) {
       toast.error((e as Error).message);
@@ -141,6 +150,7 @@ export function BlockerEditor({ onDone }: { onDone: () => void }) {
     return (
       <BlockerDuplicates
         duplicates={duplicates}
+        followerCounts={followerCounts}
         followingId={followingId}
         onFollow={handleFollow}
         onBack={() => setView("form")}

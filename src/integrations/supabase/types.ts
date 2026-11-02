@@ -822,6 +822,10 @@ export type Database = {
         Args: { _id: string }
         Returns: Database["public"]["Enums"]["publication_status"]
       }
+      blocker_follower_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: { blocker_id: string; follower_count: number }[]
+      }
     }
     Enums: {
       app_role: "admin" | "manager" | "collaborateur"

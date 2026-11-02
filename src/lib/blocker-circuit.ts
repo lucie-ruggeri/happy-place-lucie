@@ -187,3 +187,17 @@ export async function fetchBlockersIWithdrew(email: string): Promise<WithdrawnBy
 
   return selectCurrentlyWithdrawn(history, byId).slice(0, 10);
 }
+
+/** Libellé accordé au singulier/pluriel, ex. "1 personne concernée" / "4 personnes concernées". */
+export function followerCountLabel(n: number): string {
+  return `${n} personne${n === 1 ? "" : "s"} concernée${n === 1 ? "" : "s"}`;
+}
+
+/** Décompte des suiveurs par point, pour tous les points visibles par l'appelant (flow 2-9) :
+ * un seul appel pour toute une liste, jamais une requête par ligne. blocker_follower_counts()
+ * est SECURITY INVOKER : un point invisible pour l'appelant n'a simplement pas de ligne. */
+export async function fetchBlockerFollowerCounts(): Promise<Map<string, number>> {
+  const { data, error } = await supabase.rpc("blocker_follower_counts");
+  if (error) throw error;
+  return new Map((data ?? []).map((r) => [r.blocker_id, r.follower_count]));
+}

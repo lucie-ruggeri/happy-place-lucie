@@ -29,6 +29,8 @@ import {
   withdrawBlocker,
   abandonBlocker,
   fetchBlockersIWithdrew,
+  fetchBlockerFollowerCounts,
+  followerCountLabel,
 } from "@/lib/blocker-circuit";
 import { BlockerReviewPanel } from "@/components/blocker-review-panel";
 import { BlockerResubmitForm } from "@/components/blocker-resubmit-form";
@@ -157,6 +159,12 @@ function ManagerSpace() {
     retry: false,
   });
   const blockers = useQuery({ queryKey: ["blockers"], queryFn: fetchBlockers, retry: false });
+  // "N personnes concernées" (flow 2-9) : un seul appel pour toute la liste, pas une requête par ligne.
+  const followerCounts = useQuery({
+    queryKey: ["blockers", "follower-counts"],
+    queryFn: fetchBlockerFollowerCounts,
+    retry: false,
+  });
   // Mes points bloquants : l'admin n'a aucun contenu à lui (D26), voir "Mes actus"/"Mes idées".
   const myBlockers = useQuery({
     queryKey: ["blockers", "mine", email],
@@ -765,6 +773,9 @@ function ManagerSpace() {
                       />
                       <div className="min-w-0">
                         <p className="font-body-md text-primary font-bold wrap-anywhere">{b.title}</p>
+                        <p className="text-[11px] font-label-sm text-on-surface-variant">
+                          {followerCountLabel(followerCounts.data?.get(b.id) ?? 0)}
+                        </p>
                         <p className="text-body-sm text-on-surface-variant wrap-anywhere">{b.description}</p>
                         <div className="flex items-center gap-sm mt-xs flex-wrap">
                           <span className="text-[11px] font-label-sm bg-surface-container-highest px-xs py-0.5">
@@ -1022,6 +1033,7 @@ function ManagerSpace() {
       />
       <BlockerReviewPanel
         blocker={withdrawingBlocker}
+        followerCount={withdrawingBlocker ? followerCounts.data?.get(withdrawingBlocker.id) : undefined}
         pending={withdraw.isPending}
         onWithdraw={(note) => withdrawingBlocker && withdraw.mutate({ id: withdrawingBlocker.id, note })}
         onClose={() => setWithdrawingBlocker(null)}

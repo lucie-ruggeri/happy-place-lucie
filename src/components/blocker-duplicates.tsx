@@ -1,5 +1,6 @@
 import type { Blocker } from "@/lib/dashboard";
 import { timeAgo } from "@/lib/dashboard";
+import { followerCountLabel } from "@/lib/blocker-circuit";
 
 export const SEVERITY_LABELS: Record<string, string> = {
   critical: "Critique",
@@ -15,6 +16,7 @@ export const SEVERITY_STYLES: Record<string, string> = {
 
 export function BlockerDuplicates({
   duplicates,
+  followerCounts,
   followingId,
   onFollow,
   onBack,
@@ -22,6 +24,7 @@ export function BlockerDuplicates({
   creating,
 }: {
   duplicates: Blocker[];
+  followerCounts: Map<string, number>;
   followingId: string | null;
   onFollow: (id: string) => void;
   onBack: () => void;
@@ -58,7 +61,9 @@ export function BlockerDuplicates({
             {d.description && (
               <p className="font-body-sm text-body-sm text-on-surface-variant wrap-anywhere">{d.description}</p>
             )}
-            <p className="font-label-sm text-label-sm text-on-surface-variant">Mis à jour {timeAgo(d.updated_at)}</p>
+            <p className="font-label-sm text-label-sm text-on-surface-variant">
+              {followerCountLabel(followerCounts.get(d.id) ?? 0)} · Mis à jour {timeAgo(d.updated_at)}
+            </p>
             <button
               type="button"
               disabled={followingId === d.id}

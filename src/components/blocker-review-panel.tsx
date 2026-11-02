@@ -2,6 +2,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useState } from "react";
 import { CharCounter } from "@/components/expandable-card";
 import { SEVERITY_LABELS, SEVERITY_STYLES } from "@/components/blocker-duplicates";
+import { followerCountLabel } from "@/lib/blocker-circuit";
 import type { Blocker } from "@/lib/dashboard";
 
 /**
@@ -13,11 +14,14 @@ import type { Blocker } from "@/lib/dashboard";
  */
 export function BlockerReviewPanel({
   blocker: b,
+  followerCount,
   pending,
   onWithdraw,
   onClose,
 }: {
   blocker: Blocker | null;
+  /** "N personnes concernées" (flow 2-9) ; absent si pas encore chargé. */
+  followerCount?: number;
   pending: boolean;
   onWithdraw: (note: string) => void;
   onClose: () => void;
@@ -84,6 +88,11 @@ export function BlockerReviewPanel({
               {b.description && (
                 <p className="font-body-md text-body-md text-on-surface whitespace-pre-line wrap-anywhere">
                   {b.description}
+                </p>
+              )}
+              {followerCount !== undefined && (
+                <p className="font-label-sm text-label-sm text-on-surface-variant">
+                  {followerCountLabel(followerCount)}
                 </p>
               )}
 
