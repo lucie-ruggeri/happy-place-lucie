@@ -376,13 +376,14 @@ function ManagerSpace() {
         </div>
 
         <div className="bento-grid">
-          {/* Les 4 modules : Actus actif, les autres bientôt disponibles */}
-          <section className="col-span-12 grid grid-cols-2 gap-sm sm:grid-cols-4">
+          {/* ============================= ACTUS ============================= */}
+          <div className="col-span-12 flex flex-wrap items-center justify-between gap-sm">
+            <h2 className="font-headline-lg text-headline-lg text-primary">Actus</h2>
             {isAdmin ? (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="flex cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                    <span className="flex w-56 shrink-0 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
                       <Icon name="article" className="text-on-surface-variant" />
                       <span className="font-headline-sm text-headline-sm text-primary">Actus</span>
                       <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Nouvelle actu</span>
@@ -394,77 +395,14 @@ function ManagerSpace() {
             ) : (
               <Link
                 to="/nouvelle-actu"
-                className="flex flex-col gap-xs border-2 border-primary bg-surface-container-lowest p-sm hover:bg-surface-container"
+                className="flex w-56 shrink-0 flex-col gap-xs border-2 border-primary bg-surface-container-lowest p-sm hover:bg-surface-container"
               >
                 <Icon name="article" className="text-primary" />
                 <span className="font-headline-sm text-headline-sm text-primary">Actus</span>
                 <span className="font-label-sm text-label-sm uppercase text-primary">+ Nouvelle actu</span>
               </Link>
             )}
-            {isAdmin ? (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="flex cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
-                      <Icon name="lightbulb" className="text-on-surface-variant" />
-                      <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
-                      <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>Le compte admin ne publie pas d'idée.</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  setSubmissionErrors({});
-                  const only = role === "manager" && myTeams.data?.length === 1 ? myTeams.data[0] : "";
-                  setSubmissionForm({ author_name: "", team: only, content: "", status: "en attente" });
-                }}
-                className="flex flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm text-left hover:border-primary"
-              >
-                <Icon name="lightbulb" className="text-on-surface-variant" />
-                <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
-                <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
-              </button>
-            )}
-            {isAdmin ? (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="flex cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
-                      <Icon name="report" className="text-on-surface-variant" />
-                      <span className="font-headline-sm text-headline-sm text-primary">Points bloquants</span>
-                      <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Point bloquant</span>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>Les admins ne signalent pas de point bloquant.</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ) : (
-              <Link
-                to="/nouveau-point-bloquant"
-                className="flex flex-col gap-xs border-2 border-primary bg-surface-container-lowest p-sm hover:bg-surface-container"
-              >
-                <Icon name="report" className="text-primary" />
-                <span className="font-headline-sm text-headline-sm text-primary">Points bloquants</span>
-                <span className="font-label-sm text-label-sm uppercase text-primary">+ Point bloquant</span>
-              </Link>
-            )}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="flex cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
-                    <Icon name="bar_chart" className="text-on-surface-variant" />
-                    <span className="font-headline-sm text-headline-sm text-primary">Indicateurs</span>
-                    <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Indicateur</span>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>Bientôt disponible</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </section>
+          </div>
 
           {/* Actualités du cabinet / Mes actus */}
           <section className="col-span-12 lg:col-span-6 min-w-0 bg-surface-container-lowest border border-outline-variant p-md flex flex-col gap-sm">
@@ -583,6 +521,39 @@ function ManagerSpace() {
           </section>
           )}
 
+          {/* ========================= BOÎTE À IDÉES ========================= */}
+          <div className="col-span-12 flex flex-wrap items-center justify-between gap-sm">
+            <h2 className="font-headline-lg text-headline-lg text-primary">Boîte à idées</h2>
+            {isAdmin ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="flex w-56 shrink-0 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                      <Icon name="lightbulb" className="text-on-surface-variant" />
+                      <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
+                      <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>Le compte admin ne publie pas d'idée.</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setSubmissionErrors({});
+                  const only = role === "manager" && myTeams.data?.length === 1 ? myTeams.data[0] : "";
+                  setSubmissionForm({ author_name: "", team: only, content: "", status: "en attente" });
+                }}
+                className="flex w-56 shrink-0 flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm text-left hover:border-primary"
+              >
+                <Icon name="lightbulb" className="text-on-surface-variant" />
+                <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
+                <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
+              </button>
+            )}
+          </div>
+
           {/* Idées de mon équipe à traiter (flow 2-7 : seul le manager de l'équipe traite) */}
           {role === "manager" && (
           <section className="col-span-12 lg:col-span-4 min-w-0 bg-surface-container-lowest border border-outline-variant p-md flex flex-col">
@@ -694,6 +665,142 @@ function ManagerSpace() {
             </section>
           )}
 
+          {/* Idées validées : dernier bloc du module Boîte à idées */}
+          <ValidatedSubmissions
+            role={role}
+            email={myEmail}
+            managerTeams={myTeams.data ?? []}
+            onRead={setReading}
+          />
+
+          {/* ======================= POINTS BLOQUANTS ======================= */}
+          <div className="col-span-12 flex flex-wrap items-center justify-between gap-sm">
+            <h2 className="font-headline-lg text-headline-lg text-primary">Points bloquants</h2>
+            {isAdmin ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="flex w-56 shrink-0 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                      <Icon name="report" className="text-on-surface-variant" />
+                      <span className="font-headline-sm text-headline-sm text-primary">Points bloquants</span>
+                      <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Point bloquant</span>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>Les admins ne signalent pas de point bloquant.</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <Link
+                to="/nouveau-point-bloquant"
+                className="flex w-56 shrink-0 flex-col gap-xs border-2 border-primary bg-surface-container-lowest p-sm hover:bg-surface-container"
+              >
+                <Icon name="report" className="text-primary" />
+                <span className="font-headline-sm text-headline-sm text-primary">Points bloquants</span>
+                <span className="font-label-sm text-label-sm uppercase text-primary">+ Point bloquant</span>
+              </Link>
+            )}
+          </div>
+
+          {/* Points Bloquants (liste principale) */}
+          <section className="col-span-12 bg-surface-container-lowest border border-outline-variant p-md">
+            <div className="flex items-center justify-between mb-md">
+              <div className="flex items-center gap-sm">
+                <h2 className="font-headline-sm text-headline-sm text-primary">Points Bloquants</h2>
+                <span className="text-xs bg-error-container text-on-error-container px-xs py-1 font-label-sm">
+                  PRIORITÉ HAUTE
+                </span>
+              </div>
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                onClick={() => setArchiveOpen(true)}
+                className="text-primary font-label-sm text-label-sm underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                 VOIR L'ARCHIVE
+              </button>
+            </div>
+            <div className="space-y-sm">
+              {blockers.isError && (
+                <p className="text-body-sm text-error">
+                  Les points bloquants sont indisponibles.
+                </p>
+              )}
+              {blockers.data?.length === 0 && (
+                <p className="text-body-sm text-on-surface-variant italic">
+                  Aucun point bloquant en cours.
+                </p>
+              )}
+              {blockers.data?.map((b) => {
+                const critical = b.severity === "critical";
+                const canAdvance = canAdvanceBlocker(b.department);
+                return (
+                  <div
+                    key={b.id}
+                    className={`${critical ? "accent-bar " : ""}bg-card border border-outline-variant p-sm flex items-start justify-between`}
+                  >
+                    <div className="flex gap-md">
+                      <Icon
+                        name={critical ? "error" : "warning"}
+                        className={
+                          critical
+                            ? "text-error mt-1 [font-variation-settings:'FILL'_1]"
+                            : "text-secondary mt-1"
+                        }
+                      />
+                      <div>
+                        <p className="font-body-md text-primary font-bold">{b.title}</p>
+                        <p className="text-body-sm text-on-surface-variant">{b.description}</p>
+                        <div className="flex items-center gap-sm mt-xs">
+                          <span className="text-[11px] font-label-sm bg-surface-container-highest px-xs py-0.5">
+                            {b.department}
+                          </span>
+                          <span className="text-[11px] font-label-sm text-on-surface-variant">
+                            Mis à jour {timeAgo(b.updated_at)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    {canAdvance ? (
+                      <select
+                        aria-label={`Statut de ${b.title}`}
+                        value={b.status}
+                        disabled={setBlocker.isPending}
+                        onChange={(e) => setBlocker.mutate({ id: b.id, status: e.target.value })}
+                        className={`bg-transparent border-none text-xs font-label-sm focus:outline-none cursor-pointer disabled:opacity-50 ${critical ? "text-error" : "text-on-surface-variant"}`}
+                      >
+                        <option>OUVERT</option>
+                        <option>EN COURS</option>
+                        <option>SURVEILLANCE</option>
+                        <option
+                          disabled={b.status === "OUVERT"}
+                          title={b.status === "OUVERT" ? "Passe d'abord par EN COURS" : undefined}
+                        >
+                          RÉSOLU
+                        </option>
+                      </select>
+                    ) : (
+                      <div className="flex flex-col items-end gap-1 text-right max-w-[160px]">
+                        <BlockerStatusBadge status={b.status} />
+                        <p className="font-label-sm text-label-sm text-on-surface-variant">
+                          Seuls les managers du pôle responsable font avancer ce point.
+                        </p>
+                      </div>
+                    )}
+                    {canWithdrawBlocker(b) && (
+                      <button
+                        type="button"
+                        onClick={() => setWithdrawingBlocker(b)}
+                        className="ml-sm shrink-0 font-label-sm text-label-sm text-error underline"
+                      >
+                        Retirer
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
           {/* Mes points bloquants : l'admin n'a aucun contenu à lui (D26) */}
           {!isAdmin && myBlockers.data && myBlockers.data.length > 0 && (
             <section className="col-span-12 min-w-0 bg-surface-container-lowest border border-outline-variant p-md">
@@ -797,115 +904,25 @@ function ManagerSpace() {
             </section>
           )}
 
-          <ValidatedSubmissions
-            role={role}
-            email={myEmail}
-            managerTeams={myTeams.data ?? []}
-            onRead={setReading}
-          />
-
-          {/* Points Bloquants */}
-          <section className="col-span-12 md:col-span-7 bg-surface-container-lowest border border-outline-variant p-md">
-            <div className="flex items-center justify-between mb-md">
-              <div className="flex items-center gap-sm">
-                <h2 className="font-headline-sm text-headline-sm text-primary">Points Bloquants</h2>
-                <span className="text-xs bg-error-container text-on-error-container px-xs py-1 font-label-sm">
-                  PRIORITÉ HAUTE
-                </span>
-              </div>
-              <button
-                type="button"
-                aria-haspopup="dialog"
-                onClick={() => setArchiveOpen(true)}
-                className="text-primary font-label-sm text-label-sm underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                 VOIR L'ARCHIVE
-              </button>
-            </div>
-            <div className="space-y-sm">
-              {blockers.isError && (
-                <p className="text-body-sm text-error">
-                  Les points bloquants sont indisponibles.
-                </p>
-              )}
-              {blockers.data?.length === 0 && (
-                <p className="text-body-sm text-on-surface-variant italic">
-                  Aucun point bloquant en cours.
-                </p>
-              )}
-              {blockers.data?.map((b) => {
-                const critical = b.severity === "critical";
-                const canAdvance = canAdvanceBlocker(b.department);
-                return (
-                  <div
-                    key={b.id}
-                    className={`${critical ? "accent-bar " : ""}bg-card border border-outline-variant p-sm flex items-start justify-between`}
-                  >
-                    <div className="flex gap-md">
-                      <Icon
-                        name={critical ? "error" : "warning"}
-                        className={
-                          critical
-                            ? "text-error mt-1 [font-variation-settings:'FILL'_1]"
-                            : "text-secondary mt-1"
-                        }
-                      />
-                      <div>
-                        <p className="font-body-md text-primary font-bold">{b.title}</p>
-                        <p className="text-body-sm text-on-surface-variant">{b.description}</p>
-                        <div className="flex items-center gap-sm mt-xs">
-                          <span className="text-[11px] font-label-sm bg-surface-container-highest px-xs py-0.5">
-                            {b.department}
-                          </span>
-                          <span className="text-[11px] font-label-sm text-on-surface-variant">
-                            Mis à jour {timeAgo(b.updated_at)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    {canAdvance ? (
-                      <select
-                        aria-label={`Statut de ${b.title}`}
-                        value={b.status}
-                        disabled={setBlocker.isPending}
-                        onChange={(e) => setBlocker.mutate({ id: b.id, status: e.target.value })}
-                        className={`bg-transparent border-none text-xs font-label-sm focus:outline-none cursor-pointer disabled:opacity-50 ${critical ? "text-error" : "text-on-surface-variant"}`}
-                      >
-                        <option>OUVERT</option>
-                        <option>EN COURS</option>
-                        <option>SURVEILLANCE</option>
-                        <option
-                          disabled={b.status === "OUVERT"}
-                          title={b.status === "OUVERT" ? "Passe d'abord par EN COURS" : undefined}
-                        >
-                          RÉSOLU
-                        </option>
-                      </select>
-                    ) : (
-                      <div className="flex flex-col items-end gap-1 text-right max-w-[160px]">
-                        <BlockerStatusBadge status={b.status} />
-                        <p className="font-label-sm text-label-sm text-on-surface-variant">
-                          Seuls les managers du pôle responsable font avancer ce point.
-                        </p>
-                      </div>
-                    )}
-                    {canWithdrawBlocker(b) && (
-                      <button
-                        type="button"
-                        onClick={() => setWithdrawingBlocker(b)}
-                        className="ml-sm shrink-0 font-label-sm text-label-sm text-error underline"
-                      >
-                        Retirer
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+          {/* ========================== INDICATEURS ========================== */}
+          <div className="col-span-12 flex flex-wrap items-center justify-between gap-sm">
+            <h2 className="font-headline-lg text-headline-lg text-primary">Indicateurs</h2>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="flex w-56 shrink-0 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                    <Icon name="bar_chart" className="text-on-surface-variant" />
+                    <span className="font-headline-sm text-headline-sm text-primary">Indicateurs</span>
+                    <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Indicateur</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Bientôt disponible</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
 
           {/* Performance Hub */}
-          <section className="col-span-12 md:col-span-5 bg-surface-container-lowest border border-outline-variant p-md flex flex-col">
+          <section className="col-span-12 bg-surface-container-lowest border border-outline-variant p-md flex flex-col">
             <div className="flex items-center justify-between mb-md">
               <h2 className="font-headline-sm text-headline-sm text-primary">Indicateurs</h2>
             </div>
