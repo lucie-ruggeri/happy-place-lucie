@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Target, Briefcase, Smile, type LucideIcon } from "lucide-react";
 import { signOut } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -79,8 +80,13 @@ export const Route = createFileRoute("/_authenticated/")({
   component: ManagerSpace,
 });
 
-const PERF_IMAGE =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuAz-Y4URSqOCzUaVC6vomdu54tTiFPC_bF9A_h0SjxJ1mq2OlNfOyeKTNkPIgtPRloYwE5JrWFm2FHBNUq0GScs0ALDVMiq16FLu95dHNGPjmybEoIb2uyz1OGozRn0XkudSMukcPY4gKfeOJMR_KAnhYbkZifswTCbpCs_aHZyMuoZRz_oc4KsWtWiryTdwVD0EKyvxScj3palbDIM2wMlnH0njPGj912mRwhMmTo3Yu07l6xfVv2Zuw";
+/** Icône discrète au-dessus d'un libellé d'indicateur (D21bis) : trait fin, ton secondaire,
+ * aria-hidden car le libellé en dessous porte déjà le sens. */
+function KpiIcon({ icon: IconComponent }: { icon: LucideIcon }) {
+  return (
+    <IconComponent aria-hidden="true" size={28} strokeWidth={1.5} className="text-on-surface-variant mx-auto mb-1" />
+  );
+}
 
 function Icon({ name, className = "" }: { name: string; className?: string }) {
   return (
@@ -1102,6 +1108,7 @@ function ManagerSpace() {
             </div>
             <div className="grid grid-cols-2 gap-sm mb-md">
               <div className="p-sm bg-card border border-outline-variant text-center">
+                <KpiIcon icon={Target} />
                 <p className="font-label-sm text-label-sm text-on-surface-variant uppercase">
                   {metricLabel(metricOf(metrics.data, "training_kpi"), "Taux de placement")}
                 </p>
@@ -1120,6 +1127,7 @@ function ManagerSpace() {
                 )}
               </div>
               <div className="p-sm bg-card border border-outline-variant text-center">
+                <KpiIcon icon={Briefcase} />
                 <p className="font-label-sm text-label-sm text-on-surface-variant uppercase">
                   {metricLabel(metricOf(metrics.data, "active_users"), "Missions actives")}
                 </p>
@@ -1140,6 +1148,7 @@ function ManagerSpace() {
             </div>
             {isAdmin && (
               <div className="space-y-xs">
+                <KpiIcon icon={Smile} />
                 <p className="font-label-sm text-label-sm text-on-surface-variant block">NPS CANDIDATS</p>
                 <p className="font-display text-[28px] text-primary">{formatMetric(npsMetric, "—")}</p>
                 <p className="text-[10px] text-on-surface-variant italic">
@@ -1154,14 +1163,6 @@ function ManagerSpace() {
                 )}
               </div>
             )}
-            <div className="mt-auto pt-md">
-              <img
-                src={PERF_IMAGE}
-                 alt="Graphiques minimalistes à barres et à lignes dans un tableau de bord anthracite et blanc"
-                loading="lazy"
-                className="w-full h-24 object-cover border border-outline-variant"
-              />
-            </div>
           </section>
         </div>
       </main>
