@@ -777,7 +777,13 @@ function ManagerSpace() {
                   <div key={r.content_id} className="p-sm border border-outline-variant bg-card min-w-0 overflow-hidden space-y-xs">
                     <div className="flex items-center justify-between gap-sm min-w-0">
                       <p className="font-body-md text-primary wrap-anywhere">{r.title}</p>
-                      <StatusBadge status={r.current_status} className="shrink-0" />
+                      {r.current_status === "abandonnée" ? (
+                        <span className="inline-flex items-center rounded-sm px-xs py-0.5 font-label-sm text-label-sm uppercase tracking-wide bg-surface-container-high text-on-surface-variant shrink-0">
+                          Abandonné par l'auteur
+                        </span>
+                      ) : (
+                        <StatusBadge status={r.current_status} className="shrink-0" />
+                      )}
                     </div>
                     <p className="text-[11px] font-label-sm text-on-surface-variant uppercase">
                       {r.department} • Retiré {timeAgo(r.changed_at)}

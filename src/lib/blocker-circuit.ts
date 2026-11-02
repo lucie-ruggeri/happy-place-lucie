@@ -128,6 +128,40 @@ export type WithdrawnByMeRecord = {
   current_status: string;
 };
 
+export type WithdrawHistoryRow = { content_id: string; note: string | null; changed_at: string };
+export type BlockerSnapshot = { title: string; department: string; statut_publication: string | null };
+
+// Un point retiré ne reste dans "Points retirés" que tant qu'il n'a pas été republié :
+// l'historique dit QUI l'a retiré, mais seul l'état ACTUEL du point (via blockersById)
+// décide s'il doit encore apparaître (D85).
+const VISIBLE_WITHDRAWN_STATUSES = new Set(["a_modifier_manager", "abandonnée"]);
+
+/** Logique pure (testable sans Supabase) de "Points retirés" : déduplique par point (garde
+ * le retrait le plus récent) puis ne garde que les points encore à modifier ou abandonnés. */
+export function selectCurrentlyWithdrawn(
+  history: WithdrawHistoryRow[],
+  blockersById: Map<string, BlockerSnapshot>,
+): WithdrawnByMeRecord[] {
+  const sorted = [...history].sort((a, b) => b.changed_at.localeCompare(a.changed_at));
+  const seen = new Set<string>();
+  const result: WithdrawnByMeRecord[] = [];
+  for (const h of sorted) {
+    if (seen.has(h.content_id)) continue;
+    seen.add(h.content_id);
+    const b = blockersById.get(h.content_id);
+    if (!b?.statut_publication || !VISIBLE_WITHDRAWN_STATUSES.has(b.statut_publication)) continue;
+    result.push({
+      content_id: h.content_id,
+      title: b.title,
+      department: b.department,
+      note: h.note,
+      changed_at: h.changed_at,
+      current_status: b.statut_publication,
+    });
+  }
+  return result;
+}
+
 /** Points que l'appelant (manager) a retirés, pour "Points retirés" (lecture seule, trace
  * historique) : lit public.publication_history (déjà accessible par RLS à son auteur du
  * changement), pas de nouvelle colonne/migration nécessaire. */
@@ -141,32 +175,15 @@ export async function fetchBlockersIWithdrew(email: string): Promise<WithdrawnBy
     .order("changed_at", { ascending: false })
     .limit(20);
   if (error) throw error;
+  if (!history || history.length === 0) return [];
 
-  const seen = new Set<string>();
-  const unique = (history ?? []).filter((h) => {
-    if (seen.has(h.content_id)) return false;
-    seen.add(h.content_id);
-    return true;
-  }).slice(0, 10);
-  if (unique.length === 0) return [];
-
+  const ids = [...new Set(history.map((h) => h.content_id))];
   const { data: blockers, error: bErr } = await supabase
     .from("blockers")
     .select("id, title, department, statut_publication")
-    .in("id", unique.map((h) => h.content_id));
+    .in("id", ids);
   if (bErr) throw bErr;
   const byId = new Map((blockers ?? []).map((b) => [b.id, b]));
 
-  return unique.flatMap((h) => {
-    const b = byId.get(h.content_id);
-    if (!b) return [];
-    return [{
-      content_id: h.content_id,
-      title: b.title,
-      department: b.department,
-      note: h.note,
-      changed_at: h.changed_at,
-      current_status: b.statut_publication,
-    }];
-  });
+  return selectCurrentlyWithdrawn(history, byId).slice(0, 10);
 }
