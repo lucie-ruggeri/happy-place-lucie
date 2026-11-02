@@ -103,6 +103,10 @@ JOIN public.allowed_users u ON u.email = m.email
 ON CONFLICT DO NOTHING;
 
 -- 3. Actualités
+-- D24 : aucun événement vers Make pendant le seed (GUC hp.seeding, voir
+-- 20261102140000_news_journal_evenements_make.sql). is_local = true : tient
+-- tout le temps de cette transaction (BEGIN/COMMIT en tête de ce fichier).
+select set_config('hp.seeding', 'on', true);
 INSERT INTO public.news (title, body, author, status, created_at) VALUES
 ('Meet-up candidats Cloud & DevOps', 'Une rencontre candidats et entreprises est organisée le 6 novembre autour des métiers Platform Engineering, SRE et Cloud.', 'Communauté Tech', 'publiée', now() - interval '31 days'),
 ('Trois consultants rejoignent le cabinet', 'Bienvenue à Inès, spécialisée Product & Design, Mathieu sur le pôle Cloud et Nora sur les profils Data.', 'People & Culture', 'publiée', now() - interval '29 days'),
@@ -179,6 +183,8 @@ FROM (VALUES
   ('Lancement de la newsletter mensuelle du cabinet',          'ines@happyplace.test')
 ) AS a(title, email)
 WHERE n.title = a.title;
+
+select set_config('hp.seeding', '', true);
 
 -- Circuit D : la newsletter a déjà été validée par Marc avant d'arriver chez la Comm
 -- (contrairement à "Bienvenue à nos 3 nouveaux consultants", écrite par Marc lui-même).
