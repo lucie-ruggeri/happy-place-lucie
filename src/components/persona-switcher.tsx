@@ -22,12 +22,20 @@ export interface PersonaSwitcherProfile {
 // SQL choisir_persona, qui porte seule la vérité sur rôle/équipe/case Relecteur Comm.
 // Les libellés ci-dessous ne sont qu'un affichage ; aucune valeur n'est renvoyée au serveur.
 const PERSONAS = [
-  { key: "ines", label: "Inès", roleLabel: "Collaboratrice", team: "Direction Commerciale" },
-  { key: "marc", label: "Marc", roleLabel: "Manager", team: "Direction Commerciale" },
-  { key: "camille", label: "Camille", roleLabel: "Collaboratrice · Relectrice Comm", team: "Communication" },
-  { key: "julien", label: "Julien", roleLabel: "Collaborateur · Relecteur Comm", team: "Communication" },
-  { key: "sophie", label: "Sophie", roleLabel: "Manager", team: "Communication" },
-  { key: "karim", label: "Karim", roleLabel: "Admin", team: "IT" },
+  { key: "ines", label: "Inès", roleLabel: "Collaboratrice", team: "Direction Commerciale", note: null },
+  { key: "marc", label: "Marc", roleLabel: "Manager", team: "Direction Commerciale", note: null },
+  { key: "camille", label: "Camille", roleLabel: "Collaboratrice · Relectrice Comm", team: "Communication", note: null },
+  { key: "julien", label: "Julien", roleLabel: "Collaborateur · Relecteur Comm", team: "Communication", note: null },
+  { key: "sophie", label: "Sophie", roleLabel: "Manager", team: "Communication", note: null },
+  {
+    key: "karim",
+    label: "Karim",
+    roleLabel: "Compte admin",
+    team: "IT",
+    // D26, flow 3-5 : Karim a aussi un compte contributeur IT (option A, pas encore
+    // dans la démo) — cette phrase évite de laisser croire que ce compte publie.
+    note: "Paramétrage uniquement, aucun bouton de publication. Karim a aussi un compte contributeur IT, non inclus dans la démo.",
+  },
 ] as const;
 
 const GENERIC_ROLE_LABEL: Record<AppRole, string> = {
@@ -75,10 +83,15 @@ export function PersonaSwitcher({ profile }: { profile: PersonaSwitcherProfile }
         </DropdownMenuLabel>
         {PERSONAS.map((p) => (
           <DropdownMenuItem key={p.key} onSelect={() => choose(p.key)} className="font-body-sm flex-col items-start">
-            <span className="font-body-md text-primary">{p.label}</span>
-            <span className="font-label-sm text-label-sm text-on-surface-variant">
-              {p.roleLabel} · {p.team}
+            <span className="font-body-md text-primary">
+              {p.label} · {p.roleLabel}
             </span>
+            <span className="font-label-sm text-label-sm text-on-surface-variant">{p.team}</span>
+            {p.note && (
+              <span className="font-body-sm text-body-sm italic text-on-surface-variant whitespace-normal">
+                {p.note}
+              </span>
+            )}
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />

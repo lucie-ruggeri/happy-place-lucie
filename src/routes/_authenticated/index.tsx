@@ -313,19 +313,34 @@ function ManagerSpace() {
               <span className="font-headline-sm text-headline-sm text-primary">Actus</span>
               <span className="font-label-sm text-label-sm uppercase text-primary">+ Nouvelle actu</span>
             </Link>
-            <button
-              type="button"
-              onClick={() => {
-                setSubmissionErrors({});
-                const only = role === "manager" && myTeams.data?.length === 1 ? myTeams.data[0] : "";
-                setSubmissionForm({ author_name: "", team: only, content: "", status: "en attente" });
-              }}
-              className="flex flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm text-left hover:border-primary"
-            >
-              <Icon name="lightbulb" className="text-on-surface-variant" />
-              <span className="font-headline-sm text-headline-sm text-primary">Idées</span>
-              <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Idée</span>
-            </button>
+            {isAdmin ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="flex cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                      <Icon name="lightbulb" className="text-on-surface-variant" />
+                      <span className="font-headline-sm text-headline-sm text-primary">Idées</span>
+                      <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Idée</span>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>Le compte admin ne publie pas d'idée.</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setSubmissionErrors({});
+                  const only = role === "manager" && myTeams.data?.length === 1 ? myTeams.data[0] : "";
+                  setSubmissionForm({ author_name: "", team: only, content: "", status: "en attente" });
+                }}
+                className="flex flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm text-left hover:border-primary"
+              >
+                <Icon name="lightbulb" className="text-on-surface-variant" />
+                <span className="font-headline-sm text-headline-sm text-primary">Idées</span>
+                <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Idée</span>
+              </button>
+            )}
             {isAdmin ? (
               <TooltipProvider>
                 <Tooltip>

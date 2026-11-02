@@ -58,11 +58,13 @@ INSERT INTO public.allowed_user_roles (allowed_user_id, role)
 SELECT up.id, p.role::public.app_role FROM up JOIN people p ON p.email = up.email
 ON CONFLICT (allowed_user_id) DO UPDATE SET role = excluded.role;
 
+-- karim.haddad (Yacine) ne gère plus "Direction Commerciale" : collision avec le
+-- persona manager Marc sur la même équipe, qui rendait my_manager_name() (LIMIT 1
+-- sans ORDER BY) non déterministe pour Inès (D79bis). Il garde "Marketing".
 INSERT INTO public.manager_teams (allowed_user_id, team)
 SELECT u.id, m.team
 FROM (VALUES
   ('sophie.marchand@biggerboat.example', 'Product'),
-  ('karim.haddad@biggerboat.example',    'Direction Commerciale'),
   ('karim.haddad@biggerboat.example',    'Marketing'),
   ('julie.moreau@biggerboat.example',    'People'),
   ('julie.moreau@biggerboat.example',    'Pôle Data et IA')
