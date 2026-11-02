@@ -131,9 +131,12 @@ function ManagerSpace() {
   const [rejectErrors, setRejectErrors] = useState<FieldErrors>({});
 
   const news = useQuery({ queryKey: ["news"], queryFn: fetchNews, retry: false });
+  // Flow 2-7 : seul le manager traite les idées en attente (RLS can_review_team les
+  // limite déjà à ses propres équipes) ; inutile d'interroger pour les autres rôles.
   const submissions = useQuery({
     queryKey: ["submissions"],
     queryFn: fetchSubmissions,
+    enabled: role === "manager",
     retry: false,
   });
   const mine = useQuery({
@@ -529,7 +532,8 @@ function ManagerSpace() {
             </div>
           </section>
 
-          {/* Idées de mon équipe à traiter */}
+          {/* Idées de mon équipe à traiter (flow 2-7 : seul le manager de l'équipe traite) */}
+          {role === "manager" && (
           <section className="col-span-12 lg:col-span-4 min-w-0 bg-surface-container-lowest border border-outline-variant p-md flex flex-col">
             <div className="flex flex-wrap items-center justify-between gap-xs border-b border-outline-variant pb-sm mb-md">
               <h2 className="font-headline-sm text-headline-sm text-primary min-w-0">
@@ -611,6 +615,7 @@ function ManagerSpace() {
               ))}
             </div>
           </section>
+          )}
 
           {/* Mes idées */}
           {mine.data && mine.data.length > 0 && (

@@ -34,7 +34,7 @@ export function SubmissionReader({
                   {s.author_name}
                 </DialogPrimitive.Title>
                 <DialogPrimitive.Description className="font-label-sm text-label-sm text-on-surface-variant">
-                  {s.team} • {(statusLabel ?? s.status).toUpperCase()} • Soumise le {formatExactDate(s.created_at)}
+                  {s.team} • {(statusLabel ?? s.status).toUpperCase()} • Proposée le {formatExactDate(s.created_at)}
                 </DialogPrimitive.Description>
               </div>
               <DialogPrimitive.Close

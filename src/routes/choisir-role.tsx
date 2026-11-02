@@ -39,7 +39,7 @@ const ROLES: { value: AppRole; label: string; description: string }[] = [
   {
     value: "manager",
     label: "Manager",
-    description: "Je valide ou refuse les demandes de mon équipe, je rédige des actualités et je suis les points bloquants.",
+    description: "Je valide ou refuse les idées de mon équipe, je rédige des actualités et je suis les points bloquants.",
   },
   {
     value: "admin",

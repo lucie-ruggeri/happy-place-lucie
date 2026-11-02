@@ -259,7 +259,7 @@ export async function fetchResolvedBlockers(): Promise<Blocker[]> {
 
 export type ValidatedSubmission = Submission & { validated_at: string | null };
 
-/** Demandes validées, toutes équipes (filtrées par les règles d'accès de la base). */
+/** Idées validées, toutes équipes (filtrées par les règles d'accès de la base). */
 export async function fetchValidatedSubmissions(): Promise<ValidatedSubmission[]> {
   const { data, error } = await db
     .from("submissions")

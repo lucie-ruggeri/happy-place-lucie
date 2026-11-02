@@ -522,7 +522,7 @@ function TeamsSection({ users, teams, onChanged }: { users: Row[]; teams: { name
     mutationFn: async (n: string) => {
       const { error } = await supabase.from("teams").delete().eq("name", n);
       if (error)
-        throw new Error(error.code === "23503" ? "Impossible : cette équipe est encore utilisée (personnes ou demandes). Réaffecte-les d'abord." : error.message);
+        throw new Error(error.code === "23503" ? "Impossible : cette équipe est encore utilisée (personnes ou idées). Réaffecte-les d'abord." : error.message);
     },
     onSuccess: () => { toast.success("Équipe supprimée"); onChanged(); },
     onError,

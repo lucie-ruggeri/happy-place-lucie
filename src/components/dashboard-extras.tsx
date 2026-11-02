@@ -88,7 +88,7 @@ export function ValidatedSubmissions({
   return (
     <section className="col-span-12 min-w-0 bg-surface-container-lowest border border-outline-variant p-md">
       <div className="flex flex-wrap items-center justify-between gap-sm border-b border-outline-variant pb-sm mb-md">
-        <h2 className="font-headline-sm text-headline-sm text-primary">Demandes validées</h2>
+        <h2 className="font-headline-sm text-headline-sm text-primary">Idées validées</h2>
         <label className="flex items-center gap-xs font-label-sm text-label-sm text-on-surface-variant min-w-0">
           <span className="sr-only">Filtrer par équipe</span>
           <select
@@ -103,16 +103,16 @@ export function ValidatedSubmissions({
         </label>
       </div>
       {q.isLoading && <p className="text-body-sm text-on-surface-variant">Chargement…</p>}
-      {q.isError && <p className="text-body-sm text-error">Les demandes validées sont indisponibles.</p>}
+      {q.isError && <p className="text-body-sm text-error">Les idées validées sont indisponibles.</p>}
       {q.data && filtered.length === 0 && (
-        <p className="text-body-sm text-on-surface-variant italic">Aucune demande validée pour le moment.</p>
+        <p className="text-body-sm text-on-surface-variant italic">Aucune idée validée pour le moment.</p>
       )}
       <div className="grid gap-xs md:grid-cols-2">
         {shown.map((s) => (
           <div key={s.id} className="p-sm border border-outline-variant bg-card min-w-0 overflow-hidden space-y-xs">
             <p className="text-[11px] font-label-sm text-on-surface-variant uppercase wrap-anywhere">
               <span className="text-primary font-bold">{s.author_name}</span> • {s.team} •{" "}
-              {s.validated_at ? `Validée le ${formatExactDate(s.validated_at)}` : `Soumise le ${formatExactDate(s.created_at)}`}
+              {s.validated_at ? `Validée le ${formatExactDate(s.validated_at)}` : `Proposée le ${formatExactDate(s.created_at)}`}
             </p>
             <SubmissionPreview content={s.content} onOpen={() => onRead(s)} />
             {s.attachment_path &&
