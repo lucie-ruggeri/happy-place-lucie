@@ -69,11 +69,14 @@ export function ValidatedSubmissions({
   email,
   managerTeams,
   onRead,
+  className = "col-span-12",
 }: {
   role: string | null | undefined;
   email: string;
   managerTeams: string[];
   onRead: (s: Submission) => void;
+  /** Largeur de la section dans la grille parente (ex. côte à côte avec la file à traiter du manager). */
+  className?: string;
 }) {
   const q = useQuery({ queryKey: ["submissions", "validated"], queryFn: fetchValidatedSubmissions, retry: false });
   const [team, setTeam] = useState("");
@@ -86,7 +89,7 @@ export function ValidatedSubmissions({
   const shown = filtered.slice(0, limit);
 
   return (
-    <section className="col-span-12 min-w-0 bg-surface-container-lowest border border-outline-variant p-md">
+    <section className={`${className} min-w-0 bg-surface-container-lowest border border-outline-variant p-md`}>
       <div className="flex flex-wrap items-center justify-between gap-sm border-b border-outline-variant pb-sm mb-md">
         <h2 className="font-headline-sm text-headline-sm text-primary">Idées validées</h2>
         <label className="flex items-center gap-xs font-label-sm text-label-sm text-on-surface-variant min-w-0">

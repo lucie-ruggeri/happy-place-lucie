@@ -556,7 +556,7 @@ function ManagerSpace() {
 
           {/* Idées de mon équipe à traiter (flow 2-7 : seul le manager de l'équipe traite) */}
           {role === "manager" && (
-          <section className="col-span-12 lg:col-span-4 min-w-0 bg-surface-container-lowest border border-outline-variant p-md flex flex-col">
+          <section className="col-span-12 lg:col-span-6 min-w-0 bg-surface-container-lowest border border-outline-variant p-md flex flex-col">
             <div className="flex flex-wrap items-center justify-between gap-xs border-b border-outline-variant pb-sm mb-md">
               <h2 className="font-headline-sm text-headline-sm text-primary min-w-0">
                 Idées de mon équipe à traiter
@@ -639,6 +639,17 @@ function ManagerSpace() {
           </section>
           )}
 
+          {/* Idées validées, côte à côte avec la file à traiter pour le manager seulement */}
+          {role === "manager" && (
+            <ValidatedSubmissions
+              role={role}
+              email={myEmail}
+              managerTeams={myTeams.data ?? []}
+              onRead={setReading}
+              className="col-span-12 lg:col-span-6"
+            />
+          )}
+
           {/* Mes idées : l'admin n'a aucun contenu à lui (D26) */}
           {!isAdmin && mine.data && mine.data.length > 0 && (
             <section className="col-span-12 min-w-0 bg-surface-container-lowest border border-outline-variant p-md">
@@ -665,13 +676,16 @@ function ManagerSpace() {
             </section>
           )}
 
-          {/* Idées validées : dernier bloc du module Boîte à idées */}
-          <ValidatedSubmissions
-            role={role}
-            email={myEmail}
-            managerTeams={myTeams.data ?? []}
-            onRead={setReading}
-          />
+          {/* Idées validées : dernier bloc du module Boîte à idées (déjà affichée plus haut,
+              côte à côte, pour le manager : voir juste après "Idées de mon équipe à traiter") */}
+          {role !== "manager" && (
+            <ValidatedSubmissions
+              role={role}
+              email={myEmail}
+              managerTeams={myTeams.data ?? []}
+              onRead={setReading}
+            />
+          )}
 
           {/* ======================= POINTS BLOQUANTS ======================= */}
           <div className="col-span-12 flex flex-wrap items-center justify-between gap-sm">
