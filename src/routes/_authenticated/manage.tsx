@@ -29,11 +29,10 @@ export const Route = createFileRoute("/_authenticated/manage")({
   component: ManageLayout,
 });
 
+// D26 : l'admin ne publie rien, il garde le paramétrage. Les onglets Actualités,
+// Soumissions, Points bloquants et Indicateurs sont désactivés (voir le beforeLoad
+// de chacune de ces 4 routes) ; le code reste en place si D26 change plus tard.
 const tabs = [
-  { to: "/manage/news", label: "ACTUALITÉS" },
-  { to: "/manage/submissions", label: "SOUMISSIONS" },
-  { to: "/manage/blockers", label: "POINTS BLOQUANTS" },
-  { to: "/manage/metrics", label: "INDICATEURS" },
   { to: "/manage/users", label: "UTILISATEURS AUTORISÉS" },
 ] as const;
 

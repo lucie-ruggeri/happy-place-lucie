@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -41,6 +41,11 @@ export const Route = createFileRoute("/_authenticated/manage/submissions")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
+  // D26 : l'admin ne valide rien. Onglet désactivé (voir manage.tsx), code conservé
+  // au cas où D26 changerait ; la migration de fermeture reste à faire (CLAUDE.md).
+  beforeLoad: () => {
+    throw redirect({ to: "/manage/users" });
+  },
   component: ManageSubmissions,
 });
 

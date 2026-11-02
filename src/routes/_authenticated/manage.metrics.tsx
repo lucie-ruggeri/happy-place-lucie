@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -36,6 +36,12 @@ export const Route = createFileRoute("/_authenticated/manage/metrics")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
+  // D26 : l'admin garde le paramétrage mais plus la création de contenu. Onglet
+  // désactivé (voir manage.tsx), code conservé ; la migration de fermeture reste
+  // à faire (CLAUDE.md).
+  beforeLoad: () => {
+    throw redirect({ to: "/manage/users" });
+  },
   component: ManageMetrics,
 });
 

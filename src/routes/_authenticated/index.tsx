@@ -722,10 +722,12 @@ function ManagerSpace() {
                         </option>
                       </select>
                     ) : (
-                      <BlockerStatusBadge
-                        status={b.status}
-                        title="Seuls les managers du pôle responsable font avancer ce point."
-                      />
+                      <div className="flex flex-col items-end gap-1 text-right max-w-[160px]">
+                        <BlockerStatusBadge status={b.status} />
+                        <p className="font-label-sm text-label-sm text-on-surface-variant">
+                          Seuls les managers du pôle responsable font avancer ce point.
+                        </p>
+                      </div>
                     )}
                   </div>
                 );

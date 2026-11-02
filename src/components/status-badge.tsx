@@ -54,21 +54,12 @@ const BLOCKER_STATUS_STYLES: Record<BlockerStatus, string> = {
   RÉSOLU: "bg-success-container text-on-success-container",
 };
 
-export function BlockerStatusBadge({
-  status,
-  className = "",
-  title,
-}: {
-  status: string;
-  className?: string;
-  title?: string;
-}) {
+export function BlockerStatusBadge({ status, className = "" }: { status: string; className?: string }) {
   const known = status in BLOCKER_STATUS_LABELS ? (status as BlockerStatus) : null;
   const label = known ? BLOCKER_STATUS_LABELS[known] : status;
   const style = known ? BLOCKER_STATUS_STYLES[known] : "bg-surface-container-high text-on-surface-variant";
   return (
     <span
-      title={title}
       className={`inline-flex items-center rounded-sm px-xs py-0.5 font-label-sm text-label-sm uppercase tracking-wide ${style} ${className}`}
     >
       {label}
