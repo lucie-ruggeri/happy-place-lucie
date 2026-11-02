@@ -102,7 +102,8 @@ function ManagerSpace() {
   const qc = useQueryClient();
   const { role, email, firstName, team, isReviewer } = Route.useRouteContext();
   const isAdmin = role === "admin";
-  const canReview = role === "admin" || role === "manager";
+  // D26 : l'admin ne valide ni ne refuse rien (seuls les managers relisent les soumissions).
+  const canReview = role === "manager";
   const myEmail = (email ?? "").toLowerCase();
   const [nps, setNps] = useState<string>("");
   const [submissionForm, setSubmissionForm] = useState<SubmissionInput | null>(null);
