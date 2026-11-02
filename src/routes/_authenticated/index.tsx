@@ -407,6 +407,97 @@ function ManagerSpace() {
           </div>
         </div>
 
+        {/* Rangée d'accès rapide aux 4 modules : mêmes actions, mêmes conditions que les
+            boutons "+ ..." de chaque section ci-dessous (doublon visuel assumé). */}
+        <section className="flex flex-wrap gap-sm mb-md">
+          {isAdmin ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="flex min-w-[240px] flex-1 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                    <Icon name="article" className="text-on-surface-variant" />
+                    <span className="font-headline-sm text-headline-sm text-primary">Actus</span>
+                    <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Publier une nouvelle actu</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Le compte admin ne publie pas d'actu.</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <Link
+              to="/nouvelle-actu"
+              className="flex min-w-[240px] flex-1 flex-col gap-xs border-2 border-primary bg-surface-container-lowest p-sm hover:bg-surface-container"
+            >
+              <Icon name="article" className="text-primary" />
+              <span className="font-headline-sm text-headline-sm text-primary">Actus</span>
+              <span className="font-label-sm text-label-sm uppercase text-primary">+ Publier une nouvelle actu</span>
+            </Link>
+          )}
+          {isAdmin ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="flex min-w-[240px] flex-1 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                    <Icon name="lightbulb" className="text-on-surface-variant" />
+                    <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
+                    <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Le compte admin ne publie pas d'idée.</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setSubmissionErrors({});
+                const only = role === "manager" && myTeams.data?.length === 1 ? myTeams.data[0] : "";
+                setSubmissionForm({ author_name: "", team: only, content: "", status: "en attente" });
+              }}
+              className="flex min-w-[240px] flex-1 flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm text-left hover:border-primary"
+            >
+              <Icon name="lightbulb" className="text-on-surface-variant" />
+              <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
+              <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
+            </button>
+          )}
+          {isAdmin ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="flex min-w-[240px] flex-1 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                    <Icon name="report" className="text-on-surface-variant" />
+                    <span className="font-headline-sm text-headline-sm text-primary">Points bloquants</span>
+                    <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Signaler un point bloquant</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Les admins ne signalent pas de point bloquant.</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <Link
+              to="/nouveau-point-bloquant"
+              className="flex min-w-[240px] flex-1 flex-col gap-xs border-2 border-primary bg-surface-container-lowest p-sm hover:bg-surface-container"
+            >
+              <Icon name="report" className="text-primary" />
+              <span className="font-headline-sm text-headline-sm text-primary">Points bloquants</span>
+              <span className="font-label-sm text-label-sm uppercase text-primary">+ Signaler un point bloquant</span>
+            </Link>
+          )}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="flex min-w-[240px] flex-1 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                  <Icon name="bar_chart" className="text-on-surface-variant" />
+                  <span className="font-headline-sm text-headline-sm text-primary">Indicateurs</span>
+                  <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Publier / mettre à jour un indicateur</span>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>Bientôt disponible</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </section>
+
         <div className="bento-grid">
           {/* ============================= ACTUS ============================= */}
           <div className="col-span-12 flex flex-wrap items-center justify-between gap-sm">
@@ -415,10 +506,10 @@ function ManagerSpace() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="flex w-56 shrink-0 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                    <span className="flex w-64 shrink-0 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
                       <Icon name="article" className="text-on-surface-variant" />
                       <span className="font-headline-sm text-headline-sm text-primary">Actus</span>
-                      <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Nouvelle actu</span>
+                      <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Publier une nouvelle actu</span>
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>Le compte admin ne publie pas d'actu.</TooltipContent>
@@ -427,11 +518,11 @@ function ManagerSpace() {
             ) : (
               <Link
                 to="/nouvelle-actu"
-                className="flex w-56 shrink-0 flex-col gap-xs border-2 border-primary bg-surface-container-lowest p-sm hover:bg-surface-container"
+                className="flex w-64 shrink-0 flex-col gap-xs border-2 border-primary bg-surface-container-lowest p-sm hover:bg-surface-container"
               >
                 <Icon name="article" className="text-primary" />
                 <span className="font-headline-sm text-headline-sm text-primary">Actus</span>
-                <span className="font-label-sm text-label-sm uppercase text-primary">+ Nouvelle actu</span>
+                <span className="font-label-sm text-label-sm uppercase text-primary">+ Publier une nouvelle actu</span>
               </Link>
             )}
           </div>
@@ -560,7 +651,7 @@ function ManagerSpace() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="flex w-56 shrink-0 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                    <span className="flex w-64 shrink-0 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
                       <Icon name="lightbulb" className="text-on-surface-variant" />
                       <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
                       <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
@@ -577,7 +668,7 @@ function ManagerSpace() {
                   const only = role === "manager" && myTeams.data?.length === 1 ? myTeams.data[0] : "";
                   setSubmissionForm({ author_name: "", team: only, content: "", status: "en attente" });
                 }}
-                className="flex w-56 shrink-0 flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm text-left hover:border-primary"
+                className="flex w-64 shrink-0 flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm text-left hover:border-primary"
               >
                 <Icon name="lightbulb" className="text-on-surface-variant" />
                 <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
@@ -726,10 +817,10 @@ function ManagerSpace() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="flex w-56 shrink-0 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                    <span className="flex w-64 shrink-0 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
                       <Icon name="report" className="text-on-surface-variant" />
                       <span className="font-headline-sm text-headline-sm text-primary">Points bloquants</span>
-                      <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Point bloquant</span>
+                      <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Signaler un point bloquant</span>
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>Les admins ne signalent pas de point bloquant.</TooltipContent>
@@ -738,11 +829,11 @@ function ManagerSpace() {
             ) : (
               <Link
                 to="/nouveau-point-bloquant"
-                className="flex w-56 shrink-0 flex-col gap-xs border-2 border-primary bg-surface-container-lowest p-sm hover:bg-surface-container"
+                className="flex w-64 shrink-0 flex-col gap-xs border-2 border-primary bg-surface-container-lowest p-sm hover:bg-surface-container"
               >
                 <Icon name="report" className="text-primary" />
                 <span className="font-headline-sm text-headline-sm text-primary">Points bloquants</span>
-                <span className="font-label-sm text-label-sm uppercase text-primary">+ Point bloquant</span>
+                <span className="font-label-sm text-label-sm uppercase text-primary">+ Signaler un point bloquant</span>
               </Link>
             )}
           </div>
@@ -992,10 +1083,10 @@ function ManagerSpace() {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="flex w-56 shrink-0 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                  <span className="flex w-64 shrink-0 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
                     <Icon name="bar_chart" className="text-on-surface-variant" />
                     <span className="font-headline-sm text-headline-sm text-primary">Indicateurs</span>
-                    <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Indicateur</span>
+                    <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Publier / mettre à jour un indicateur</span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>Bientôt disponible</TooltipContent>
