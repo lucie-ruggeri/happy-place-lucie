@@ -194,7 +194,7 @@ export async function exportMyRecentSubmissions(email: string): Promise<number> 
   const rows = data ?? [];
   if (rows.length === 0) return 0;
 
-  const header = ["Date", "Auteur", "E-mail", "Équipe", "Question soumise", "Statut"];
+  const header = ["Date", "Auteur", "E-mail", "Équipe", "Idée", "Statut"];
   const csv = [
     header.map(csvCell).join(";"),
     ...rows.map((row) =>
@@ -213,7 +213,7 @@ export async function exportMyRecentSubmissions(email: string): Promise<number> 
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `soumissions-30-jours-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.download = `idees-30-jours-${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(link);
   link.click();
   link.remove();

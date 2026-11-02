@@ -24,7 +24,7 @@ export const submissionSchema = z.object({
   team: z.string().trim().min(2, "Pôle requis").max(60, "60 caractères maximum"),
   content: z.string().trim().min(5, "5 caractères minimum").superRefine((v, ctx) => {
     if (v.length > 2000)
-      ctx.addIssue({ code: "custom", message: `Ta proposition dépasse 2 000 caractères (${v.length.toLocaleString("fr-FR")} saisis). Raccourcis-la avant d'envoyer.` });
+      ctx.addIssue({ code: "custom", message: `Ton idée dépasse 2 000 caractères (${v.length.toLocaleString("fr-FR")} saisis). Raccourcis-la avant d'envoyer.` });
   }),
   status: z.enum(["en attente", "validée", "refusée"], {
     errorMap: () => ({ message: "Statut invalide" }),

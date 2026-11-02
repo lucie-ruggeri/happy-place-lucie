@@ -50,7 +50,7 @@ export const Route = createFileRoute("/_authenticated/")({
       {
         name: "description",
         content:
-          "Pilotez les missions de recrutement IT et digital, les propositions des équipes, les alertes opérationnelles et les indicateurs du cabinet.",
+          "Pilotez les missions de recrutement IT et digital, les idées des équipes, les alertes opérationnelles et les indicateurs du cabinet.",
       },
       { property: "og:title", content: "Happy Place — Vue d'ensemble" },
       {
@@ -171,10 +171,10 @@ function ManagerSpace() {
     },
     onSuccess: (count) => {
       if (count === 0) {
-        toast.info("Aucune soumission en attente ou validée sur les 30 derniers jours.");
+        toast.info("Aucune idée en attente ou validée sur les 30 derniers jours.");
         return;
       }
-      toast.success(`${count} soumission${count > 1 ? "s" : ""} exportée${count > 1 ? "s" : ""} au format CSV.`);
+      toast.success(`${count} idée${count > 1 ? "s" : ""} exportée${count > 1 ? "s" : ""} au format CSV.`);
     },
     onError,
   });
@@ -184,7 +184,7 @@ function ManagerSpace() {
     onSuccess: (_d, vars) => {
       if (vars.status === "refusée") {
         setRejecting(null);
-        toast.success("Soumission refusée");
+        toast.success("Idée refusée");
       } else {
         setReading((r) => (r?.id === vars.id ? null : r));
       }
@@ -219,7 +219,7 @@ function ManagerSpace() {
       setSubmissionForm(null);
       setAttachment(null);
       setSubmissionErrors({});
-      toast.success("Soumission envoyée");
+      toast.success("Idée envoyée");
       qc.invalidateQueries({ queryKey: ["submissions"] });
     },
     onError: (e: unknown) => toast.error(rejectionErrorMessage(e)),
@@ -356,8 +356,8 @@ function ManagerSpace() {
                   <TooltipTrigger asChild>
                     <span className="flex cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
                       <Icon name="lightbulb" className="text-on-surface-variant" />
-                      <span className="font-headline-sm text-headline-sm text-primary">Idées</span>
-                      <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Idée</span>
+                      <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
+                      <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>Le compte admin ne publie pas d'idée.</TooltipContent>
@@ -374,8 +374,8 @@ function ManagerSpace() {
                 className="flex flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm text-left hover:border-primary"
               >
                 <Icon name="lightbulb" className="text-on-surface-variant" />
-                <span className="font-headline-sm text-headline-sm text-primary">Idées</span>
-                <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Idée</span>
+                <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
+                <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
               </button>
             )}
             {isAdmin ? (
@@ -529,14 +529,14 @@ function ManagerSpace() {
             </div>
           </section>
 
-          {/* Pending Submissions */}
+          {/* Idées de mon équipe à traiter */}
           <section className="col-span-12 lg:col-span-4 min-w-0 bg-surface-container-lowest border border-outline-variant p-md flex flex-col">
-            <div className="flex items-center justify-between border-b border-outline-variant pb-sm mb-md">
-              <h2 className="font-headline-sm text-headline-sm text-primary">
-                Soumissions en attente
+            <div className="flex flex-wrap items-center justify-between gap-xs border-b border-outline-variant pb-sm mb-md">
+              <h2 className="font-headline-sm text-headline-sm text-primary min-w-0">
+                Idées de mon équipe à traiter
               </h2>
-              <div className="bg-tertiary-fixed text-on-tertiary-fixed px-xs py-1 rounded-full font-label-sm text-label-sm">
-                {submissions.data?.length ?? 0} NOUVELLES
+              <div className="shrink-0 bg-tertiary-fixed text-on-tertiary-fixed px-xs py-1 rounded-full font-label-sm text-label-sm uppercase">
+                {submissions.data?.length ?? 0} nouvelle{(submissions.data?.length ?? 0) === 1 ? "" : "s"}
               </div>
             </div>
             <div className="space-y-sm flex-grow min-w-0">
@@ -566,12 +566,12 @@ function ManagerSpace() {
               )}
               {submissions.isError && (
                 <p className="text-body-sm text-error">
-                  Les soumissions sont indisponibles.
+                  Les idées sont indisponibles.
                 </p>
               )}
               {submissions.data?.length === 0 && (
                 <p className="text-body-sm text-on-surface-variant italic">
-                  Aucune soumission en attente.
+                  Aucune idée en attente.
                 </p>
               )}
               {submissions.data?.map((s) => (
@@ -612,11 +612,11 @@ function ManagerSpace() {
             </div>
           </section>
 
-          {/* Mes soumissions */}
+          {/* Mes idées */}
           {mine.data && mine.data.length > 0 && (
             <section className="col-span-12 min-w-0 bg-surface-container-lowest border border-outline-variant p-md">
               <h2 className="font-headline-sm text-headline-sm text-primary border-b border-outline-variant pb-sm mb-md">
-                Mes soumissions
+                Mes idées
               </h2>
               <div className="space-y-xs">
                 {mine.data.map((s) => (
@@ -851,7 +851,7 @@ function ManagerSpace() {
         approving={review.isPending}
       />
       {rejecting && (
-        <Modal title="Refuser la soumission" onClose={() => setRejecting(null)}>
+        <Modal title="Refuser l'idée" onClose={() => setRejecting(null)}>
           <form
             noValidate
             className="space-y-sm"
@@ -881,7 +881,7 @@ function ManagerSpace() {
               <TextArea
                 rows={4}
                 value={rejectForm.rejection_note}
-                placeholder="Explique au collaborateur pourquoi sa soumission est refusée…"
+                placeholder="Explique au collaborateur pourquoi son idée est refusée…"
                 onChange={(e) => setRejectForm({ ...rejectForm, rejection_note: e.target.value })}
               />
               <CharCounter value={rejectForm.rejection_note} max={500} />
@@ -891,7 +891,7 @@ function ManagerSpace() {
         </Modal>
       )}
       {submissionForm && (
-        <Modal title="Soumettre une proposition" onClose={() => setSubmissionForm(null)}>
+        <Modal title="Proposer une idée" onClose={() => setSubmissionForm(null)}>
           <form onSubmit={sendSubmission} className="space-y-sm" noValidate>
             <ErrorSummary errors={submissionErrors} />
             <Field label="Nom" error={submissionErrors.author_name}>
@@ -920,7 +920,7 @@ function ManagerSpace() {
             {role === "admin" && (
               <p className="text-body-sm text-on-surface-variant">Équipe : Admin</p>
             )}
-            <Field label="Proposition" error={submissionErrors.content}>
+            <Field label="Idée" error={submissionErrors.content}>
               <TextArea
                 rows={5}
                 value={submissionForm.content}

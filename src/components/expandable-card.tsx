@@ -8,7 +8,7 @@ export function rejectionErrorMessage(e: unknown): string {
   const msg = (e as Error)?.message ?? String(e);
   if (msg.includes("submissions_rejection_note_max_500")) return REJECTION_NOTE_DB_MSG;
   if (msg.includes("submissions_content_length_check"))
-    return "La proposition doit faire entre 5 et 2 000 caractères.";
+    return "L'idée doit faire entre 5 et 2 000 caractères.";
   return msg;
 }
 
