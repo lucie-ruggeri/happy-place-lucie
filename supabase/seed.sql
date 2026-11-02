@@ -230,32 +230,36 @@ INSERT INTO public.blockers (title, description, department, severity, status, c
 ('Import des candidatures dans l’ATS', 'Les dossiers actifs ont été repris et contrôlés dans le nouvel outil de suivi.', 'OPÉRATIONS', 'warning', 'EN COURS', now() - interval '17 days', now() - interval '17 days');
 UPDATE public.blockers SET status = 'RÉSOLU' WHERE title = 'Import des candidatures dans l’ATS';
 
--- 6. Indicateurs (l'historique d'abord, puis la valeur actuelle)
+-- 6. Indicateurs — dates de mise à jour FIXES (D21 : affichage "Mis à jour le …" stable
+-- le jour de la démo, pas de now()/interval qui dériverait à chaque rejeu du seed).
+-- Une date distincte par indicateur, entre le 12 octobre et le 1er novembre 2026.
 INSERT INTO public.metrics_history (metric_key, value, recorded_at) VALUES
-('training_kpi', 38.6, now() - interval '12 days'),
-('active_users', 42,   now() - interval '12 days'),
-('active_users', 45,   now() - interval '8 days'),
-('nps',          71,   now() - interval '12 days'),
-('nps',          72,   now() - interval '8 days'),
-('engagement',   84.3, now() - interval '12 days'),
-('turnover',     31,   now() - interval '12 days'),
-('absenteeism',  27.8, now() - interval '12 days'),
-('open_positions', 63, now() - interval '12 days'),
-('training_hours', 186, now() - interval '12 days');
+('training_kpi',   38.6, '2026-10-24 12:00:00+00'),
+('active_users',   42,   '2026-10-28 12:00:00+00'),
+('active_users',   45,   '2026-11-01 12:00:00+00'),
+('nps',            71,   '2026-10-16 12:00:00+00'),
+('nps',            72,   '2026-10-20 12:00:00+00'),
+('engagement',     84.3, '2026-10-15 12:00:00+00'),
+('turnover',       31,   '2026-10-12 12:00:00+00'),
+('absenteeism',    27.8, '2026-10-24 12:00:00+00'),
+('open_positions', 63,   '2026-10-18 12:00:00+00'),
+('training_hours', 186,  '2026-10-31 12:00:00+00');
 
--- Indicateurs mis à jour il y a 8 jours (taux de placement, missions, NPS) ou 12 jours (les autres)
+-- metrics.updated_at = date affichée "Mis à jour le …" (D21) ; écarts conservés à
+-- l'identique de l'ancienne version relative (4 jours entre historique et mise à jour
+-- pour training_kpi/active_users/nps, pour ne pas changer les tendances déjà affichées).
 INSERT INTO public.metrics (key, label, value, unit, updated_at) VALUES
-('training_kpi',   'Taux de placement',           40.6, '%', now() - interval '8 days'),
-('active_users',   'Missions actives',            34.2, NULL, now() - interval '8 days'),
-('nps',            'NPS candidats',               71,   NULL, now() - interval '8 days'),
-('engagement',     'Taux d’acceptation',          84.3, '%', now() - interval '12 days'),
-('turnover',       'Délai moyen de recrutement',  31,   'j', now() - interval '12 days'),
-('absenteeism',    'Taux de réponse candidats',   27.8, '%', now() - interval '12 days'),
-('open_positions', 'Postes ouverts',              63,   NULL, now() - interval '12 days'),
-('training_hours', 'Entretiens réalisés',         186,  NULL, now() - interval '12 days');
+('training_kpi',   'Taux de placement',           40.6, '%',  '2026-10-28 12:00:00+00'),
+('active_users',   'Missions actives',            34.2, NULL, '2026-11-01 12:00:00+00'),
+('nps',            'NPS candidats',               71,   NULL, '2026-10-20 12:00:00+00'),
+('engagement',     'Taux d’acceptation',          84.3, '%',  '2026-10-15 12:00:00+00'),
+('turnover',       'Délai moyen de recrutement',  31,   'j',  '2026-10-12 12:00:00+00'),
+('absenteeism',    'Taux de réponse candidats',   27.8, '%',  '2026-10-24 12:00:00+00'),
+('open_positions', 'Postes ouverts',              63,   NULL, '2026-10-18 12:00:00+00'),
+('training_hours', 'Entretiens réalisés',         186,  NULL, '2026-10-31 12:00:00+00');
 
--- Le trigger d'historique a ajouté une ligne datée d'aujourd'hui : on la recale
--- sur la date de mise à jour, et on retire les doublons de valeur inchangée.
+-- Le trigger d'historique a ajouté une ligne datée d'aujourd'hui (exécution du seed) : on
+-- la recale sur la date de mise à jour fixe, et on retire les doublons de valeur inchangée.
 UPDATE public.metrics_history h SET recorded_at = m.updated_at
   FROM public.metrics m
  WHERE h.metric_key = m.key AND h.recorded_at > now() - interval '1 minute';
