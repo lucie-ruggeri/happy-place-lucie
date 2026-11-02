@@ -40,6 +40,7 @@ import {
   fetchBlockers,
   fetchMetrics,
   deltaText,
+  formatDateMiseAJour,
   fetchNews,
   fetchSubmissions,
   fetchMySubmissions,
@@ -1112,6 +1113,11 @@ function ManagerSpace() {
                   {deltaText(metricOf(metrics.data, "training_kpi")) &&
                     ` · ${deltaText(metricOf(metrics.data, "training_kpi"))}`}
                 </p>
+                {formatDateMiseAJour(metricOf(metrics.data, "training_kpi")?.updated_at) && (
+                  <p className="text-[10px] text-on-surface-variant">
+                    {formatDateMiseAJour(metricOf(metrics.data, "training_kpi")?.updated_at)}
+                  </p>
+                )}
               </div>
               <div className="p-sm bg-card border border-outline-variant text-center">
                 <p className="font-label-sm text-label-sm text-on-surface-variant uppercase">
@@ -1125,6 +1131,11 @@ function ManagerSpace() {
                   {deltaText(metricOf(metrics.data, "active_users")) &&
                     ` · ${deltaText(metricOf(metrics.data, "active_users"))}`}
                 </p>
+                {formatDateMiseAJour(metricOf(metrics.data, "active_users")?.updated_at) && (
+                  <p className="text-[10px] text-on-surface-variant">
+                    {formatDateMiseAJour(metricOf(metrics.data, "active_users")?.updated_at)}
+                  </p>
+                )}
               </div>
             </div>
             {isAdmin && (
@@ -1138,6 +1149,9 @@ function ManagerSpace() {
                       }`
                     : "Mis à jour à partir des retours candidats."}
                 </p>
+                {formatDateMiseAJour(npsMetric?.updated_at) && (
+                  <p className="text-[10px] text-on-surface-variant">{formatDateMiseAJour(npsMetric?.updated_at)}</p>
+                )}
               </div>
             )}
             <div className="mt-auto pt-md">

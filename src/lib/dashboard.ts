@@ -77,6 +77,7 @@ export type Metric = {
   trend: "hausse" | "baisse" | "stable";
   previous_value: number | null;
   delta: number | string | null;
+  updated_at: string | null;
 };
 
 export const TREND_LABELS: Record<Metric["trend"], string> = {
@@ -101,6 +102,25 @@ export function formatMetricValue(value: number | string, unit: string | null): 
     maximumFractionDigits: 1,
   });
   return `${formatted}${unit ?? ""}`;
+}
+
+/** "Mis à jour le 28 octobre 2026" (D21), fuseau Europe/Paris, sans heure. Chaîne vide
+ * si la date est absente ou invalide (pas de "Mis à jour le null"/"Invalid Date"). */
+export function formatDateMiseAJour(date: string | null | undefined): string {
+  if (!date) return "";
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("fr-FR", {
+    timeZone: "Europe/Paris",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).formatToParts(parsed);
+  const day = parts.find((p) => p.type === "day")?.value ?? "";
+  const month = parts.find((p) => p.type === "month")?.value ?? "";
+  const year = parts.find((p) => p.type === "year")?.value ?? "";
+  const dayLabel = day === "1" ? "1er" : day;
+  return `Mis à jour le ${dayLabel} ${month} ${year}`;
 }
 
 export async function fetchNews(): Promise<News[]> {
