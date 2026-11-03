@@ -213,3 +213,32 @@ export async function fetchMyFollowedBlockerIds(): Promise<Set<string>> {
   if (error) throw error;
   return new Set((data ?? []).map((r) => r.blocker_id));
 }
+
+export type BlockerNotification = {
+  id: string;
+  blocker_id: string | null;
+  message: string;
+  created_at: string;
+  read_at: string | null;
+};
+
+/** Notifications de la cloche (R9), les plus récentes d'abord. blocker_notifications_select ne
+ * laisse lire QUE ses propres lignes : pas de WHERE nécessaire, la RLS filtre déjà à "moi". */
+export async function fetchMyBlockerNotifications(): Promise<BlockerNotification[]> {
+  const { data, error } = await supabase
+    .from("blocker_notifications")
+    .select("id, blocker_id, message, created_at, read_at")
+    .order("created_at", { ascending: false })
+    .limit(20);
+  if (error) throw error;
+  return (data ?? []) as BlockerNotification[];
+}
+
+/** Marque une notification comme lue (policy update : seulement la sienne). */
+export async function markBlockerNotificationRead(id: string): Promise<void> {
+  const { error } = await supabase
+    .from("blocker_notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw error;
+}

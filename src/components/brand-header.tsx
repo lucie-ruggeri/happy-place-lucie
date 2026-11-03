@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import sharkLogo from "@/assets/bigger-boat-shark.png";
 import { supabase } from "@/integrations/supabase/client";
 import { PersonaSwitcher, type PersonaSwitcherProfile } from "@/components/persona-switcher";
+import { NotificationBell } from "@/components/notification-bell";
 
 export function BrandHeader({ profile }: { profile?: PersonaSwitcherProfile } = {}) {
   // Version élèves : sélecteur de persona visible dès qu'on est connecté avec un profil
@@ -30,6 +31,7 @@ export function BrandHeader({ profile }: { profile?: PersonaSwitcherProfile } = 
           <span className="font-label-md text-lg font-bold uppercase text-primary">Bigger Boat</span>
         </Link>
         <div className="flex items-center gap-md">
+          {signedIn && profile?.email && <NotificationBell email={profile.email} />}
           {signedIn && pathname !== "/choisir-role" && (
             profile ? (
               <PersonaSwitcher profile={profile} />

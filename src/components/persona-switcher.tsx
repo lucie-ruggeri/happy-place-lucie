@@ -16,6 +16,8 @@ export interface PersonaSwitcherProfile {
   firstName: string | null;
   role: AppRole;
   team: string | null;
+  /** Lu par BrandHeader pour la cloche de notifications (R9) ; PersonaSwitcher lui-même ne s'en sert pas. */
+  email?: string | null;
 }
 
 // Les 6 personas de démonstration (prompt-fondations) : clé envoyée à la fonction

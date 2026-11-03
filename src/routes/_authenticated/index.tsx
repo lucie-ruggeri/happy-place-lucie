@@ -357,7 +357,7 @@ function ManagerSpace() {
 
   return (
     <div className="bg-background text-on-surface font-body-md min-h-screen flex flex-col">
-      <BrandHeader profile={{ firstName, role, team }} />
+      <BrandHeader profile={{ firstName, role, team, email }} />
       <main className="flex-grow w-full max-w-interface mx-auto p-sm md:p-md space-y-md">
         {email && <DepartureNotices email={email} />}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-sm mb-lg">
