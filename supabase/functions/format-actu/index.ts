@@ -122,6 +122,8 @@ Deno.serve(async (req) => {
     clearTimeout(timeout);
 
     if (!resp.ok) {
+      // Diagnostic : la réponse d'erreur Gemini ne contient pas la clé API.
+      console.error("Gemini", resp.status, (await resp.text()).slice(0, 500));
       return jsonResponse({ error: "L'assistant IA est momentanément indisponible." }, 502);
     }
 
@@ -146,8 +148,9 @@ Deno.serve(async (req) => {
     }
 
     return jsonResponse({ title, body: bodyText });
-  } catch {
+  } catch (e) {
     clearTimeout(timeout);
+    console.error("format-actu", e instanceof Error ? e.name : "erreur");
     return jsonResponse({ error: "L'assistant IA est momentanément indisponible." }, 502);
   }
 });
