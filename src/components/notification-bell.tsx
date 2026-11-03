@@ -13,7 +13,8 @@ import { fetchMyBlockerNotifications, markBlockerNotificationRead } from "@/lib/
 import { timeAgo } from "@/lib/dashboard";
 
 /** Cloche minimale (R9) : icône + badge non lus, liste des notifications de points bloquants,
- * marquer comme lu au clic, lien vers le tableau de bord (/) — aucune fiche dédiée n'existe. */
+ * marquer comme lu au clic, lien vers le tableau de bord (/) ancré sur le point concerné
+ * (#blocker-<id>) — aucune fiche dédiée n'existe. */
 export function NotificationBell({ email }: { email: string }) {
   const qc = useQueryClient();
   const q = useQuery({
@@ -59,7 +60,7 @@ export function NotificationBell({ email }: { email: string }) {
         ) : (
           notifications.map((n) => (
             <DropdownMenuItem key={n.id} asChild onSelect={() => handleOpen(n.id)}>
-              <Link to="/" className="flex-col items-start gap-0.5 whitespace-normal">
+              <Link to="/" hash={n.blocker_id ? `blocker-${n.blocker_id}` : undefined} className="flex-col items-start gap-0.5 whitespace-normal">
                 <span className={`font-body-sm text-body-sm ${n.read_at ? "text-on-surface-variant" : "text-primary font-bold"}`}>
                   {n.message}
                 </span>
