@@ -127,6 +127,7 @@ export type Database = {
           statut_publication: Database["public"]["Enums"]["publication_status"]
           team: string | null
           title: string
+          tool: string | null
           updated_at: string
           withdraw_reminder_at: string | null
         }
@@ -145,6 +146,7 @@ export type Database = {
           statut_publication?: Database["public"]["Enums"]["publication_status"]
           team?: string | null
           title: string
+          tool?: string | null
           updated_at?: string
           withdraw_reminder_at?: string | null
         }
@@ -163,6 +165,7 @@ export type Database = {
           statut_publication?: Database["public"]["Enums"]["publication_status"]
           team?: string | null
           title?: string
+          tool?: string | null
           updated_at?: string
           withdraw_reminder_at?: string | null
         }

@@ -86,6 +86,7 @@ export function BlockerEditor({ onDone }: { onDone: () => void }) {
         title: title.trim(),
         description: description.trim(),
         department,
+        tool,
         severity: severity as "critical" | "warning" | "info",
         audience,
         ...(needsTeamChoice ? { team: emittingTeam } : {}),

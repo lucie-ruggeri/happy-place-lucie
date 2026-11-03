@@ -227,6 +227,10 @@ UPDATE public.submissions
  WHERE content = 'Prime trimestrielle par équipe plutôt qu’individuelle.';
 
 -- 5. Points bloquants
+-- R9 : garde hp.seeding (même mécanisme que le bloc actus plus haut) pour
+-- qu'un futur reseed ne déclenche ni notification cloche ni message Slack
+-- pour ces points historiques.
+select set_config('hp.seeding', 'on', true);
 INSERT INTO public.blockers (title, description, department, severity, status, created_at, updated_at) VALUES
 ('Pénurie de profils DevSecOps seniors', 'Trois mandats prioritaires ouverts depuis plus de 30 jours avec peu de candidats disponibles en Île-de-France.', 'CLOUD & CYBERSÉCURITÉ', 'critical', 'EN COURS', now() - interval '17 days', now() - interval '17 days'),
 ('Brief client incomplet — Head of Product', 'Les critères de séniorité et le périmètre managérial doivent être clarifiés avant la reprise du sourcing.', 'PRODUCT TEAM', 'warning', 'EN COURS', now() - interval '17 days', now() - interval '17 days'),
@@ -235,6 +239,7 @@ INSERT INTO public.blockers (title, description, department, severity, status, c
 ('Capacité limitée sur le pôle Cybersécurité', 'Deux nouveaux mandats nécessitent un renfort temporaire en sourcing spécialisé.', 'DIRECTION RECRUTEMENT', 'warning', 'SURVEILLANCE', now() - interval '17 days', now() - interval '17 days'),
 ('Import des candidatures dans l’ATS', 'Les dossiers actifs ont été repris et contrôlés dans le nouvel outil de suivi.', 'OPÉRATIONS', 'warning', 'EN COURS', now() - interval '17 days', now() - interval '17 days');
 UPDATE public.blockers SET status = 'RÉSOLU' WHERE title = 'Import des candidatures dans l’ATS';
+select set_config('hp.seeding', '', true);
 
 -- 6. Indicateurs — dates de mise à jour FIXES (D21 : affichage "Mis à jour le …" stable
 -- le jour de la démo, pas de now()/interval qui dériverait à chaque rejeu du seed).

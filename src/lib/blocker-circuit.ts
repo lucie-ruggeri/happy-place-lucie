@@ -15,6 +15,8 @@ export type BlockerCreateInput = {
   description: string;
   /** Pôle résolu à partir de l'outil choisi (voir CLAUDE.md : la détection de doublon se fait par pôle). */
   department: string;
+  /** Nom précis de l'outil choisi (R9) : affiché dans le message Slack et la notification, jamais utilisé pour le routage (la détection de doublon reste par pôle). */
+  tool: string;
   severity: "critical" | "warning" | "info";
   /** Valeur base : "mon_equipe" | "tout_le_cabinet" (jamais "plusieurs_equipes", voir CLAUDE.md). */
   audience: string;
@@ -30,6 +32,7 @@ export async function createBlockerReport(input: BlockerCreateInput): Promise<Bl
       title: input.title,
       description: input.description || null,
       department: input.department,
+      tool: input.tool || null,
       severity: input.severity as never,
       audience: input.audience as never,
       ...(input.team ? { team: input.team } : {}),
