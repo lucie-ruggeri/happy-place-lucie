@@ -6,9 +6,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ErrorSummary, Field, FormActions, Modal, TextArea, TextInput } from "@/components/manage/crud-ui";
-import { rejectionSchema, submissionSchema, validate, type FieldErrors } from "@/lib/manage-schemas";
+import { rejectionSchema, validate, type FieldErrors } from "@/lib/manage-schemas";
 import { BrandHeader } from "@/components/brand-header";
 import { AttachmentLink } from "@/components/attachment-link";
+import { IdeaMediaPicker } from "@/components/idea-media-picker";
 import { CharCounter, SubmissionPreview, rejectionErrorMessage } from "@/components/expandable-card";
 import { Linkify } from "@/components/linkify";
 import { SubmissionReader } from "@/components/submission-reader";
@@ -55,7 +56,7 @@ import {
   timeAgo,
   TREND_LABELS,
   type Metric,
-  type SubmissionInput,
+  type IdeaDraft,
 } from "@/lib/dashboard";
 
 export const Route = createFileRoute("/_authenticated/")({
@@ -125,7 +126,7 @@ function ManagerSpace() {
   // D26 : l'admin ne valide ni ne refuse rien (seuls les managers relisent les soumissions).
   const canReview = role === "manager";
   const myEmail = (email ?? "").toLowerCase();
-  const [submissionForm, setSubmissionForm] = useState<SubmissionInput | null>(null);
+  const [submissionForm, setSubmissionForm] = useState<IdeaDraft | null>(null);
   const [submissionErrors, setSubmissionErrors] = useState<FieldErrors>({});
   const myTeams = useQuery({
     queryKey: ["manager_teams", "mine", email],
@@ -275,11 +276,7 @@ function ManagerSpace() {
   }
 
   const submit = useMutation({
-    mutationFn: (input: SubmissionInput) => submitIdea({
-      author_name: input.author_name,
-      team: input.team,
-      content: input.content,
-    }, attachment),
+    mutationFn: (input: IdeaDraft) => submitIdea(input, attachment),
     onSuccess: () => {
       setSubmissionForm(null);
       setAttachment(null);
@@ -343,16 +340,15 @@ function ManagerSpace() {
   function sendSubmission(e: React.FormEvent) {
     e.preventDefault();
     if (!submissionForm) return;
-    // Collaborators: team is set server-side from their account
-    // Admin: always the « Admin » team (set server-side); manager: one of their teams
-    const team = role === "collaborateur" ? "auto" : role === "admin" ? "Admin" : submissionForm.team;
-    const result = validate(submissionSchema, { ...submissionForm, team, status: "en attente" });
-    if (!result.ok) {
-      setSubmissionErrors(result.errors);
+    // Collaborateur : l'équipe est posée côté serveur depuis son compte.
+    // Manager : une seule équipe → posée d'office ; plusieurs → il choisit (elle décide quel manager voit l'idée).
+    const team = role === "collaborateur" ? "auto" : submissionForm.team;
+    if (role === "manager" && !team) {
+      setSubmissionErrors({ team: "Pôle requis" });
       return;
     }
     setSubmissionErrors({});
-    submit.mutate(result.data);
+    submit.mutate({ ...submissionForm, team });
   }
 
   return (
@@ -489,7 +485,7 @@ function ManagerSpace() {
               onClick={() => {
                 setSubmissionErrors({});
                 const only = role === "manager" && myTeams.data?.length === 1 ? myTeams.data[0] : "";
-                setSubmissionForm({ author_name: "", team: only, content: "", status: "en attente" });
+                setSubmissionForm({ team: only, title: "", description: "" });
               }}
               className="flex min-w-[240px] flex-1 flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm text-left hover:border-primary"
             >
@@ -1055,7 +1051,7 @@ function ManagerSpace() {
                 onClick={() => {
                   setSubmissionErrors({});
                   const only = role === "manager" && myTeams.data?.length === 1 ? myTeams.data[0] : "";
-                  setSubmissionForm({ author_name: "", team: only, content: "", status: "en attente" });
+                  setSubmissionForm({ team: only, title: "", description: "" });
                 }}
                 className="flex w-64 shrink-0 flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm text-left hover:border-primary"
               >
@@ -1274,19 +1270,23 @@ function ManagerSpace() {
       {submissionForm && (
         <Modal title="Proposer une idée" onClose={() => setSubmissionForm(null)}>
           <form onSubmit={sendSubmission} className="space-y-sm" noValidate>
-            <ErrorSummary errors={submissionErrors} />
-            <Field label="Nom" error={submissionErrors.author_name}>
+            <Field label="Titre de l'idée">
               <TextInput
-                value={submissionForm.author_name}
-                maxLength={80}
-                placeholder="Ton nom"
-                onChange={(e) => setSubmissionForm({ ...submissionForm, author_name: e.target.value })}
+                value={submissionForm.title}
+                onChange={(e) => setSubmissionForm({ ...submissionForm, title: e.target.value })}
               />
             </Field>
-            {role === "manager" && (
+            <Field label="Description détaillée">
+              <TextArea
+                rows={5}
+                value={submissionForm.description}
+                placeholder="Décris l'amélioration proposée pour le cabinet…"
+                onChange={(e) => setSubmissionForm({ ...submissionForm, description: e.target.value })}
+              />
+            </Field>
+            {role === "manager" && (myTeams.data?.length ?? 0) > 1 && (
               <Field label="Équipe" error={submissionErrors.team}>
                 <select
-                  required
                   value={submissionForm.team}
                   onChange={(e) => setSubmissionForm({ ...submissionForm, team: e.target.value })}
                   className="w-full border border-outline-variant bg-surface px-sm py-xs font-body-md"
@@ -1298,42 +1298,28 @@ function ManagerSpace() {
                 </select>
               </Field>
             )}
-            {role === "admin" && (
-              <p className="text-body-sm text-on-surface-variant">Équipe : Admin</p>
-            )}
-            <Field label="Idée" error={submissionErrors.content}>
-              <TextArea
-                rows={5}
-                value={submissionForm.content}
-                placeholder="Décris l'amélioration proposée pour le cabinet…"
-                onChange={(e) => setSubmissionForm({ ...submissionForm, content: e.target.value })}
-              />
-              <CharCounter value={submissionForm.content} max={2000} min={5} />
-            </Field>
-            <Field label="Document PDF (optionnel, 20 Mo max)" error={submissionErrors.attachment}>
-              <input
-                type="file"
-                accept="application/pdf,.pdf"
-                className="block w-full text-body-sm"
-                onChange={(e) => {
-                  const f = e.target.files?.[0] ?? null;
-                  if (f && f.type !== "application/pdf") {
-                    setSubmissionErrors({ ...submissionErrors, attachment: "Seuls les fichiers PDF sont acceptés." });
-                    e.target.value = ""; setAttachment(null); return;
-                  }
-                  if (f && f.size > 20 * 1024 * 1024) {
-                    setSubmissionErrors({ ...submissionErrors, attachment: "Le fichier dépasse 20 Mo." });
-                    e.target.value = ""; setAttachment(null); return;
-                  }
-                  const { attachment: _a, ...rest } = submissionErrors;
-                  setSubmissionErrors(rest);
-                  setAttachment(f);
-                }}
-              />
-            </Field>
+            <IdeaMediaPicker
+              file={attachment}
+              error={submissionErrors.attachment}
+              onPick={(f) => {
+                if (f && f.type !== "application/pdf") {
+                  setSubmissionErrors({ ...submissionErrors, attachment: "Seuls les fichiers PDF sont acceptés." });
+                  setAttachment(null);
+                  return;
+                }
+                if (f && f.size > 20 * 1024 * 1024) {
+                  setSubmissionErrors({ ...submissionErrors, attachment: "Le fichier dépasse 20 Mo." });
+                  setAttachment(null);
+                  return;
+                }
+                const { attachment: _a, ...rest } = submissionErrors;
+                setSubmissionErrors(rest);
+                setAttachment(f);
+              }}
+            />
             <FormActions
               pending={submit.isPending}
-              submitLabel="ENVOYER"
+              submitLabel="PUBLIER"
               onCancel={() => setSubmissionForm(null)}
             />
           </form>

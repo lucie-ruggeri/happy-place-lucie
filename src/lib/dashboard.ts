@@ -2,6 +2,7 @@ import { loadBrowserLib } from "@/lib/browser-lib";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { applyNewsImage, removeNewsImageFile, type MediaDraft, type NewsLink } from "@/lib/news-media";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchOwnProfile } from "@/lib/auth";
 
 export const db = supabase;
 
@@ -420,14 +421,24 @@ export async function createSubmission(input: SubmissionInput) {
 export const ATTACHMENT_BUCKET = "submission-attachments";
 export const MAX_ATTACHMENT_BYTES = 20 * 1024 * 1024;
 
-export async function submitIdea(input: Omit<SubmissionInput, "status">, file?: File | null) {
+/** Titre et description séparés par un saut de ligne ; une partie vide est ignorée. */
+export function buildIdeaContent(title: string, description: string) {
+  return [title.trim(), description.trim()].filter(Boolean).join("\n");
+}
+
+export type IdeaDraft = { team: string; title: string; description: string };
+
+export async function submitIdea(input: IdeaDraft, file?: File | null) {
+  const { data: u } = await db.auth.getUser();
+  if (!u.user) throw new Error("Session expirée");
+  // L'auteur vient toujours de la session (prénom du profil connecté), jamais du formulaire.
+  const profile = u.user.email ? await fetchOwnProfile(u.user.email) : null;
+  const author_name = profile?.firstName?.trim() || (u.user.email ?? "").split("@")[0];
   let attachment_path: string | null = null;
   let attachment_name: string | null = null;
   if (file) {
     if (file.type !== "application/pdf") throw new Error("Seuls les fichiers PDF sont acceptés.");
     if (file.size > MAX_ATTACHMENT_BYTES) throw new Error("Le fichier dépasse 20 Mo.");
-    const { data: u } = await db.auth.getUser();
-    if (!u.user) throw new Error("Session expirée");
     attachment_path = `${u.user.id}/${crypto.randomUUID()}.pdf`;
     attachment_name = file.name.slice(0, 200);
     const { error: upErr } = await db.storage
@@ -436,7 +447,7 @@ export async function submitIdea(input: Omit<SubmissionInput, "status">, file?: 
     if (upErr) throw upErr;
   }
   const { error } = await db.from("submissions").insert({
-    author_name: input.author_name, team: input.team, content: input.content, status: "en attente",
+    author_name, team: input.team, content: buildIdeaContent(input.title, input.description), status: "en attente",
     attachment_path, attachment_name,
   });
   if (error) throw error;
