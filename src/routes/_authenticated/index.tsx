@@ -440,34 +440,6 @@ function ManagerSpace() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="flex min-w-[240px] flex-1 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
-                    <Icon name="lightbulb" className="text-on-surface-variant" />
-                    <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
-                    <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>Le compte admin ne publie pas d'idée.</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                setSubmissionErrors({});
-                const only = role === "manager" && myTeams.data?.length === 1 ? myTeams.data[0] : "";
-                setSubmissionForm({ author_name: "", team: only, content: "", status: "en attente" });
-              }}
-              className="flex min-w-[240px] flex-1 flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm text-left hover:border-primary"
-            >
-              <Icon name="lightbulb" className="text-on-surface-variant" />
-              <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
-              <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
-            </button>
-          )}
-          {isAdmin ? (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="flex min-w-[240px] flex-1 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
                     <Icon name="report" className="text-on-surface-variant" />
                     <span className="font-headline-sm text-headline-sm text-primary">Points bloquants</span>
                     <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Signaler un point bloquant</span>
@@ -498,6 +470,34 @@ function ManagerSpace() {
               <TooltipContent>Bientôt disponible</TooltipContent>
             </Tooltip>
           </TooltipProvider>
+          {isAdmin ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="flex min-w-[240px] flex-1 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                    <Icon name="lightbulb" className="text-on-surface-variant" />
+                    <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
+                    <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Le compte admin ne publie pas d'idée.</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setSubmissionErrors({});
+                const only = role === "manager" && myTeams.data?.length === 1 ? myTeams.data[0] : "";
+                setSubmissionForm({ author_name: "", team: only, content: "", status: "en attente" });
+              }}
+              className="flex min-w-[240px] flex-1 flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm text-left hover:border-primary"
+            >
+              <Icon name="lightbulb" className="text-on-surface-variant" />
+              <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
+              <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
+            </button>
+          )}
         </section>
 
         <div className="bento-grid">
@@ -678,148 +678,6 @@ function ManagerSpace() {
               })}
             </div>
           </section>
-          )}
-
-          {/* ========================= BOÎTE À IDÉES ========================= */}
-          <div className="col-span-12 flex flex-wrap items-center justify-between gap-sm">
-            <h2 className="font-headline-lg text-headline-lg text-primary">Boîte à idées</h2>
-            {isAdmin ? (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="flex w-64 shrink-0 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
-                      <Icon name="lightbulb" className="text-on-surface-variant" />
-                      <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
-                      <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>Le compte admin ne publie pas d'idée.</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  setSubmissionErrors({});
-                  const only = role === "manager" && myTeams.data?.length === 1 ? myTeams.data[0] : "";
-                  setSubmissionForm({ author_name: "", team: only, content: "", status: "en attente" });
-                }}
-                className="flex w-64 shrink-0 flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm text-left hover:border-primary"
-              >
-                <Icon name="lightbulb" className="text-on-surface-variant" />
-                <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
-                <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
-              </button>
-            )}
-          </div>
-
-          {/* Idées de mon équipe à traiter (flow 2-7 : seul le manager de l'équipe traite) */}
-          {role === "manager" && (
-          <section className="col-span-12 lg:col-span-6 min-w-0 bg-surface-container-lowest border border-outline-variant p-md flex flex-col">
-            <div className="flex flex-wrap items-center justify-between gap-xs border-b border-outline-variant pb-sm mb-md">
-              <h2 className="font-headline-sm text-headline-sm text-primary min-w-0">
-                Idées de mon équipe à traiter
-              </h2>
-              <div className="shrink-0 bg-tertiary-fixed text-on-tertiary-fixed px-xs py-1 rounded-full font-label-sm text-label-sm uppercase">
-                {submissions.data?.length ?? 0} nouvelle{(submissions.data?.length ?? 0) === 1 ? "" : "s"}
-              </div>
-            </div>
-            <div className="space-y-sm flex-grow min-w-0">
-              {submissions.isError && (
-                <p className="text-body-sm text-error">
-                  Les idées sont indisponibles.
-                </p>
-              )}
-              {submissions.data?.length === 0 && (
-                <p className="text-body-sm text-on-surface-variant italic">
-                  Aucune idée en attente.
-                </p>
-              )}
-              {submissions.data?.map((s) => (
-                <div
-                  key={s.id}
-                  className="p-sm border border-outline-variant bg-card space-y-sm min-w-0 overflow-hidden"
-                >
-                  <div className="flex items-center gap-sm">
-                    <div className="w-8 h-8 rounded-full bg-secondary-fixed flex items-center justify-center">
-                      <Icon name="person" className="text-sm" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-body-sm text-primary font-bold wrap-anywhere">{s.author_name}</p>
-                      <p className="text-[10px] text-on-surface-variant font-label-sm wrap-anywhere">{s.team}</p>
-                    </div>
-                    <span className="text-[10px] text-on-surface-variant font-label-sm whitespace-nowrap">
-                      {timeAgo(s.created_at)}
-                    </span>
-                  </div>
-                  <SubmissionPreview content={s.content} onOpen={() => setReading(s)} />
-                  <AttachmentLink path={s.attachment_path} name={s.attachment_name} />
-                  {canReview && <div className="flex gap-xs pt-xs">
-                    <button
-                      onClick={() => startReject(s)}
-                      className="flex-1 py-1 border border-outline text-primary font-label-sm text-label-sm hover:bg-surface-container transition-colors"
-                    >
-                      REFUSER
-                    </button>
-                    <button
-                      onClick={() => review.mutate({ id: s.id, status: "validée" })}
-                      className="flex-1 py-1 bg-primary text-on-primary font-label-sm text-label-sm hover:opacity-90 transition-colors"
-                    >
-                      VALIDER
-                    </button>
-                  </div>}
-                </div>
-              ))}
-            </div>
-          </section>
-          )}
-
-          {/* Idées validées, côte à côte avec la file à traiter pour le manager seulement */}
-          {role === "manager" && (
-            <ValidatedSubmissions
-              role={role}
-              email={myEmail}
-              managerTeams={myTeams.data ?? []}
-              onRead={setReading}
-              className="col-span-12 lg:col-span-6"
-            />
-          )}
-
-          {/* Mes idées : l'admin n'a aucun contenu à lui (D26) */}
-          {!isAdmin && mine.data && mine.data.length > 0 && (
-            <section className="col-span-12 min-w-0 bg-surface-container-lowest border border-outline-variant p-md">
-              <h2 className="font-headline-sm text-headline-sm text-primary border-b border-outline-variant pb-sm mb-md">
-                Mes idées
-              </h2>
-              <div className="space-y-xs">
-                {mine.data.map((s) => (
-                  <div key={s.id} className="p-sm border border-outline-variant bg-card min-w-0 overflow-hidden">
-                    <SubmissionPreview content={s.content} onOpen={() => setReading(s)} />
-                    <AttachmentLink path={s.attachment_path} name={s.attachment_name} />
-                    <p className="text-[11px] font-label-sm text-on-surface-variant uppercase mt-xs">
-                      {s.status} • {s.team} • {timeAgo(s.created_at)}
-                    </p>
-                    {s.status === "refusée" && s.rejection_category && (
-                      <div className="mt-xs p-xs bg-error-container text-on-error-container text-body-sm wrap-anywhere">
-                        <p className="font-bold">Motif : {s.rejection_category}</p>
-                        <p className="whitespace-pre-line">Raison : <Linkify text={s.rejection_note ?? ""} /></p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Idées validées : dernier bloc du module Boîte à idées (déjà affichée plus haut,
-              côte à côte, pour le manager : voir juste après "Idées de mon équipe à traiter") */}
-          {role !== "manager" && (
-            <ValidatedSubmissions
-              role={role}
-              email={myEmail}
-              managerTeams={myTeams.data ?? []}
-              onRead={setReading}
-            />
           )}
 
           {/* ======================= POINTS BLOQUANTS ======================= */}
@@ -1169,6 +1027,148 @@ function ManagerSpace() {
               </div>
             )}
           </section>
+
+          {/* ========================= BOÎTE À IDÉES ========================= */}
+          <div className="col-span-12 flex flex-wrap items-center justify-between gap-sm">
+            <h2 className="font-headline-lg text-headline-lg text-primary">Boîte à idées</h2>
+            {isAdmin ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="flex w-64 shrink-0 cursor-not-allowed flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm opacity-50">
+                      <Icon name="lightbulb" className="text-on-surface-variant" />
+                      <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
+                      <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>Le compte admin ne publie pas d'idée.</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setSubmissionErrors({});
+                  const only = role === "manager" && myTeams.data?.length === 1 ? myTeams.data[0] : "";
+                  setSubmissionForm({ author_name: "", team: only, content: "", status: "en attente" });
+                }}
+                className="flex w-64 shrink-0 flex-col gap-xs border border-outline-variant bg-surface-container-lowest p-sm text-left hover:border-primary"
+              >
+                <Icon name="lightbulb" className="text-on-surface-variant" />
+                <span className="font-headline-sm text-headline-sm text-primary">Boîte à idées</span>
+                <span className="font-label-sm text-label-sm uppercase text-on-surface-variant">+ Proposer une idée</span>
+              </button>
+            )}
+          </div>
+
+          {/* Idées de mon équipe à traiter (flow 2-7 : seul le manager de l'équipe traite) */}
+          {role === "manager" && (
+          <section className="col-span-12 lg:col-span-6 min-w-0 bg-surface-container-lowest border border-outline-variant p-md flex flex-col">
+            <div className="flex flex-wrap items-center justify-between gap-xs border-b border-outline-variant pb-sm mb-md">
+              <h2 className="font-headline-sm text-headline-sm text-primary min-w-0">
+                Idées de mon équipe à traiter
+              </h2>
+              <div className="shrink-0 bg-tertiary-fixed text-on-tertiary-fixed px-xs py-1 rounded-full font-label-sm text-label-sm uppercase">
+                {submissions.data?.length ?? 0} nouvelle{(submissions.data?.length ?? 0) === 1 ? "" : "s"}
+              </div>
+            </div>
+            <div className="space-y-sm flex-grow min-w-0">
+              {submissions.isError && (
+                <p className="text-body-sm text-error">
+                  Les idées sont indisponibles.
+                </p>
+              )}
+              {submissions.data?.length === 0 && (
+                <p className="text-body-sm text-on-surface-variant italic">
+                  Aucune idée en attente.
+                </p>
+              )}
+              {submissions.data?.map((s) => (
+                <div
+                  key={s.id}
+                  className="p-sm border border-outline-variant bg-card space-y-sm min-w-0 overflow-hidden"
+                >
+                  <div className="flex items-center gap-sm">
+                    <div className="w-8 h-8 rounded-full bg-secondary-fixed flex items-center justify-center">
+                      <Icon name="person" className="text-sm" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-body-sm text-primary font-bold wrap-anywhere">{s.author_name}</p>
+                      <p className="text-[10px] text-on-surface-variant font-label-sm wrap-anywhere">{s.team}</p>
+                    </div>
+                    <span className="text-[10px] text-on-surface-variant font-label-sm whitespace-nowrap">
+                      {timeAgo(s.created_at)}
+                    </span>
+                  </div>
+                  <SubmissionPreview content={s.content} onOpen={() => setReading(s)} />
+                  <AttachmentLink path={s.attachment_path} name={s.attachment_name} />
+                  {canReview && <div className="flex gap-xs pt-xs">
+                    <button
+                      onClick={() => startReject(s)}
+                      className="flex-1 py-1 border border-outline text-primary font-label-sm text-label-sm hover:bg-surface-container transition-colors"
+                    >
+                      REFUSER
+                    </button>
+                    <button
+                      onClick={() => review.mutate({ id: s.id, status: "validée" })}
+                      className="flex-1 py-1 bg-primary text-on-primary font-label-sm text-label-sm hover:opacity-90 transition-colors"
+                    >
+                      VALIDER
+                    </button>
+                  </div>}
+                </div>
+              ))}
+            </div>
+          </section>
+          )}
+
+          {/* Idées validées, côte à côte avec la file à traiter pour le manager seulement */}
+          {role === "manager" && (
+            <ValidatedSubmissions
+              role={role}
+              email={myEmail}
+              managerTeams={myTeams.data ?? []}
+              onRead={setReading}
+              className="col-span-12 lg:col-span-6"
+            />
+          )}
+
+          {/* Mes idées : l'admin n'a aucun contenu à lui (D26) */}
+          {!isAdmin && mine.data && mine.data.length > 0 && (
+            <section className="col-span-12 min-w-0 bg-surface-container-lowest border border-outline-variant p-md">
+              <h2 className="font-headline-sm text-headline-sm text-primary border-b border-outline-variant pb-sm mb-md">
+                Mes idées
+              </h2>
+              <div className="space-y-xs">
+                {mine.data.map((s) => (
+                  <div key={s.id} className="p-sm border border-outline-variant bg-card min-w-0 overflow-hidden">
+                    <SubmissionPreview content={s.content} onOpen={() => setReading(s)} />
+                    <AttachmentLink path={s.attachment_path} name={s.attachment_name} />
+                    <p className="text-[11px] font-label-sm text-on-surface-variant uppercase mt-xs">
+                      {s.status} • {s.team} • {timeAgo(s.created_at)}
+                    </p>
+                    {s.status === "refusée" && s.rejection_category && (
+                      <div className="mt-xs p-xs bg-error-container text-on-error-container text-body-sm wrap-anywhere">
+                        <p className="font-bold">Motif : {s.rejection_category}</p>
+                        <p className="whitespace-pre-line">Raison : <Linkify text={s.rejection_note ?? ""} /></p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Idées validées : dernier bloc du module Boîte à idées (déjà affichée plus haut,
+              côte à côte, pour le manager : voir juste après "Idées de mon équipe à traiter") */}
+          {role !== "manager" && (
+            <ValidatedSubmissions
+              role={role}
+              email={myEmail}
+              managerTeams={myTeams.data ?? []}
+              onRead={setReading}
+            />
+          )}
         </div>
       </main>
       <BlockerArchive open={archiveOpen} onClose={() => setArchiveOpen(false)} />

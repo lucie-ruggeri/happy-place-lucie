@@ -7,6 +7,13 @@ export const db = supabase;
 
 type Enums = Database["public"]["Enums"];
 
+/** Ordre canonique des 4 modules du tableau de bord (correction 2) : rangée d'accès rapide
+ * et sections principales de src/routes/_authenticated/index.tsx doivent toutes les deux
+ * suivre cet ordre — un seul endroit le décide, gardé synchronisé à la main (pas de liste
+ * séparée ailleurs : vérifié, l'ordre n'existe que dans ces deux blocs du même fichier). */
+export const MODULE_ORDER = ["actus", "points_bloquants", "indicateurs", "idees"] as const;
+export type ModuleKey = (typeof MODULE_ORDER)[number];
+
 
 export type News = {
   id: string;
