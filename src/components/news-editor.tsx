@@ -320,11 +320,7 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
       };
       const saved = news?.id ? await updateNewsDraft(news.id, input) : await createNewsDraft(input);
       if (action === "draft") {
-        toast.success(
-          roleAuteur === "manager" && circuit.kind === "aucun"
-            ? "Brouillon enregistré. Tu recevras un rappel demain si elle n'est pas publiée."
-            : "Brouillon enregistré.",
-        );
+        toast.success("Brouillon enregistré. Un rappel te sera envoyé sous 24 à 48 h.");
         onDone();
         return;
       }
@@ -586,66 +582,26 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
       </div>
 
       <div className="flex flex-wrap gap-sm pt-sm">
-        {roleAuteur === "manager" ? (
-          circuit.kind === "aucun" ? (
-            <>
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => handleSubmit("submit")}
-                className="px-md py-xs bg-primary text-on-primary font-label-md text-label-md disabled:opacity-50"
-              >
-                Publier maintenant
-              </button>
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => handleSubmit("draft")}
-                className="px-md py-xs border border-outline text-primary font-label-md text-label-md hover:bg-surface-container disabled:opacity-50"
-              >
-                Plus tard (rappel demain)
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => handleSubmit("submit")}
-                className="px-md py-xs bg-primary text-on-primary font-label-md text-label-md disabled:opacity-50"
-              >
-                Envoyer à la relecture Comm
-              </button>
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => handleSubmit("draft")}
-                className="px-md py-xs border border-outline text-primary font-label-md text-label-md hover:bg-surface-container disabled:opacity-50"
-              >
-                Enregistrer en brouillon
-              </button>
-            </>
-          )
-        ) : (
-          <>
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => handleSubmit("draft")}
-              className="px-md py-xs border border-outline text-primary font-label-md text-label-md hover:bg-surface-container disabled:opacity-50"
-            >
-              Enregistrer en brouillon
-            </button>
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => handleSubmit("submit")}
-              className="px-md py-xs bg-primary text-on-primary font-label-md text-label-md disabled:opacity-50"
-            >
-              Envoyer pour validation
-            </button>
-          </>
-        )}
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => handleSubmit("draft")}
+          className="px-md py-xs border border-outline text-primary font-label-md text-label-md hover:bg-surface-container disabled:opacity-50"
+        >
+          Enregistrer en brouillon
+        </button>
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => handleSubmit("submit")}
+          className="px-md py-xs bg-primary text-on-primary font-label-md text-label-md disabled:opacity-50"
+        >
+          {roleAuteur === "manager"
+            ? circuit.kind === "aucun"
+              ? "Publier maintenant"
+              : "Envoyer à la relecture Comm"
+            : "Envoyer pour validation"}
+        </button>
       </div>
     </form>
   );

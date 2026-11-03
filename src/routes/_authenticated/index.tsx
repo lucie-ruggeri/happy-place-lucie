@@ -652,6 +652,11 @@ function ManagerSpace() {
                         <StatusBadge status={n.status} className="shrink-0" />
                       </div>
                     </button>
+                    {isDraft && !n.draft_reminder_at && (
+                      <p className="font-label-sm text-label-sm uppercase text-on-surface-variant">
+                        Rappel demain
+                      </p>
+                    )}
                     {isDraft && n.draft_reminder_at && (
                       <p className="font-label-sm text-label-sm uppercase text-on-surface-variant">
                         Brouillon en attente depuis hier
