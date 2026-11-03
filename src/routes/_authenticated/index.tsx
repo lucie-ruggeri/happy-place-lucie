@@ -371,11 +371,6 @@ function ManagerSpace() {
             <span className="font-label-sm text-label-sm text-on-surface-variant">
               {email} · {roleLabel}
             </span>
-            {!isAdmin && (
-              <span className="flex items-center gap-xs px-md py-xs border border-primary bg-surface text-primary font-label-md text-label-md">
-                <Icon name="folder" /> MES CONTENUS
-              </span>
-            )}
             {isReviewer && (
               <Link
                 to="/relecture"
