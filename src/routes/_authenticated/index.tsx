@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge, BlockerStatusBadge } from "@/components/status-badge";
 import { SEVERITY_LABELS } from "@/components/blocker-duplicates";
 import { AudienceBadge } from "@/components/audience-badge";
+import { AudienceFilter, matchesAudience, type AudienceFilterValue } from "@/components/audience-filter";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   setBlockerStatus,
@@ -89,6 +90,34 @@ function KpiIcon({ icon: IconComponent }: { icon: LucideIcon }) {
   );
 }
 
+/** Carte d'indicateur commune (Taux de placement, Missions actives, NPS) : même cadre,
+ * même structure, même hauteur dans la grille. */
+function KpiCard({
+  icon,
+  label,
+  metric,
+  fallbackTrend,
+}: {
+  icon: LucideIcon;
+  label: string;
+  metric: Metric | undefined;
+  fallbackTrend?: string;
+}) {
+  const delta = deltaText(metric);
+  const updated = formatDateMiseAJour(metric?.updated_at);
+  return (
+    <div className="h-full min-w-0 p-sm bg-card border border-outline-variant text-center">
+      <KpiIcon icon={icon} />
+      <p className="font-label-sm text-label-sm text-on-surface-variant uppercase">{label}</p>
+      <p className="font-display text-[32px] text-primary">{formatMetric(metric, "—")}</p>
+      <p className="text-[10px] text-on-surface-variant font-label-sm">
+        {metric ? `${trendText(metric)}${delta ? ` · ${delta}` : ""}` : fallbackTrend}
+      </p>
+      {updated && <p className="text-[10px] text-on-surface-variant">{updated}</p>}
+    </div>
+  );
+}
+
 function Icon({ name, className = "" }: { name: string; className?: string }) {
   return (
     <span aria-hidden="true" className={`material-symbols-outlined ${className}`}>
@@ -147,6 +176,11 @@ function ManagerSpace() {
   const [editingNews, setEditingNews] = useState<News | null>(null);
   const [reviewingNews, setReviewingNews] = useState<News | null>(null);
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const [blockerAudienceFilter, setBlockerAudienceFilter] = useState<AudienceFilterValue>("all");
+  const [newsAudienceFilter, setNewsAudienceFilter] = useState<AudienceFilterValue>("all");
+  const [queueAudienceFilter, setQueueAudienceFilter] = useState<AudienceFilterValue>("all");
+  const [myNewsAudienceFilter,setMyNewsAudienceFilter] = useState<AudienceFilterValue>("all");
+  const [myBlockersAudienceFilter, setMyBlockersAudienceFilter] = useState<AudienceFilterValue>("all");
   const [rejectForm, setRejectForm] = useState({ rejection_category: "", rejection_note: "" });
   const [rejectErrors, setRejectErrors] = useState<FieldErrors>({});
   const [withdrawingBlocker, setWithdrawingBlocker] = useState<Blocker | null>(null);
@@ -169,6 +203,7 @@ function ManagerSpace() {
     retry: false,
   });
   const blockers = useQuery({ queryKey: ["blockers"], queryFn: fetchBlockers, retry: false });
+  const filteredBlockers = blockers.data?.filter((b) => matchesAudience(b.audience, blockerAudienceFilter));
   // "N personnes concernées" (flow 2-9) : un seul appel pour toute la liste, pas une requête par ligne.
   const followerCounts = useQuery({
     queryKey: ["blockers", "follower-counts"],
@@ -332,8 +367,12 @@ function ManagerSpace() {
 
   const published = news.data?.filter((n) => n.status === "publiée") ?? [];
   const myNews = news.data?.filter((n) => (n.author_email ?? "").toLowerCase() === myEmail) ?? [];
+  const filteredPublished = published.filter((n) => matchesAudience(n.audience, newsAudienceFilter));
+  const filteredMyNews =myNews.filter((n) => matchesAudience(n.audience, myNewsAudienceFilter));
+  const filteredMyBlockers = myBlockers.data?.filter((b) => matchesAudience(b.audience, myBlockersAudienceFilter)) ?? [];
   // "a_modifier_manager" n'est pas dans cette file : c'est à l'auteur de corriger, pas à Marc de redécider.
   const managerQueue = role === "manager" ? news.data?.filter((n) => n.status === "a_valider_manager") ?? [] : [];
+  const filteredManagerQueue = managerQueue.filter((n) => matchesAudience(n.audience, queueAudienceFilter));
   const npsMetric = metricOf(metrics.data, "nps");
   const roleLabel = role === "admin" ? "ADMIN" : role === "manager" ? "MANAGER" : "COLLABORATEUR";
 
@@ -532,6 +571,7 @@ function ManagerSpace() {
                 Actualités du cabinet
               </h2>
             </div>
+            <AudienceFilter value={newsAudienceFilter} onChange={setNewsAudienceFilter} />
             <div className="space-y-xs">
               {news.isLoading && (
                 <p className="text-body-sm text-on-surface-variant">Chargement…</p>
@@ -541,12 +581,14 @@ function ManagerSpace() {
                   Les actualités sont indisponibles.
                 </p>
               )}
-              {!news.isLoading && published.length === 0 && (
+              {!news.isLoading && filteredPublished.length === 0 && (
                 <p className="text-body-sm italic text-on-surface-variant">
-                  Aucune actualité publiée pour l'instant.
+                  {newsAudienceFilter === "all"
+                    ? "Aucune actualité publiée pour l'instant."
+                    : "Aucune actualité publiée pour cette audience."}
                 </p>
               )}
-              {published.slice(0, 6).map((n) => (
+              {filteredPublished.slice(0, 6).map((n) => (
                 <button
                   type="button"
                   key={n.id}
@@ -583,8 +625,14 @@ function ManagerSpace() {
                 {managerQueue.length} à valider
               </div>
             </div>
+            <AudienceFilter value={queueAudienceFilter} onChange={setQueueAudienceFilter} />
             <div className="space-y-xs">
-              {managerQueue.map((n) => (
+              {filteredManagerQueue.length === 0 && (
+                <p className="text-body-sm italic text-on-surface-variant">
+                  Aucune actu à valider pour cette audience.
+                </p>
+              )}
+              {filteredManagerQueue.map((n) => (
                 <button
                   key={n.id}
                   type="button"
@@ -613,7 +661,13 @@ function ManagerSpace() {
             <div className="flex items-center justify-between border-b border-outline-variant pb-sm">
               <h2 className="font-headline-sm text-headline-sm text-primary">Mes actus</h2>
             </div>
+            <AudienceFilter value={myNewsAudienceFilter} onChange={setMyNewsAudienceFilter} />
             <div className="space-y-xs">
+              {myNews.length > 0 && filteredMyNews.length === 0 && (
+                <p className="text-body-sm italic text-on-surface-variant">
+                  Aucune actu pour cette audience.
+                </p>
+              )}
               {myNews.length === 0 && (
                 <p className="text-body-sm italic text-on-surface-variant">
                   Tu n'as pas encore écrit d'actu.{" "}
@@ -623,7 +677,7 @@ function ManagerSpace() {
                   .
                 </p>
               )}
-              {myNews.slice(0, 6).map((n) => {
+              {filteredMyNews.slice(0, 6).map((n) => {
                 const needsFix = n.status === "a_modifier_manager" || n.status === "a_modifier_comm";
                 const isDraft = n.status === "brouillon";
                 const isRefused = n.status === "refusée";
@@ -645,7 +699,10 @@ function ManagerSpace() {
                             </p>
                           </div>
                         </div>
-                        <StatusBadge status={n.status} className="shrink-0" />
+                        <div className="flex items-center gap-xs shrink-0">
+                          <AudienceBadge audience={n.audience ?? "tout_le_cabinet"} />
+                          <StatusBadge status={n.status} />
+                        </div>
                       </div>
                     </button>
                     {isDraft && !n.draft_reminder_at && (
@@ -727,24 +784,28 @@ function ManagerSpace() {
                  VOIR L'ARCHIVE
               </button>
             </div>
+            <AudienceFilter value={blockerAudienceFilter} onChange={setBlockerAudienceFilter} className="mb-md" />
             <div className="space-y-sm">
               {blockers.isError && (
                 <p className="text-body-sm text-error">
                   Les points bloquants sont indisponibles.
                 </p>
               )}
-              {blockers.data?.length === 0 && (
+              {filteredBlockers?.length === 0 && (
                 <p className="text-body-sm text-on-surface-variant italic">
-                  Aucun point bloquant en cours.
+                  {blockerAudienceFilter === "all"
+                    ? "Aucun point bloquant en cours."
+                    : "Aucun point bloquant en cours pour cette audience."}
                 </p>
               )}
-              {blockers.data?.map((b) => {
+              {filteredBlockers?.map((b) => {
                 const critical = b.severity === "critical";
                 const canAdvance = canAdvanceBlocker(b.department);
                 return (
                   <div
                     key={b.id}
-                    className={`${critical ? "accent-bar " : ""}bg-card border border-outline-variant p-sm grid grid-cols-[minmax(0,1fr)_200px_100px] gap-md items-start`}
+                    id={`blocker-${b.id}`}
+                    className={`${critical ? "accent-bar " : ""}scroll-mt-24 target:ring-2 target:ring-primary bg-card border border-outline-variant p-sm grid grid-cols-[minmax(0,1fr)_200px_100px] gap-md items-start`}
                   >
                     {/* Colonne 1 (flexible) : titre, description, pôle, gravité, date */}
                     <div className="flex gap-md min-w-0">
@@ -784,6 +845,7 @@ function ManagerSpace() {
                           <span className="text-[11px] font-label-sm bg-surface-container-highest px-xs py-0.5">
                             {b.department}
                           </span>
+                          <AudienceBadge audience={b.audience ?? "tout_le_cabinet"} />
                           <span className="text-[11px] font-label-sm text-on-surface-variant">
                             {SEVERITY_LABELS[b.severity] ?? b.severity}
                           </span>
@@ -846,18 +908,35 @@ function ManagerSpace() {
               <h2 className="font-headline-sm text-headline-sm text-primary border-b border-outline-variant pb-sm mb-md">
                 Mes points bloquants
               </h2>
+              <AudienceFilter value={myBlockersAudienceFilter} onChange={setMyBlockersAudienceFilter} className="mb-md" />
               <div className="space-y-xs">
-                {myBlockers.data.map((b) => {
+                {filteredMyBlockers.length === 0 && (
+                  <p className="text-body-sm italic text-on-surface-variant">
+                    Aucun point bloquant pour cette audience.
+                  </p>
+                )}
+                {filteredMyBlockers.map((b) => {
                   const needsFix = b.statut_publication === "a_modifier_manager";
                   return (
-                    <div key={b.id} className="p-sm border border-outline-variant bg-card min-w-0 overflow-hidden space-y-xs">
+                    <div
+                      key={b.id}
+                      // Même ancre que la liste principale, mais seulement hors "publiée" : un point publié y est déjà.
+                      id={b.statut_publication === "publiée" ? undefined : `blocker-${b.id}`}
+                      className="scroll-mt-24 target:ring-2 target:ring-primary p-sm border border-outline-variant bg-card min-w-0 overflow-hidden space-y-xs"
+                    >
                       <div className="flex items-center justify-between gap-sm min-w-0">
                         <p className="font-body-md text-primary wrap-anywhere">{b.title}</p>
                         <StatusBadge status={b.statut_publication ?? "publiée"} className="shrink-0" />
                       </div>
-                      <p className="text-[11px] font-label-sm text-on-surface-variant uppercase">
-                        {b.department} • {timeAgo(b.updated_at)}
-                      </p>
+                      <div className="flex items-center gap-sm flex-wrap">
+                        <span className="text-[11px] font-label-sm bg-surface-container-highest px-xs py-0.5">
+                          {b.department}
+                        </span>
+                        <AudienceBadge audience={b.audience ?? "tout_le_cabinet"} />
+                        <span className="text-[11px] font-label-sm text-on-surface-variant">
+                          Mis à jour {timeAgo(b.updated_at)}
+                        </span>
+                      </div>
                       {needsFix && b.pub_review_note && (
                         <div className="p-xs bg-error-container text-on-error-container text-body-sm wrap-anywhere">
                           <p className="whitespace-pre-line">{b.pub_review_note}</p>
@@ -970,63 +1049,28 @@ function ManagerSpace() {
             <div className="flex items-center justify-between mb-md">
               <h2 className="font-headline-sm text-headline-sm text-primary">Indicateurs</h2>
             </div>
-            <div className="grid grid-cols-2 gap-sm mb-md">
-              <div className="p-sm bg-card border border-outline-variant text-center">
-                <KpiIcon icon={Target} />
-                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase">
-                  {metricLabel(metricOf(metrics.data, "training_kpi"), "Taux de placement")}
-                </p>
-                <p className="font-display text-[32px] text-primary">
-                  {formatMetric(metricOf(metrics.data, "training_kpi"), "—")}
-                </p>
-                <p className="text-[10px] text-on-surface-variant font-label-sm">
-                  {trendText(metricOf(metrics.data, "training_kpi"))}
-                  {deltaText(metricOf(metrics.data, "training_kpi")) &&
-                    ` · ${deltaText(metricOf(metrics.data, "training_kpi"))}`}
-                </p>
-                {formatDateMiseAJour(metricOf(metrics.data, "training_kpi")?.updated_at) && (
-                  <p className="text-[10px] text-on-surface-variant">
-                    {formatDateMiseAJour(metricOf(metrics.data, "training_kpi")?.updated_at)}
-                  </p>
-                )}
-              </div>
-              <div className="p-sm bg-card border border-outline-variant text-center">
-                <KpiIcon icon={Briefcase} />
-                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase">
-                  {metricLabel(metricOf(metrics.data, "active_users"), "Missions actives")}
-                </p>
-                <p className="font-display text-[32px] text-primary">
-                  {formatMetric(metricOf(metrics.data, "active_users"), "—")}
-                </p>
-                <p className="text-[10px] text-on-surface-variant font-label-sm">
-                  {trendText(metricOf(metrics.data, "active_users"))}
-                  {deltaText(metricOf(metrics.data, "active_users")) &&
-                    ` · ${deltaText(metricOf(metrics.data, "active_users"))}`}
-                </p>
-                {formatDateMiseAJour(metricOf(metrics.data, "active_users")?.updated_at) && (
-                  <p className="text-[10px] text-on-surface-variant">
-                    {formatDateMiseAJour(metricOf(metrics.data, "active_users")?.updated_at)}
-                  </p>
-                )}
-              </div>
+            <div
+              className={`grid grid-cols-1 gap-sm items-stretch ${isAdmin ? "lg:grid-cols-3" : "sm:grid-cols-2"}`}
+            >
+              <KpiCard
+                icon={Target}
+                label={metricLabel(metricOf(metrics.data, "training_kpi"), "Taux de placement")}
+                metric={metricOf(metrics.data, "training_kpi")}
+              />
+              <KpiCard
+                icon={Briefcase}
+                label={metricLabel(metricOf(metrics.data, "active_users"), "Missions actives")}
+                metric={metricOf(metrics.data, "active_users")}
+              />
+              {isAdmin && (
+                <KpiCard
+                  icon={Smile}
+                  label="NPS CANDIDATS"
+                  metric={npsMetric}
+                  fallbackTrend="Mis à jour à partir des retours candidats."
+                />
+              )}
             </div>
-            {isAdmin && (
-              <div className="space-y-xs">
-                <KpiIcon icon={Smile} />
-                <p className="font-label-sm text-label-sm text-on-surface-variant block">NPS CANDIDATS</p>
-                <p className="font-display text-[28px] text-primary">{formatMetric(npsMetric, "—")}</p>
-                <p className="text-[10px] text-on-surface-variant italic">
-                  {npsMetric
-                    ? `Tendance : ${trendText(npsMetric)}${
-                        deltaText(npsMetric) ? ` · ${deltaText(npsMetric)}` : ""
-                      }`
-                    : "Mis à jour à partir des retours candidats."}
-                </p>
-                {formatDateMiseAJour(npsMetric?.updated_at) && (
-                  <p className="text-[10px] text-on-surface-variant">{formatDateMiseAJour(npsMetric?.updated_at)}</p>
-                )}
-              </div>
-            )}
           </section>
 
           {/* ========================= BOÎTE À IDÉES ========================= */}
