@@ -769,8 +769,16 @@ export type Database = {
         Returns: string
       }
       check_and_bump_ai_usage: {
-        Args: { _limit?: number; _user_id: string }
+        Args: { _limit?: number; _user_id: string; _feature?: string }
         Returns: boolean
+      }
+      log_dictation_event: {
+        Args: { _event_type: string; _engine: string; _duration_ms: number; _audio_seconds: number }
+        Returns: undefined
+      }
+      get_dictation_engine_setting: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       submit_news: {
         Args: { _news_id: string }

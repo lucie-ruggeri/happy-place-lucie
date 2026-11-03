@@ -17,6 +17,8 @@ import {
   updateNewsDraft,
 } from "@/lib/news-circuit";
 import type { News } from "@/lib/dashboard";
+import { fetchDictationEngineSetting, type DictationEngine } from "@/lib/whisper";
+import { useWhisperDictation } from "@/hooks/use-whisper-dictation";
 
 // La Web Speech API n'est pas dans les typings DOM standard de TypeScript :
 // on déclare juste ce dont on se sert, sans "any".
@@ -131,6 +133,18 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
   const hasResultRef = useRef(false);
   const noSpeechTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+
+  // Dictée Whisper (optionnelle, derrière le réglage admin go/no-go) : D80
+  // (Web Speech API, juste au-dessus) reste le moteur par défaut et n'est
+  // jamais modifié. Le sélecteur n'apparaît que si le réglage vaut "whisper".
+  const [dictationEngine, setDictationEngine] = useState<DictationEngine>("browser");
+  const dictationEngineSetting = useQuery({
+    queryKey: ["dictation-engine-setting"],
+    queryFn: fetchDictationEngineSetting,
+    staleTime: 5 * 60 * 1000,
+  });
+  const whisperAllowed = dictationEngineSetting.data === "whisper";
+  const whisper = useWhisperDictation();
 
   const [title, setTitle] = useState(news?.title ?? "");
   const [body, setBody] = useState(news?.body ?? "");
@@ -270,6 +284,17 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
     recognitionRef.current?.stop();
   }
 
+  async function startWhisperDictation() {
+    const text = await whisper.start();
+    if (text) setNotes(text);
+  }
+
+  function retryWithBrowserDictation() {
+    whisper.reportFallback();
+    setDictationEngine("browser");
+    startDictation();
+  }
+
   async function handleSubmit(action: "draft" | "submit") {
     const tErr = !title.trim() ? "Erreur : le titre est obligatoire" : null;
     const bErr = !body.trim() ? "Erreur : le texte est obligatoire" : null;
@@ -342,32 +367,123 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
         <div className="space-y-sm border border-outline-variant bg-surface-container p-sm">
           {mode === "dictee" ? (
             <div className="space-y-xs">
-              {dictationError && (
-                <p role="alert" className="text-body-sm text-error">
-                  {dictationError}
-                </p>
-              )}
-              {!recording ? (
-                <button
-                  type="button"
-                  onClick={startDictation}
-                  className="flex items-center gap-xs px-md py-xs border border-outline bg-surface text-primary font-label-md text-label-md hover:bg-surface-container"
-                >
-                  <span aria-hidden="true" className="material-symbols-outlined">mic</span> {notes ? "Redicter" : "Dicter"}
-                </button>
-              ) : (
-                <div className="flex items-center gap-sm">
-                  <span className="flex items-center gap-xs font-label-sm text-label-sm text-error">
-                    <span className="h-2 w-2 animate-pulse rounded-full bg-error" aria-hidden="true" /> Enregistrement…
-                  </span>
+              {whisperAllowed && (
+                <div className="flex gap-xs" role="radiogroup" aria-label="Moteur de dictée">
                   <button
                     type="button"
-                    onClick={stopDictation}
-                    className="px-md py-xs border border-outline text-primary font-label-md text-label-md hover:bg-surface-container"
+                    role="radio"
+                    aria-checked={dictationEngine === "browser"}
+                    onClick={() => setDictationEngine("browser")}
+                    className={
+                      dictationEngine === "browser"
+                        ? "px-sm py-1 bg-primary text-on-primary font-label-sm text-label-sm"
+                        : "px-sm py-1 border border-outline-variant text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container"
+                    }
                   >
-                    Stop
+                    Dictée navigateur
+                  </button>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={dictationEngine === "whisper"}
+                    onClick={() => setDictationEngine("whisper")}
+                    className={
+                      dictationEngine === "whisper"
+                        ? "px-sm py-1 bg-primary text-on-primary font-label-sm text-label-sm"
+                        : "px-sm py-1 border border-outline-variant text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container"
+                    }
+                  >
+                    Dictée Whisper
                   </button>
                 </div>
+              )}
+
+              {dictationEngine === "whisper" && whisperAllowed ? (
+                <div className="space-y-xs">
+                  <p className="font-label-sm text-label-sm text-on-surface-variant">
+                    L'audio est envoyé à un service externe : données fictives uniquement.
+                  </p>
+                  {whisper.error && (
+                    <p role="alert" className="text-body-sm text-error">
+                      {whisper.error}
+                    </p>
+                  )}
+                  {whisper.canFallback && (
+                    <button
+                      type="button"
+                      onClick={retryWithBrowserDictation}
+                      className="font-label-sm text-label-sm uppercase text-primary underline"
+                    >
+                      Réessayer avec la dictée du navigateur
+                    </button>
+                  )}
+                  {whisper.recording ? (
+                    <div className="flex items-center gap-sm">
+                      <span
+                        role="status"
+                        aria-live="polite"
+                        className="flex items-center gap-xs font-label-sm text-label-sm text-error"
+                      >
+                        <span className="h-2 w-2 animate-pulse rounded-full bg-error" aria-hidden="true" />
+                        Enregistrement… {whisper.remainingSeconds}s
+                      </span>
+                      <button
+                        type="button"
+                        onClick={whisper.stop}
+                        className="px-md py-xs border border-outline text-primary font-label-md text-label-md hover:bg-surface-container"
+                      >
+                        Stop
+                      </button>
+                    </div>
+                  ) : whisper.transcribing ? (
+                    <p role="status" aria-live="polite" className="font-label-sm text-label-sm text-on-surface-variant">
+                      Transcription en cours…
+                    </p>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={startWhisperDictation}
+                      className="flex items-center gap-xs px-md py-xs border border-outline bg-surface text-primary font-label-md text-label-md hover:bg-surface-container"
+                    >
+                      <span aria-hidden="true" className="material-symbols-outlined">mic</span>{" "}
+                      {notes ? "Redicter" : "Dicter"}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {dictationError && (
+                    <p role="alert" className="text-body-sm text-error">
+                      {dictationError}
+                    </p>
+                  )}
+                  {!recording ? (
+                    <button
+                      type="button"
+                      onClick={startDictation}
+                      className="flex items-center gap-xs px-md py-xs border border-outline bg-surface text-primary font-label-md text-label-md hover:bg-surface-container"
+                    >
+                      <span aria-hidden="true" className="material-symbols-outlined">mic</span> {notes ? "Redicter" : "Dicter"}
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-sm">
+                      <span
+                        role="status"
+                        aria-live="polite"
+                        className="flex items-center gap-xs font-label-sm text-label-sm text-error"
+                      >
+                        <span className="h-2 w-2 animate-pulse rounded-full bg-error" aria-hidden="true" /> Enregistrement…
+                      </span>
+                      <button
+                        type="button"
+                        onClick={stopDictation}
+                        className="px-md py-xs border border-outline text-primary font-label-md text-label-md hover:bg-surface-container"
+                      >
+                        Stop
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
               {notes && (
                 <p className="font-body-sm text-body-sm italic text-on-surface-variant">« {notes} »</p>
