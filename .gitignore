@@ -31,3 +31,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Notes locales (peuvent contenir des clés)
+Claude outputs/env
