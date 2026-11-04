@@ -25,6 +25,8 @@ export type News = {
   status: string;
   audience?: string | null;
   input_mode?: string | null;
+  /** Texte proposé par l'assistant IA (même retouché) ; null = inconnu (actus antérieures). */
+  ai_assisted?: boolean | null;
   submitted_at?: string | null;
   published_at?: string | null;
   manager_validated_by_email?: string | null;

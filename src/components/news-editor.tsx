@@ -133,6 +133,9 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
   const hasResultRef = useRef(false);
   const noSpeechTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  // Signal de mesure : nouvelle actu = false jusqu'à un appel IA réussi ; actu existante = valeur
+  // enregistrée (null pour les actus antérieures à ce suivi : on ne l'invente pas).
+  const [aiAssisted, setAiAssisted] = useState<boolean | null>(news ? (news.ai_assisted ?? null) : false);
 
   // Dictée Whisper (optionnelle, derrière le réglage admin go/no-go) : D80
   // (Web Speech API, juste au-dessus) reste le moteur par défaut et n'est
@@ -195,6 +198,7 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
     }
     setTitle(result.title);
     setBody(result.body);
+    setAiAssisted(true);
     toast.success("Texte proposé par l'IA — relis-le avant d'envoyer.");
   }
 
@@ -315,6 +319,7 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
         body: body.trim(),
         audience,
         input_mode: mode,
+        ai_assisted: aiAssisted,
         links: toNewsLinks(media.links),
         media,
       };

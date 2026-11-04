@@ -413,6 +413,7 @@ export type Database = {
       }
       news: {
         Row: {
+          ai_assisted: boolean | null
           audience: Database["public"]["Enums"]["news_audience"]
           author: string
           author_email: string | null
@@ -439,6 +440,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_assisted?: boolean | null
           audience?: Database["public"]["Enums"]["news_audience"]
           author?: string
           author_email?: string | null
@@ -465,6 +467,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_assisted?: boolean | null
           audience?: Database["public"]["Enums"]["news_audience"]
           author?: string
           author_email?: string | null

@@ -10,6 +10,8 @@ export type NewsDraftInput = {
   /** Valeur base : "mon_equipe" | "tout_le_cabinet" (jamais "plusieurs_equipes", voir CLAUDE.md). */
   audience: string;
   input_mode: AiMode;
+  /** true dès que l'IA a proposé le texte ; null = inconnu (actu antérieure, on n'invente pas de valeur). */
+  ai_assisted: boolean | null;
   links: NewsLink[];
   media: MediaDraft;
 };
@@ -23,6 +25,7 @@ export async function createNewsDraft(input: NewsDraftInput): Promise<News> {
       body: input.body,
       audience: input.audience as never,
       input_mode: input.input_mode as never,
+      ai_assisted: input.ai_assisted,
       links: input.links as unknown as Json,
       status: "brouillon",
     })
@@ -42,6 +45,7 @@ export async function updateNewsDraft(id: string, input: NewsDraftInput): Promis
       body: input.body,
       audience: input.audience as never,
       input_mode: input.input_mode as never,
+      ai_assisted: input.ai_assisted,
       links: input.links as unknown as Json,
     })
     .eq("id", id)
