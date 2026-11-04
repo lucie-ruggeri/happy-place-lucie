@@ -34,17 +34,17 @@ const ROLES: { value: AppRole; label: string; description: string }[] = [
   {
     value: "collaborateur",
     label: "Collaborateur",
-    description: "Je lis les actualités et les indicateurs, et je remonte des idées, questions ou problèmes à mon équipe.",
+    description: "Je contribue aux 4 modules (actus, idées, points bloquants, indicateurs) et je choisis qui est concerné. Selon l'audience, je publie tout de suite ou mon contenu est relu.",
   },
   {
     value: "manager",
     label: "Manager",
-    description: "Je valide ou refuse les idées de mon équipe, je rédige des actualités et je suis les points bloquants.",
+    description: "Je contribue aussi aux 4 modules, sans validation pour mon équipe. Je valide les contenus de mes collaborateurs et je peux retirer un contenu publié, avec un commentaire.",
   },
   {
     value: "admin",
     label: "Admin",
-    description: "Je gère tout : contenus, indicateurs, équipes et utilisateurs.",
+    description: "Je ne publie ni ne valide rien : je gère les utilisateurs, la case Relecteur Comm, les relances, les unités et les seuils d'alerte des indicateurs.",
   },
 ];
 
@@ -233,6 +233,9 @@ function ChoisirRolePage() {
                     </span>
                   </label>
                 ))}
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  Certaines fonctions arrivent bientôt : les indicateurs, la case Relecteur Comm côté admin et le choix d'audience à plusieurs équipes.
+                </p>
               </fieldset>
 
               {role !== "admin" && (
