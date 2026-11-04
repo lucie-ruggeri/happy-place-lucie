@@ -6,6 +6,7 @@ import { fetchOwnRole, signOut, type AppRole } from "@/lib/auth";
 import { BrandHeader } from "@/components/brand-header";
 import { BackLink } from "@/components/back-link";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const PERSONAS = [
   { key: "ines", label: "Inès", roleLabel: "Collaboratrice", team: "Direction Commerciale" },
@@ -111,6 +112,8 @@ function ChoisirRolePage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    // « Entrer dans Happy Place » est grisé (bientôt disponible) : la touche Entrée ne doit pas le contourner.
+    if (!current) return;
     if (!firstName.trim() || !lastName.trim()) {
       setError("Renseigne ton prénom et ton nom.");
       return;
@@ -252,9 +255,29 @@ function ChoisirRolePage() {
                 </label>
               )}
 
-              <Button type="submit" disabled={busy} className="h-12 w-full rounded-none font-label-md text-xs uppercase text-on-primary">
-                {busy ? "PATIENTE…" : current ? "CHANGER DE RÔLE" : "ENTRER DANS HAPPY PLACE"}
-              </Button>
+              {current ? (
+                <Button type="submit" disabled={busy} className="h-12 w-full rounded-none font-label-md text-xs uppercase text-on-primary">
+                  {busy ? "PATIENTE…" : "CHANGER DE RÔLE"}
+                </Button>
+              ) : (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="block w-full cursor-not-allowed" tabIndex={0}>
+                        <Button
+                          type="button"
+                          disabled
+                          aria-disabled="true"
+                          className="pointer-events-none h-12 w-full rounded-none font-label-md text-xs uppercase text-on-primary"
+                        >
+                          ENTRER DANS HAPPY PLACE
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>Bientôt disponible</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </form>
           )}
 
