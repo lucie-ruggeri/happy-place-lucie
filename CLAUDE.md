@@ -31,6 +31,15 @@ Six profils fixes, activables en un clic via le sélecteur de rôle (en-tête) o
 
 Note sur le champ « équipe » affiché : pour un collaborateur, c'est `allowed_users.team` ; pour un manager, c'est sa première équipe dans `manager_teams` (ex. Marc/Sophie) ; **un admin n'a pas de notion d'équipe stockée** dans le modèle actuel — l'« équipe IT » de Karim est narrative (persona), pas une donnée en base.
 
+## Authentification
+
+Deux entrées sur `/auth` (`src/routes/auth.tsx`) :
+
+- **Connexion par e-mail (lien magique Supabase)** : `signInWithOtp` avec `emailRedirectTo = <origine>/auth` ; le clic sur le lien du mail ouvre la session, `/auth` détecte la session et redirige (`/` puis `/choisir-role` si le compte n'a pas de profil). L'adresse réelle est conservée par `choisir_mon_role` (elle lit `auth.jwt() ->> 'email'`), affichée en lecture seule sur `/choisir-role`. C'est la vraie authentification à montrer en démo.
+- **Accès démo** : session anonyme (`signInAnonymously`) + personas ; le bouton « Entrer dans Happy Place » reste grisé pour ce type de compte (« Bientôt disponible »).
+
+Réglages Supabase requis (Dashboard, pas de migration) : fournisseur Email actif, **Site URL** sans chemin, **Redirect URLs** contenant `<site publié>/auth` et `http://localhost:3000/auth`. Les modèles de mail ne sont modifiables qu'avec un SMTP personnalisé : le mail par défaut contient un lien, pas de code à 6 chiffres. Service mail par défaut limité à quelques envois par heure.
+
 ## Audience
 
 Deux valeurs en base (`public.news_audience`), nommées différemment du libellé affiché :
