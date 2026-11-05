@@ -17,7 +17,7 @@ import {
   updateNewsDraft,
 } from "@/lib/news-circuit";
 import type { News } from "@/lib/dashboard";
-import { fetchDictationEngineSetting, type DictationEngine } from "@/lib/whisper";
+import { fetchDictationEngineSetting, logDictationEvent, type DictationEngine } from "@/lib/whisper";
 import { useWhisperDictation } from "@/hooks/use-whisper-dictation";
 
 // La Web Speech API n'est pas dans les typings DOM standard de TypeScript :
@@ -131,6 +131,7 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
   const [useFallbackDictation, setUseFallbackDictation] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const hasResultRef = useRef(false);
+  const attemptStartRef = useRef<number | null>(null);
   const noSpeechTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   // Signal de mesure : nouvelle actu = false jusqu'à un appel IA réussi ; actu existante = valeur
@@ -223,16 +224,33 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
    *  applique resolveDictationOutcome, pour ne jamais oublier un cas. */
   function finishDictationAttempt(errorCode?: string) {
     clearNoSpeechTimer();
+    logBrowserAttempt(hasResultRef.current && !errorCode);
     const outcome = resolveDictationOutcome({ hadResult: hasResultRef.current, errorCode });
     if (outcome.message) setDictationError(outcome.message);
     setUseFallbackDictation(outcome.fallback);
     setRecording(false);
   }
 
+  /** Journal des dictées navigateur (KPI) : un seul événement par tentative,
+   *  même si onerror, onend et le minuteur se déclenchent tous. Jamais bloquant. */
+  function logBrowserAttempt(ok: boolean) {
+    const startedAt = attemptStartRef.current;
+    if (startedAt === null) return;
+    attemptStartRef.current = null;
+    void logDictationEvent({
+      event_type: ok ? "dictation_ok" : "dictation_failed",
+      engine: "browser",
+      duration_ms: 0,
+      audio_seconds: (Date.now() - startedAt) / 1000,
+    });
+  }
+
   function startDictation() {
     setDictationError(null);
+    attemptStartRef.current = Date.now();
     const Ctor = getSpeechRecognitionCtor();
     if (!Ctor) {
+      logBrowserAttempt(false);
       setDictationError(UNSUPPORTED_MSG);
       setUseFallbackDictation(true);
       setRecording(true);
@@ -276,6 +294,7 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
         }
       }, 8000);
     } catch {
+      logBrowserAttempt(false);
       setDictationError(UNSUPPORTED_MSG);
       setUseFallbackDictation(true);
     }
