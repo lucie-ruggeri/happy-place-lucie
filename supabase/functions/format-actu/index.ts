@@ -5,10 +5,17 @@
 // qui transmet automatiquement le JWT de la session en cours.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-const GEMINI_MODEL = "gemini-3.5-flash-lite";
+// Modèles essayés dans l'ordre : si le premier est surchargé (503/429) ou
+// absent (404), on bascule sur le suivant au lieu d'échouer.
+const GEMINI_MODELS = [
+  Deno.env.get("GEMINI_MODEL") ?? "gemini-3.5-flash-lite",
+  "gemini-2.5-flash-lite",
+  "gemini-2.5-flash",
+];
 const MAX_NOTES_LENGTH = 4000;
 const DAILY_QUOTA = 50;
-const GEMINI_TIMEOUT_MS = 8000; // marge sous le timeout de 10s côté client
+const GEMINI_ATTEMPT_TIMEOUT_MS = 7000; // par tentative
+const TOTAL_BUDGET_MS = 22000; // marge sous le timeout de 25s côté client
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -103,27 +110,46 @@ Deno.serve(async (req) => {
     "Le titre fait 90 caractères maximum. N'invente aucun fait absent des notes.\n\nNotes :\n" +
     notes;
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+  // Tentatives successives (modèles de repli, 2 essais par modèle) dans un
+  // budget de temps global. Une réponse 4xx autre que 404/429 est définitive.
+  const startedAt = Date.now();
+  let resp: Response | null = null;
+  outer: for (const model of GEMINI_MODELS) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (Date.now() - startedAt > TOTAL_BUDGET_MS - 2000) break outer;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), GEMINI_ATTEMPT_TIMEOUT_MS);
+      try {
+        const r = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: "application/json" },
+            }),
+            signal: controller.signal,
+          },
+        );
+        clearTimeout(timeout);
+        if (r.ok) {
+          resp = r;
+          break outer;
+        }
+        console.error("Gemini", model, r.status, (await r.text()).slice(0, 300));
+        if (r.status === 404) continue outer; // modèle inconnu → suivant
+        if (r.status !== 429 && r.status < 500) break outer;
+      } catch (e) {
+        clearTimeout(timeout);
+        console.error("format-actu", model, e instanceof Error ? e.name : "erreur");
+      }
+      await new Promise((res) => setTimeout(res, 400));
+    }
+  }
 
   try {
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: "application/json" },
-        }),
-        signal: controller.signal,
-      },
-    );
-    clearTimeout(timeout);
-
-    if (!resp.ok) {
-      // Diagnostic : la réponse d'erreur Gemini ne contient pas la clé API.
-      console.error("Gemini", resp.status, (await resp.text()).slice(0, 500));
+    if (!resp) {
       return jsonResponse({ error: "L'assistant IA est momentanément indisponible." }, 502);
     }
 
@@ -149,7 +175,6 @@ Deno.serve(async (req) => {
 
     return jsonResponse({ title, body: bodyText });
   } catch (e) {
-    clearTimeout(timeout);
     console.error("format-actu", e instanceof Error ? e.name : "erreur");
     return jsonResponse({ error: "L'assistant IA est momentanément indisponible." }, 502);
   }

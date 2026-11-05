@@ -7,7 +7,7 @@ import { NewsMediaEditor } from "@/components/news-media";
 import { CircuitStepper, type CircuitStep } from "@/components/circuit-stepper";
 import { getCircuit, type CircuitAudience, type CircuitKind } from "@/lib/circuit";
 import { emptyMedia, linkErrors, mediaFromNews, toNewsLinks, type MediaDraft } from "@/lib/news-media";
-import { formatActuWithAI, type AiMode } from "@/lib/ai";
+import { formatActuLocally, formatActuWithAI, type AiMode } from "@/lib/ai";
 import {
   createNewsDraft,
   fetchMyManagedTeams,
@@ -192,8 +192,11 @@ export function NewsEditor({ news, onDone }: { news?: News | null; onDone: () =>
     const result = await formatActuWithAI(notes.trim(), mode);
     setAiLoading(false);
     if (!result) {
-      toast.error("L'assistant IA est indisponible, continue en écrivant toi-même.");
-      setBody((b) => b || notes.trim());
+      // Repli local : le formulaire est toujours pré-rempli, jamais bloqué.
+      const local = formatActuLocally(notes.trim());
+      setTitle((t) => t || local.title);
+      setBody((b) => b || local.body);
+      toast.warning("L'assistant IA ne répond pas : mise en forme simple appliquée, retouche le texte si besoin.");
       return;
     }
     setTitle(result.title);
