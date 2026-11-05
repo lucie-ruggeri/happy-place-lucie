@@ -26,7 +26,8 @@ export const Route = createFileRoute("/choisir-role")({
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth" });
-    return { email: data.user.email ?? "" };
+    // is_anonymous : accès démo (adresse interne fabriquée) ; sinon connexion réelle par code e-mail.
+    return { email: data.user.email ?? "", isAnonymous: data.user.is_anonymous === true };
   },
   component: ChoisirRolePage,
 });
@@ -50,7 +51,7 @@ const ROLES: { value: AppRole; label: string; description: string }[] = [
 ];
 
 function ChoisirRolePage() {
-  const { email } = Route.useRouteContext();
+  const { email, isAnonymous } = Route.useRouteContext();
   const [teams, setTeams] = useState<string[]>([]);
   const [current, setCurrent] = useState<AppRole | null>(null);
   const [role, setRole] = useState<AppRole>("collaborateur");
@@ -112,8 +113,9 @@ function ChoisirRolePage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    // « Entrer dans Happy Place » est grisé (bientôt disponible) : la touche Entrée ne doit pas le contourner.
-    if (!current) return;
+    // Pour l'accès démo, « Entrer dans Happy Place » est grisé (bientôt disponible) : la touche Entrée
+    // ne doit pas le contourner. Un compte connecté par e-mail peut créer son profil.
+    if (!current && isAnonymous) return;
     if (!firstName.trim() || !lastName.trim()) {
       setError("Renseigne ton prénom et ton nom.");
       return;
@@ -202,6 +204,12 @@ function ChoisirRolePage() {
             <p className="mt-md font-body-md text-on-surface-variant">Chargement…</p>
           ) : (
             <form onSubmit={submit} className="mt-md space-y-md" noValidate>
+              {!isAnonymous && email && (
+                <label className={labelCls}>
+                  Adresse e-mail
+                  <input value={email} readOnly aria-readonly="true" autoComplete="email" className={`${inputCls} cursor-not-allowed opacity-70`} />
+                </label>
+              )}
               <div className="grid grid-cols-1 gap-sm sm:grid-cols-2">
                 <label className={labelCls}>
                   Prénom
@@ -255,9 +263,9 @@ function ChoisirRolePage() {
                 </label>
               )}
 
-              {current ? (
+              {current || !isAnonymous ? (
                 <Button type="submit" disabled={busy} className="h-12 w-full rounded-none font-label-md text-xs uppercase text-on-primary">
-                  {busy ? "PATIENTE…" : "CHANGER DE RÔLE"}
+                  {busy ? "PATIENTE…" : current ? "CHANGER DE RÔLE" : "ENTRER DANS HAPPY PLACE"}
                 </Button>
               ) : (
                 <TooltipProvider>
