@@ -23,33 +23,42 @@ export const Route = createFileRoute("/auth")({
 function EntreePage() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
-  const [attempt, setAttempt] = useState(0);
+  const [checking, setChecking] = useState(true);
+  const [busy, setBusy] = useState(false);
 
+  // Une session existante renvoie directement au dashboard ; sinon on affiche
+  // l'écran de connexion (accès démo), l'utilisateur clique pour ouvrir sa session.
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      setError(null);
       const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
       if (data.session) {
         navigate({ to: "/" });
         return;
       }
-      const { error: err } = await supabase.auth.signInAnonymously();
-      if (cancelled) return;
-      if (err) {
-        setError(
-          /anonymous/i.test(err.message) && /disabled|not enabled/i.test(err.message)
-            ? "Les connexions anonymes ne sont pas activées dans Supabase. Active « Allow anonymous sign-ins » (voir le README, étape 2), puis réessaie."
-            : `Impossible d'ouvrir Happy Place : ${err.message}`,
-        );
-        return;
-      }
-      navigate({ to: "/choisir-role" });
+      setChecking(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, [navigate, attempt]);
+  }, [navigate]);
+
+  async function connect() {
+    setBusy(true);
+    setError(null);
+    const { error: err } = await supabase.auth.signInAnonymously();
+    if (err) {
+      setError(
+        /anonymous/i.test(err.message) && /disabled|not enabled/i.test(err.message)
+          ? "Les connexions anonymes ne sont pas activées dans Supabase. Active « Allow anonymous sign-ins » (voir le README, étape 2), puis réessaie."
+          : `Impossible d'ouvrir Happy Place : ${err.message}`,
+      );
+      setBusy(false);
+      return;
+    }
+    navigate({ to: "/choisir-role" });
+  }
 
   return (
     <div className="min-h-dvh w-full bg-background flex flex-col">
@@ -57,22 +66,32 @@ function EntreePage() {
       <main className="flex flex-1 items-center justify-center px-md py-lg">
         <section className="w-[min(100%,28rem)] border border-outline-variant bg-surface-container-lowest p-lg shadow-sm">
           <h1 className="font-headline-lg text-headline-lg text-primary">Happy Place</h1>
-          {error ? (
+          {checking ? (
+            <p className="mt-sm font-body-md text-body-md text-on-surface-variant" role="status">
+              Vérification de ta session…
+            </p>
+          ) : (
             <>
-              <p className="mt-md border border-error bg-error-container p-sm font-body-sm text-on-error-container" role="alert">
-                {error}
+              <p className="mt-sm font-body-md text-body-md text-on-surface-variant">
+                Le dashboard interne de Bigger Boat : actus, points bloquants, indicateurs et idées.
               </p>
+              {error && (
+                <p className="mt-md border border-error bg-error-container p-sm font-body-sm text-on-error-container" role="alert">
+                  {error}
+                </p>
+              )}
               <Button
-                onClick={() => setAttempt((n) => n + 1)}
+                onClick={connect}
+                disabled={busy}
                 className="mt-md h-12 w-full rounded-none font-label-md text-xs uppercase text-on-primary"
               >
-                RÉESSAYER
+                {busy ? "CONNEXION…" : error ? "RÉESSAYER" : "SE CONNECTER (ACCÈS DÉMO)"}
               </Button>
+              <p className="mt-sm font-body-sm text-body-sm text-on-surface-variant">
+                Accès de démonstration : une session sécurisée est ouverte sans mot de passe, puis tu choisis un persona. L'authentification
+                par SSO du cabinet remplacera cette étape.
+              </p>
             </>
-          ) : (
-            <p className="mt-sm font-body-md text-body-md text-on-surface-variant" role="status">
-              Ouverture de ton espace…
-            </p>
           )}
         </section>
       </main>
