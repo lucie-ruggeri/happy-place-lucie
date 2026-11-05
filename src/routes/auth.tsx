@@ -5,8 +5,8 @@ import { BrandHeader } from "@/components/brand-header";
 import { Button } from "@/components/ui/button";
 
 // Deux entrées :
-// 1. Connexion par code e-mail (OTP Supabase) : on saisit son adresse, on reçoit
-//    un code à 6 chiffres, on le saisit. C'est la vraie authentification.
+// 1. Connexion par lien magique (Supabase) : on saisit son adresse e-mail, on reçoit
+//    un lien, on clique dessus et on revient ici connecté. C'est la vraie authentification.
 // 2. Accès démo : une session anonyme Supabase est ouverte, puis /choisir-role
 //    permet de choisir un rôle ou l'une des 6 personas. Aucun e-mail requis.
 // Dans les deux cas, le navigateur garde la session : on retrouve son rôle à la visite suivante.
@@ -22,24 +22,31 @@ export const Route = createFileRoute("/auth")({
   component: EntreePage,
 });
 
-type Step = "checking" | "choix" | "email" | "code";
+type Step = "checking" | "choix" | "email" | "envoye";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const OTP_LENGTH = 6;
+
+// Un lien expiré ou déjà utilisé revient ici avec l'erreur dans l'adresse (#error_code=otp_expired…).
+function linkErrorFromUrl(): string | null {
+  if (typeof window === "undefined") return null;
+  const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const code = params.get("error_code");
+  if (!code && !params.get("error")) return null;
+  return code === "otp_expired"
+    ? "Ce lien a expiré ou a déjà été utilisé. Demande un nouveau lien."
+    : "Ce lien de connexion n'est pas valide. Demande un nouveau lien.";
+}
 
 function EntreePage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("checking");
   const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
-  const [codeError, setCodeError] = useState<string | null>(null);
   const [demoError, setDemoError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  // Une session existante renvoie directement au dashboard ; sinon on affiche
-  // l'écran de connexion (e-mail ou accès démo).
+  // Une session existante (ou créée par le lien magique) renvoie directement au dashboard ;
+  // sinon on affiche l'écran de connexion (e-mail ou accès démo).
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -47,6 +54,12 @@ function EntreePage() {
       if (cancelled) return;
       if (data.session) {
         navigate({ to: "/" });
+        return;
+      }
+      const linkError = linkErrorFromUrl();
+      if (linkError) {
+        setEmailError(linkError);
+        setStep("email");
         return;
       }
       setStep("choix");
@@ -72,11 +85,9 @@ function EntreePage() {
     navigate({ to: "/choisir-role" });
   }
 
-  async function sendCode(e?: React.FormEvent) {
+  async function sendLink(e?: React.FormEvent) {
     e?.preventDefault();
     setEmailError(null);
-    setCodeError(null);
-    setInfo(null);
     const clean = email.trim().toLowerCase();
     if (!clean) {
       setEmailError("Renseigne ton adresse e-mail.");
@@ -87,47 +98,21 @@ function EntreePage() {
       return;
     }
     setBusy(true);
-    const { error: err } = await supabase.auth.signInWithOtp({ email: clean, options: { shouldCreateUser: true } });
+    const { error: err } = await supabase.auth.signInWithOtp({
+      email: clean,
+      options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/auth` },
+    });
     setBusy(false);
     if (err) {
       setEmailError(
         /rate limit|too many|seconds/i.test(err.message)
-          ? "Trop de codes demandés : patiente quelques minutes avant de réessayer."
-          : `Impossible d'envoyer le code : ${err.message}`,
+          ? "Trop de liens demandés : patiente quelques minutes avant de réessayer."
+          : `Impossible d'envoyer le lien : ${err.message}`,
       );
       return;
     }
     setEmail(clean);
-    setCode("");
-    setStep("code");
-    setInfo(`Un code à ${OTP_LENGTH} chiffres vient d'être envoyé à ${clean}.`);
-  }
-
-  async function verifyCode(e: React.FormEvent) {
-    e.preventDefault();
-    setCodeError(null);
-    const clean = code.replace(/\s/g, "");
-    if (!clean) {
-      setCodeError("Saisis le code reçu par e-mail.");
-      return;
-    }
-    if (!new RegExp(`^\\d{${OTP_LENGTH}}$`).test(clean)) {
-      setCodeError(`Le code contient exactement ${OTP_LENGTH} chiffres.`);
-      return;
-    }
-    setBusy(true);
-    const { error: err } = await supabase.auth.verifyOtp({ email, token: clean, type: "email" });
-    if (err) {
-      setBusy(false);
-      setCodeError(
-        /expired|invalid/i.test(err.message)
-          ? "Code incorrect ou expiré. Vérifie-le ou demande un nouveau code."
-          : `Connexion impossible : ${err.message}`,
-      );
-      return;
-    }
-    // « / » renvoie vers /choisir-role si le compte n'a pas encore de profil.
-    navigate({ to: "/" });
+    setStep("envoye");
   }
 
   const inputCls =
@@ -159,7 +144,7 @@ function EntreePage() {
                 ME CONNECTER AVEC MON E-MAIL
               </Button>
               <p className="font-body-sm text-body-sm text-on-surface-variant">
-                Tu reçois un code à {OTP_LENGTH} chiffres par e-mail, sans mot de passe.
+                Tu reçois un lien de connexion par e-mail, sans mot de passe.
               </p>
               <div className="space-y-xs border-t border-outline-variant pt-md">
                 <Button variant="outline" onClick={enterDemo} disabled={busy} className={`${btnCls} text-primary`}>
@@ -178,9 +163,9 @@ function EntreePage() {
           )}
 
           {step === "email" && (
-            <form onSubmit={sendCode} className="mt-md space-y-md" noValidate>
+            <form onSubmit={sendLink} className="mt-md space-y-md" noValidate>
               <p className="font-body-md text-body-md text-on-surface-variant">
-                Saisis ton adresse e-mail : on t'envoie un code à {OTP_LENGTH} chiffres.
+                Saisis ton adresse e-mail : on t'envoie un lien pour te connecter.
               </p>
               <label className={labelCls}>
                 Adresse e-mail
@@ -201,7 +186,7 @@ function EntreePage() {
                 )}
               </label>
               <Button type="submit" disabled={busy} className={`${btnCls} text-on-primary`}>
-                {busy ? "ENVOI…" : "RECEVOIR MON CODE"}
+                {busy ? "ENVOI…" : "RECEVOIR MON LIEN"}
               </Button>
               <button
                 type="button"
@@ -216,44 +201,21 @@ function EntreePage() {
             </form>
           )}
 
-          {step === "code" && (
-            <form onSubmit={verifyCode} className="mt-md space-y-md" noValidate>
-              {info && (
-                <p className="font-body-md text-body-md text-on-surface-variant" role="status">
-                  {info}
-                </p>
-              )}
-              <label className={labelCls}>
-                Code reçu par e-mail
-                <input
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  autoFocus
-                  maxLength={OTP_LENGTH + 2}
-                  aria-invalid={codeError ? true : undefined}
-                  className={`${inputCls} tracking-[0.4em]`}
-                />
-                {codeError && (
-                  <span className={errCls} role="alert">
-                    {codeError}
-                  </span>
-                )}
-              </label>
-              <Button type="submit" disabled={busy} className={`${btnCls} text-on-primary`}>
-                {busy ? "VÉRIFICATION…" : "ME CONNECTER"}
-              </Button>
+          {step === "envoye" && (
+            <div className="mt-md space-y-md">
+              <p className="font-body-md text-body-md text-on-surface-variant" role="status">
+                Un lien de connexion vient d'être envoyé à <strong className="text-on-surface">{email}</strong>. Ouvre ta boîte mail et clique sur
+                « Sign in » : tu reviendras ici connecté(e). Pense à regarder tes courriers indésirables.
+              </p>
               <div className="flex flex-wrap items-center justify-between gap-xs font-body-sm text-body-sm text-on-surface-variant">
-                <button type="button" onClick={() => sendCode()} disabled={busy} className={linkBtnCls}>
-                  Renvoyer le code
+                <button type="button" onClick={() => sendLink()} disabled={busy} className={linkBtnCls}>
+                  {busy ? "Envoi…" : "Renvoyer le lien"}
                 </button>
                 <button
                   type="button"
                   onClick={() => {
                     setStep("email");
-                    setCodeError(null);
-                    setInfo(null);
+                    setEmailError(null);
                   }}
                   className={linkBtnCls}
                 >
@@ -265,7 +227,7 @@ function EntreePage() {
                   {emailError}
                 </p>
               )}
-            </form>
+            </div>
           )}
         </section>
       </main>
