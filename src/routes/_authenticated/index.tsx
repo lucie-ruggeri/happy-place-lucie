@@ -615,46 +615,6 @@ function ManagerSpace() {
             </div>
           </section>
 
-          {/* Actus à valider (manager) : déplacée depuis la carte "Idées de mon équipe à
-              traiter" du module Boîte à idées, où elle ne devait pas être (D83). */}
-          {role === "manager" && managerQueue.length > 0 && (
-          <section className="col-span-12 min-w-0 bg-surface-container-lowest border border-outline-variant p-md flex flex-col gap-sm">
-            <div className="flex flex-wrap items-center justify-between gap-xs border-b border-outline-variant pb-sm">
-              <h2 className="font-headline-sm text-headline-sm text-primary">Actus à valider</h2>
-              <div className="shrink-0 bg-tertiary-fixed text-on-tertiary-fixed px-xs py-1 rounded-full font-label-sm text-label-sm uppercase">
-                {managerQueue.length} à valider
-              </div>
-            </div>
-            <AudienceFilter value={queueAudienceFilter} onChange={setQueueAudienceFilter} />
-            <div className="space-y-xs">
-              {filteredManagerQueue.length === 0 && (
-                <p className="text-body-sm italic text-on-surface-variant">
-                  Aucune actu à valider pour cette audience.
-                </p>
-              )}
-              {filteredManagerQueue.map((n) => (
-                <button
-                  key={n.id}
-                  type="button"
-                  onClick={() => setReviewingNews(n)}
-                  aria-haspopup="dialog"
-                  className="w-full text-left p-sm bg-card border border-outline-variant hover:bg-surface-container transition-colors min-w-0 overflow-hidden"
-                >
-                  <div className="flex items-center justify-between gap-sm min-w-0">
-                    <div className="min-w-0">
-                      <p className="font-body-md text-primary wrap-anywhere">{n.title}</p>
-                      <p className="text-xs text-on-surface-variant uppercase font-label-sm">
-                        {n.author} • {timeAgo(n.submitted_at ?? n.created_at)}
-                      </p>
-                    </div>
-                    <AudienceBadge audience={n.audience ?? "tout_le_cabinet"} className="shrink-0" />
-                  </div>
-                </button>
-              ))}
-            </div>
-          </section>
-          )}
-
           {/* Mes actus : l'admin n'a aucun contenu à lui (D26) */}
           {!isAdmin && (
           <section className="col-span-12 lg:col-span-6 min-w-0 bg-surface-container-lowest border border-outline-variant p-md flex flex-col gap-sm">
@@ -734,6 +694,46 @@ function ManagerSpace() {
                   </div>
                 );
               })}
+            </div>
+          </section>
+          )}
+
+          {/* Actus à valider (manager) : déplacée depuis la carte "Idées de mon équipe à
+              traiter" du module Boîte à idées, où elle ne devait pas être (D83). */}
+          {role === "manager" && managerQueue.length > 0 && (
+          <section className="col-span-12 min-w-0 bg-surface-container-lowest border border-outline-variant p-md flex flex-col gap-sm">
+            <div className="flex flex-wrap items-center justify-between gap-xs border-b border-outline-variant pb-sm">
+              <h2 className="font-headline-sm text-headline-sm text-primary">Actus à valider</h2>
+              <div className="shrink-0 bg-tertiary-fixed text-on-tertiary-fixed px-xs py-1 rounded-full font-label-sm text-label-sm uppercase">
+                {managerQueue.length} à valider
+              </div>
+            </div>
+            <AudienceFilter value={queueAudienceFilter} onChange={setQueueAudienceFilter} />
+            <div className="space-y-xs">
+              {filteredManagerQueue.length === 0 && (
+                <p className="text-body-sm italic text-on-surface-variant">
+                  Aucune actu à valider pour cette audience.
+                </p>
+              )}
+              {filteredManagerQueue.map((n) => (
+                <button
+                  key={n.id}
+                  type="button"
+                  onClick={() => setReviewingNews(n)}
+                  aria-haspopup="dialog"
+                  className="w-full text-left p-sm bg-card border border-outline-variant hover:bg-surface-container transition-colors min-w-0 overflow-hidden"
+                >
+                  <div className="flex items-center justify-between gap-sm min-w-0">
+                    <div className="min-w-0">
+                      <p className="font-body-md text-primary wrap-anywhere">{n.title}</p>
+                      <p className="text-xs text-on-surface-variant uppercase font-label-sm">
+                        {n.author} • {timeAgo(n.submitted_at ?? n.created_at)}
+                      </p>
+                    </div>
+                    <AudienceBadge audience={n.audience ?? "tout_le_cabinet"} className="shrink-0" />
+                  </div>
+                </button>
+              ))}
             </div>
           </section>
           )}
